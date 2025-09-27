@@ -42,3 +42,4 @@ fix: crud room validation
 feat: crud room
 fix: crud room validation
 fix: crud room validation
+fix: crud booking validation
