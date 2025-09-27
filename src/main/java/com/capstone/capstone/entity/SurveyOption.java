@@ -1,6 +1,5 @@
 package com.capstone.capstone.entity;
 
-import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -14,20 +13,17 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-public class Room extends BaseEntity {
-    private String roomNumber;
-    private int totalSlot;
-    private int floor;
-    private StatusRoomEnum status;
-    @OneToMany(mappedBy = "room")
-    private List<Slot> slots;
-
+@NoArgsConstructor
+@AllArgsConstructor
+public class SurveyOption extends BaseEntity {
     @ManyToOne
-    @JoinColumn(name = "dorm_id")
+    @JoinColumn(name = "survey_question_id")
     @JsonIgnore
-    private Dorm dorm;
+    private SurveyQuestion  surveyQuestion;
+    private String optionContent;
+
+    @OneToMany(mappedBy = "surveyOption")
+    private List<SurveyQuetionSelected> surveyQuetionSelected;
 }

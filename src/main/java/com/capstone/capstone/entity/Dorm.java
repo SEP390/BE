@@ -1,15 +1,15 @@
 package com.capstone.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.aspectj.weaver.patterns.TypePatternQuestions;
 
-import java.nio.MappedByteBuffer;
 import java.util.List;
 
 @Entity
@@ -17,9 +17,11 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class SurveyQuestion extends BaseEntity {
+public class Dorm extends BaseEntity {
+    private String DormName;
+    private int TotalRoom;
+    private int TotalFloor;
 
-    @OneToMany(mappedBy = "surveyQuestion")
-    private List<SurveyOption>  surveyOptions;
-    private String questionContent;
+    @OneToMany(mappedBy = "dorm")
+    private List<Room> rooms;
 }
