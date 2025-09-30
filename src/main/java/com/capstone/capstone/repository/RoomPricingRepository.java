@@ -9,4 +9,5 @@ import java.util.UUID;
 @Repository
 public interface RoomPricingRepository extends JpaRepository<RoomPricing, UUID> {
 
+    RoomPricing findByTotalSlot(int totalSlot);
 }

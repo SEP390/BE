@@ -17,6 +17,7 @@ public class RoomDetailsResponse {
     private UUID id;
     private String roomNumber;
     private DormResponse dorm;
+    private long pricing;
     private List<SlotResponse> slots;
 
     @Getter

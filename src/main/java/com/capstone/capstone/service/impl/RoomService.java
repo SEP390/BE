@@ -4,7 +4,9 @@ import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
 import com.capstone.capstone.dto.response.room.RoomMatching;
 import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
 import com.capstone.capstone.entity.Room;
+import com.capstone.capstone.entity.RoomPricing;
 import com.capstone.capstone.exception.NotFoundException;
+import com.capstone.capstone.repository.RoomPricingRepository;
 import com.capstone.capstone.repository.RoomRepository;
 import com.capstone.capstone.service.interfaces.IRoomService;
 import lombok.AllArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class RoomService implements IRoomService {
     private final RoomRepository roomRepository;
+    private final RoomPricingRepository roomPricingRepository;
 
     public List<RoomMatchingResponse> getBookableRoomFirstYear(UUID currentUserId) {
         return roomRepository.findBookableRoomFirstYear(currentUserId).stream().map(m -> RoomMatchingResponse.builder()
@@ -31,9 +34,11 @@ public class RoomService implements IRoomService {
 
     public RoomDetailsResponse getRoomDetails(UUID id) {
         Room room = roomRepository.findDetails(id);
+        RoomPricing pricing = roomPricingRepository.findByTotalSlot(room.getTotalSlot());
         return RoomDetailsResponse.builder()
                 .roomNumber(room.getRoomNumber())
                 .id(room.getId())
+                .pricing(pricing.getPrice())
                 .dorm(RoomDetailsResponse.DormResponse.builder()
                         .dormName(room.getDorm().getDormName())
                         .build())
