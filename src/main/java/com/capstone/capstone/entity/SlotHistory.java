@@ -1,9 +1,8 @@
 package com.capstone.capstone.entity;
 
+import com.capstone.capstone.dto.enums.StatusSlotHistoryEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,10 +15,16 @@ import java.util.UUID;
 public class SlotHistory extends BaseEntity {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private UUID userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
     @ManyToOne
     @JoinColumn(name = "slot_id")
     @JsonIgnore
     private Slot slot;
 
+    private LocalDateTime createdDate;
+    private String paymentUrl;
+    @Enumerated(EnumType.STRING)
+    private StatusSlotHistoryEnum status;
 }
