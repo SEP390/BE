@@ -21,10 +21,13 @@ public interface DormRepository extends JpaRepository<Dorm, UUID> {
     @Query("""
             SELECT room.dorm
             FROM Room room
-            JOIN Slot slot ON slot.room.id = room.id AND slot.status = 'AVAILABLE'
-            LEFT JOIN User user ON user.id = slot.user.id AND (user.gender IS NULL OR user.gender = :gender)
-            WHERE room.totalSlot = :totalSlot
+            WHERE room.status = 0 AND NOT EXISTS (
+                SELECT 1 FROM Slot slot
+                JOIN User user ON slot.user.id = user.id
+                WHERE slot.room.id = room.id AND user.gender != :gender
+            )
             GROUP BY room.dorm
+            ORDER BY room.dorm.dormName
             """)
     List<Dorm> getBookableDorm(int totalSlot, GenderEnum gender);
 }
