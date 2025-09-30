@@ -1,23 +1,41 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.response.BaseResponse;
+import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
+import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
 import com.capstone.capstone.dto.response.room.RoomPricingResponse;
+import com.capstone.capstone.entity.User;
+import com.capstone.capstone.service.impl.RoomService;
 import com.capstone.capstone.service.interfaces.IRoomPricingService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
 public class RoomController {
     private final IRoomPricingService roomPricingService;
+    private final RoomService roomService;
 
     @GetMapping("/api/rooms/pricing")
     public ResponseEntity<BaseResponse<List<RoomPricingResponse>>> getAllRoomPricing() {
         return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomPricingService.getAllRoomPricing()));
+    }
+
+    @GetMapping("/api/rooms/matching1y")
+    public ResponseEntity<BaseResponse<List<RoomMatchingResponse>>> getRoomMatchingFirstYear(Authentication authentication) {
+        UUID currentUserId = ((User) authentication.getPrincipal()).getId();
+        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getBookableRoomFirstYear(currentUserId)));
+    }
+
+    @GetMapping("/api/rooms/details")
+    public ResponseEntity<BaseResponse<RoomDetailsResponse>> getRoomDetails(UUID id) {
+        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoomDetails(id)));
     }
 }
