@@ -4,7 +4,7 @@ import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.dorm.BookableDormResponse;
 import com.capstone.capstone.entity.User;
-import com.capstone.capstone.service.impl.DormService;
+import com.capstone.capstone.service.interfaces.IDormService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 public class DormController {
-    private final DormService dormService;
+    private final IDormService dormService;
 
     @PostMapping("/api/dorms/bookable")
     public ResponseEntity<BaseResponse<List<BookableDormResponse>>> getBookableDorm(int totalSlot, UserDetails userDetails) {
