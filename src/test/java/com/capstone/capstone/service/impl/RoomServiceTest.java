@@ -22,4 +22,10 @@ public class RoomServiceTest {
             log.info("Room number: {}, Matching: {}", room.getRoomNumber(), room.getMatching());
         });
     }
+
+    @Test
+    public void getRoomDetails() {
+        UUID id = UUID.fromString("10165ca5-3d16-4eee-8164-f5a8f1ae8a1e");
+        log.info("Room: {}", roomService.getRoomDetails(id));
+    }
 }

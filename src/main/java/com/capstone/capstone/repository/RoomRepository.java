@@ -107,4 +107,12 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
             ORDER BY matching DESC;
             """, nativeQuery = true)
     List<RoomMatching> findBookableRoom(UUID currentUserId, int totalSlot, UUID dormId, int floor);
+
+    @Query("""
+    FROM Room r
+    JOIN FETCH r.dorm
+    JOIN FETCH r.slots
+    WHERE r.id = :id
+""")
+    Room findDetails(UUID id);
 }
