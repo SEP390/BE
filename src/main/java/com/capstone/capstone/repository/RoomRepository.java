@@ -69,7 +69,7 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
                 valid_room  AS (
                     SELECT *
                     FROM room r
-                    WHERE room.status = 0 AND NOT EXISTS(
+                    WHERE room.status = 0 AND floor = :floor AND dorm_id = :dormId AND NOT EXISTS(
                         SELECT 1 FROM slot s JOIN user u ON s.user_id = u.id
                                  WHERE s.room_id = r.id AND s.gender != :gender
                     )
