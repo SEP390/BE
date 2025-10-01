@@ -28,6 +28,6 @@ public class UserController {
         baseResponse.setData(registerUserResponse);
         baseResponse.setStatus(HttpStatus.CREATED.value());
         baseResponse.setMessage("Register Successfully");
-        return new ResponseEntity<>(baseResponse, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(baseResponse);
     }
 }
