@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class VNPayService {
-    @Value("vnpay.secret")
+    @Value("${vnpay.secret}")
     private String HASH_SECRET;
-    @Value("vnpay.tmncode")
+    @Value("${vnpay.tmncode}")
     private String TMNCODE;
 
     private static final String PAY_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
