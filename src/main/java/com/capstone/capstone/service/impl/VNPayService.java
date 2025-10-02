@@ -26,13 +26,13 @@ public class VNPayService {
 
     private static final String PAY_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
-    public String createPaymentUrl(UUID slotId, long amount) {
+    public String createPaymentUrl(UUID id, long amount) {
         String returnUrl = "http://localhost:5173/vnpay";
         amount = amount * 100;
         Map<String, String> params = new HashMap<>();
         params.put("vnp_Version", "2.1.0");
         params.put("vnp_Command", "pay");
-        params.put("vnp_TxnRef", slotId.toString());
+        params.put("vnp_TxnRef", id.toString());
         params.put("vnp_IpAddr", "127.0.0.1");
         params.put("vnp_OrderType", "other");
         params.put("vnp_CurrCode", "VND");
