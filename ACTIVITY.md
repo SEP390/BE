@@ -57,3 +57,4 @@ feat: crud booking
 fix: crud room validation
 fix: crud semester validation
 fix: crud room validation
+fix: crud booking validation
