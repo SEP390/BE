@@ -13,5 +13,8 @@ import java.util.UUID;
 public class RoomMatchingResponse {
     private UUID id;
     private String roomNumber;
+    private String dormName;
+    private int floor;
     private double matching;
+    private int slotAvailable;
 }

@@ -1,5 +1,7 @@
 package com.capstone.capstone.controller;
 
+import com.capstone.capstone.dto.request.room.RoomDetailRequest;
+import com.capstone.capstone.dto.request.room.RoomMatchingRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
 import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
@@ -12,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -34,8 +38,14 @@ public class RoomController {
         return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getBookableRoomFirstYear(currentUserId)));
     }
 
-    @GetMapping("/api/rooms/details")
-    public ResponseEntity<BaseResponse<RoomDetailsResponse>> getRoomDetails(UUID id) {
-        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoomDetails(id)));
+    @PostMapping("/api/rooms/matching")
+    public ResponseEntity<BaseResponse<List<RoomMatchingResponse>>> getRoomMatching(@RequestBody RoomMatchingRequest request, Authentication authentication) {
+        UUID currentUserId = ((User) authentication.getPrincipal()).getId();
+        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getBookableRoom(currentUserId, request.getTotalSlot(), request.getDormId(), request.getFloor())));
+    }
+
+    @PostMapping("/api/rooms/details")
+    public ResponseEntity<BaseResponse<RoomDetailsResponse>> getRoomDetails(@RequestBody RoomDetailRequest request) {
+        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoomDetails(request.getId())));
     }
 }

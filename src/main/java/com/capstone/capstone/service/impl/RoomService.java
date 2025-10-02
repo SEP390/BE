@@ -1,19 +1,15 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
-import com.capstone.capstone.dto.response.room.RoomMatching;
 import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.RoomPricing;
-import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.RoomPricingRepository;
 import com.capstone.capstone.repository.RoomRepository;
 import com.capstone.capstone.service.interfaces.IRoomService;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,8 +22,22 @@ public class RoomService implements IRoomService {
 
     public List<RoomMatchingResponse> getBookableRoomFirstYear(UUID currentUserId) {
         return roomRepository.findBookableRoomFirstYear(currentUserId).stream().map(m -> RoomMatchingResponse.builder()
-                .id(convertBytesToUUID(m.getId()))
+                .id(m.getId())
+                .dormName(m.getDormName())
+                .floor(m.getFloor())
                 .roomNumber(m.getRoomNumber())
+                .slotAvailable(m.getSlotAvailable())
+                .matching(Optional.ofNullable(m.getMatching()).orElse(0D))
+                .build()).toList();
+    }
+
+    public List<RoomMatchingResponse> getBookableRoom(UUID currentUserId, int totalSlot, UUID dormId, int floor) {
+        return roomRepository.findBookableRoom(currentUserId, totalSlot, dormId, floor).stream().map(m -> RoomMatchingResponse.builder()
+                .id(m.getId())
+                .dormName(m.getDormName())
+                .floor(m.getFloor())
+                .roomNumber(m.getRoomNumber())
+                .slotAvailable(m.getSlotAvailable())
                 .matching(Optional.ofNullable(m.getMatching()).orElse(0D))
                 .build()).toList();
     }
@@ -40,19 +50,14 @@ public class RoomService implements IRoomService {
                 .id(room.getId())
                 .pricing(pricing.getPrice())
                 .dorm(RoomDetailsResponse.DormResponse.builder()
+                        .id(room.getDorm().getId())
                         .dormName(room.getDorm().getDormName())
                         .build())
                 .slots(room.getSlots().stream().map(slot -> RoomDetailsResponse.SlotResponse.builder()
+                        .id(slot.getId())
                         .slotName(slot.getSlotName())
                         .status(slot.getStatus())
                         .build()).toList())
                 .build();
-    }
-
-    public static UUID convertBytesToUUID(byte[] bytes) {
-        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-        long high = byteBuffer.getLong();
-        long low = byteBuffer.getLong();
-        return new UUID(high, low);
     }
 }

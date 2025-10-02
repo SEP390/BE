@@ -17,8 +17,17 @@ public class RoomServiceTest {
 
     @Test
     public void getBookableRoomFirstYear() {
-        UUID currentUserId = UUID.fromString("0d7628b8-a61b-41c4-914f-6cd17ad373fc");
+        UUID currentUserId = UUID.fromString("a1778c64-32c1-46d0-b08b-a95d22038b8e");
         roomService.getBookableRoomFirstYear(currentUserId).forEach(room -> {
+            log.info("Room number: {}, Matching: {}", room.getRoomNumber(), room.getMatching());
+        });
+    }
+
+    @Test
+    public void getBookableRoom() {
+        UUID currentUserId = UUID.fromString("0d7628b8-a61b-41c4-914f-6cd17ad373fc");
+        UUID dormId = UUID.fromString("353068cc-51b1-4cac-bb52-464b7c2af9af");
+        roomService.getBookableRoom(currentUserId, 6, dormId, 1).forEach(room -> {
             log.info("Room number: {}, Matching: {}", room.getRoomNumber(), room.getMatching());
         });
     }

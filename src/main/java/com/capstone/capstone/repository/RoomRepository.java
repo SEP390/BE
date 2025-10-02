@@ -10,102 +10,70 @@ import java.util.UUID;
 
 public interface RoomRepository extends JpaRepository<Room, UUID> {
     @Query(value = """
-        WITH current_user_answers AS (
-            SELECT survey_option_id
-            FROM survey_quetion_selected
-            WHERE user_id = :currentUserId
-        ),
-        valid_room AS (
-            SELECT DISTINCT r.*
-            FROM room r
-            LEFT JOIN slot s ON s.room_id = r.id
-            LEFT JOIN user u ON u.id = s.user_id
-            WHERE u.id IS NULL OR u.gender = (SELECT gender FROM user WHERE id = :currentUserId)
-        ),
-        room_user_pairs AS (
-            SELECT r.id AS room_id, s.user_id AS other_user_id
-            FROM valid_room r
-            JOIN slot s ON s.room_id = r.id
-            WHERE s.user_id IS NOT NULL
-        ),
-        shared_answers AS (
-            SELECT rup.room_id, rup.other_user_id, COUNT(*) AS matching_answers
-            FROM room_user_pairs rup
-            JOIN survey_quetion_selected sqs
-            ON sqs.user_id = rup.other_user_id
-            JOIN current_user_answers cua
-            ON cua.survey_option_id = sqs.survey_option_id
-            GROUP BY rup.room_id, rup.other_user_id
-        ),
-        current_user_answer_count AS (
-            SELECT COUNT(*) AS total_answers
-            FROM current_user_answers
-        ),
-        matching_percentage_per_user AS (
-            SELECT sa.room_id, sa.other_user_id,
-                (sa.matching_answers / cua.total_answers) * 100 AS match_percentage
-            FROM shared_answers sa
-            CROSS JOIN current_user_answer_count cua
-        ),
-        final_room_matching AS (
-            SELECT r.id AS id,
-                r.room_number as roomNumber,
-                AVG(mp.match_percentage) AS matching
-            FROM valid_room r
-            LEFT JOIN matching_percentage_per_user mp ON r.id = mp.room_id
-            GROUP BY r.id, r.room_number
-        )
-        SELECT *
-        FROM final_room_matching
+       SELECT
+            r.id as id,
+            r.dorm.dormName as dormName,
+            r.floor as floor,
+            r.roomNumber as roomNumber,
+            CASE
+               WHEN COUNT(slotUser.id) = 0 THEN 0.0
+               ELSE (SUM(CAST((
+                   SELECT COUNT(sqs2)
+                   FROM SurveyQuetionSelected sqs1
+                   JOIN SurveyQuetionSelected sqs2 ON sqs1.surveyOption.id = sqs2.surveyOption.id
+                   WHERE sqs1.user.id = :currentUserId
+                   AND sqs2.user.id = slotUser.id
+               ) AS double)) / (20.0 * COUNT(slotUser.id))) * 100.0
+           END as matching,
+           (COUNT(*) - COUNT(s.user)) AS slotAvailable
+        FROM Room r
+        LEFT JOIN r.slots s
+        LEFT JOIN s.user slotUser
+        WHERE r.status = 'AVAILABLE'
+            AND (slotUser IS NULL OR slotUser.gender = (SELECT u.gender FROM User u WHERE u.id = :currentUserId))
+            AND r.id NOT IN (
+                SELECT sl.room.id FROM Slot sl
+                JOIN sl.user su
+                WHERE su.gender != (SELECT u2.gender FROM User u2 WHERE u2.id = :currentUserId)
+            )
+        GROUP BY r.id, r.roomNumber
+        HAVING (COUNT(*) - COUNT(s.user)) > 0
         ORDER BY matching DESC
-        LIMIT 5;
-    """, nativeQuery = true)
+        LIMIT 5
+    """)
     List<RoomMatching> findBookableRoomFirstYear(UUID currentUserId);
 
     @Query(value = """
-            WITH current_user_answers AS (SELECT survey_option_id
-                                          FROM survey_quetion_selected
-                                          WHERE user_id = :currentUserId),
-                valid_room  AS (
-                    SELECT *
-                    FROM room r
-                    WHERE room.status = 0 AND floor = :floor AND dorm_id = :dormId AND NOT EXISTS(
-                        SELECT 1 FROM slot s JOIN user u ON s.user_id = u.id
-                                 WHERE s.room_id = r.id AND s.gender != :gender
-                    )
-                ),
-                 room_user_pairs AS (SELECT r.id      AS room_id,
-                                            s.user_id AS other_user_id
-                                     FROM valid_room r
-                                              JOIN slot s ON s.room_id = r.id
-                                     WHERE s.user_id IS NOT NULL),
-                 shared_answers AS (SELECT rup.room_id,
-                                           rup.other_user_id,
-                                           COUNT(*) AS matching_answers
-                                    FROM room_user_pairs rup
-                                             JOIN survey_quetion_selected sqs
-                                                  ON sqs.user_id = rup.other_user_id
-                                             JOIN current_user_answers cua
-                                                  ON cua.survey_option_id = sqs.survey_option_id
-                                    GROUP BY rup.room_id, rup.other_user_id),
-                 current_user_answer_count AS (SELECT COUNT(*) AS total_answers
-                                               FROM current_user_answers),
-            
-                 matching_percentage_per_user AS (SELECT sa.room_id,
-                                                         sa.other_user_id,
-                                                         (sa.matching_answers / cua.total_answers) * 100 AS match_percentage
-                                                  FROM shared_answers sa
-                                                           CROSS JOIN current_user_answer_count cua),
-                 final_room_matching AS (SELECT r.id                     AS id,
-                                                r.room_number            as roomNumber,
-                                                AVG(mp.match_percentage) AS matching
-                                         FROM room r
-                                                  LEFT JOIN matching_percentage_per_user mp ON r.id = mp.room_id
-                                         GROUP BY r.id, r.room_number)
-            SELECT *
-            FROM final_room_matching
-            ORDER BY matching DESC;
-            """, nativeQuery = true)
+        SELECT
+            r.id as id,
+            r.dorm.dormName as dormName,
+            r.floor as floor,
+            r.roomNumber as roomNumber,
+            CASE
+               WHEN COUNT(slotUser.id) = 0 THEN 0.0
+               ELSE (SUM(CAST((
+                   SELECT COUNT(sqs2)
+                   FROM SurveyQuetionSelected sqs1
+                   JOIN SurveyQuetionSelected sqs2 ON sqs1.surveyOption.id = sqs2.surveyOption.id
+                   WHERE sqs1.user.id = :currentUserId
+                   AND sqs2.user.id = slotUser.id
+               ) AS double)) / (20.0 * COUNT(slotUser.id))) * 100.0
+           END as matching,
+           (COUNT(*) - COUNT(s.user)) AS slotAvailable
+        FROM Room r
+        LEFT JOIN r.slots s
+        LEFT JOIN s.user slotUser
+        WHERE r.status = 'AVAILABLE' AND r.dorm.id = :dormId AND r.totalSlot = :totalSlot AND r.floor = :floor
+            AND (slotUser IS NULL OR slotUser.gender = (SELECT u.gender FROM User u WHERE u.id = :currentUserId))
+            AND r.id NOT IN (
+                SELECT sl.room.id FROM Slot sl
+                JOIN sl.user su
+                WHERE su.gender != (SELECT u2.gender FROM User u2 WHERE u2.id = :currentUserId)
+            )
+        GROUP BY r.id, r.roomNumber
+        HAVING (COUNT(*) - COUNT(s.user)) > 0
+        ORDER BY matching DESC
+    """)
     List<RoomMatching> findBookableRoom(UUID currentUserId, int totalSlot, UUID dormId, int floor);
 
     @Query("""

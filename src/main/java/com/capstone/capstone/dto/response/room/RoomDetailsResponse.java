@@ -25,6 +25,7 @@ public class RoomDetailsResponse {
     @Builder
     @ToString
     public static class DormResponse {
+        private UUID id;
         private String dormName;
     }
 
@@ -33,6 +34,7 @@ public class RoomDetailsResponse {
     @Builder
     @ToString
     public static class SlotResponse {
+        private UUID id;
         private String slotName;
         private StatusSlotEnum status;
     }
