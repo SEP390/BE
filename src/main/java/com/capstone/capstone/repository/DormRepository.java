@@ -1,6 +1,7 @@
 package com.capstone.capstone.repository;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
+import com.capstone.capstone.dto.response.dorm.BookableDormResponse;
 import com.capstone.capstone.entity.Dorm;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,15 +20,25 @@ public interface DormRepository extends JpaRepository<Dorm, UUID> {
      * @return dorm
      */
     @Query("""
-            SELECT room.dorm
-            FROM Room room
-            WHERE room.status = 0 AND NOT EXISTS (
-                SELECT 1 FROM Slot slot
-                JOIN User user ON slot.user.id = user.id
-                WHERE slot.room.id = room.id AND user.gender != :gender
-            )
-            GROUP BY room.dorm
-            ORDER BY room.dorm.dormName
-            """)
-    List<Dorm> getBookableDorm(int totalSlot, GenderEnum gender);
+        SELECT new com.capstone.capstone.dto.response.dorm.BookableDormResponse(
+            d.id,
+            d.dormName,
+            d.totalRoom,
+            d.totalFloor,
+            CASE WHEN EXISTS (
+                SELECT 1
+                FROM Room r
+                WHERE r.dorm = d
+                    AND r.status = com.capstone.capstone.dto.enums.StatusRoomEnum.AVAILABLE
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM Slot s
+                        WHERE s MEMBER OF r.slots AND s.user IS NOT NULL AND s.user.gender <> :gender
+                    )
+            ) THEN true ELSE false END
+        )
+        FROM Dorm d
+        ORDER BY d.dormName
+    """)
+    List<BookableDormResponse> getBookableDorm(int totalSlot, GenderEnum gender);
 }

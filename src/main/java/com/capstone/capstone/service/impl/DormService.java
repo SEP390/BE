@@ -16,11 +16,6 @@ public class DormService implements IDormService {
 
     @Override
     public List<BookableDormResponse> getBookableDorm(int totalSlot, GenderEnum gender) {
-        return dormRepository.getBookableDorm(totalSlot, gender).stream().map(dorm -> BookableDormResponse.builder()
-                .id(dorm.getId())
-                .dormName(dorm.getDormName())
-                .totalFloor(dorm.getTotalFloor())
-                .totalRoom(dorm.getTotalRoom())
-                .build()).toList();
+        return dormRepository.getBookableDorm(totalSlot, gender);
     }
 }

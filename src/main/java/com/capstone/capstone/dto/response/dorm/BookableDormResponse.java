@@ -15,4 +15,5 @@ public class BookableDormResponse {
     private String dormName;
     private int totalRoom;
     private int totalFloor;
+    private boolean status;
 }
