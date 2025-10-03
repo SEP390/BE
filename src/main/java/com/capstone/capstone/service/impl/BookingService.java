@@ -33,6 +33,7 @@ public class BookingService {
     public SlotBookingResponse createBooking(UUID currentUserId, UUID slotId) {
         // lock slot (so other user cannot book this slot)
         Slot slot = slotRepository.findById(slotId).orElseThrow();
+        if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new RuntimeException("Slot is unavailable");
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
 
         // create history
@@ -67,6 +68,13 @@ public class BookingService {
             slotHistoryRepository.save(slotHistory);
         }
         slotHistory = slotHistoryRepository.findByIdAndFetchDetails(slotHistoryId);
+
+        // unlock slot
+        Slot slot = slotHistory.getSlot();
+        slot = slotRepository.findById(slot.getId()).orElseThrow();
+        if (slotHistory.getStatus() != StatusSlotHistoryEnum.SUCCESS) {
+            slot.setStatus(StatusSlotEnum.AVAILABLE);
+        }
 
         return PaymentResultResponse.builder()
                 .dormName(slotHistory.getSlot().getRoom().getDorm().getDormName())
