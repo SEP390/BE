@@ -69,13 +69,11 @@ public class BookingService {
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
 
         // set user to slot
-        User user = userRepository.getReferenceById(currentUserId);
+        User user = userRepository.findById(currentUserId).orElseThrow();
         slot.setUser(user);
         slot = slotRepository.save(slot);
 
-        Slot example = new Slot();
-        example.setRoom(slot.getRoom());
-        List<Slot> slots = slotRepository.findAll(Example.of(example));
+        List<Slot> slots = slotRepository.findByRoom(slot.getRoom());
         if (slots.stream().allMatch(s -> s.getStatus().equals(StatusSlotEnum.UNAVAILABLE))) {
             Room room = roomRepository.findById(slot.getRoom().getId()).orElseThrow();
             room.setStatus(StatusRoomEnum.FULL);
