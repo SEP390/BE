@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -23,12 +24,5 @@ class VNPayServiceTest {
         String date = "20251004011946";
         UUID id = UUID.fromString("959b265a-efe8-48fd-a538-a4e8516b87bb");
         log.info("queryPaymentResult: {}", service.queryPaymentResult(id, date));
-    }
-
-    @Test
-    void createPayment() {
-        UUID id = UUID.randomUUID();
-        log.info("Create UUID: {}", id);
-        log.info("Create Payment: {}", service.createPaymentUrl(id, 100000));
     }
 }

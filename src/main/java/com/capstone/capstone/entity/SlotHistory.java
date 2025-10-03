@@ -13,8 +13,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SlotHistory extends BaseEntity {
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    @ManyToOne
+    @JoinColumn(name = "semester_id")
+    private Semester semester;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

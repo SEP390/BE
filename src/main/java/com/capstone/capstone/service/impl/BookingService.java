@@ -4,20 +4,20 @@ import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.enums.StatusSlotHistoryEnum;
 import com.capstone.capstone.dto.response.booking.PaymentResultResponse;
 import com.capstone.capstone.dto.response.booking.SlotBookingResponse;
+import com.capstone.capstone.dto.response.booking.SlotHistoryResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
+import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.SlotHistory;
 import com.capstone.capstone.entity.User;
-import com.capstone.capstone.repository.RoomPricingRepository;
-import com.capstone.capstone.repository.SlotHistoryRepository;
-import com.capstone.capstone.repository.SlotRepository;
-import com.capstone.capstone.repository.UserRepository;
+import com.capstone.capstone.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Service
@@ -28,11 +28,39 @@ public class BookingService {
     private final SlotHistoryRepository slotHistoryRepository;
     private final VNPayService vNPayService;
     private final RoomPricingRepository roomPricingRepository;
+    private final SemesterRepository semesterRepository;
+
+    public SlotHistoryResponse getCurrentBooking(UUID currentUserId) {
+        var nextSemester = semesterRepository.findNextSemester();
+        SlotHistory slotHistory = slotHistoryRepository.findCurrentSlotHistory(currentUserId, nextSemester);
+
+        if (slotHistory == null) {
+            return null;
+        }
+        if (ChronoUnit.MINUTES.between(slotHistory.getCreateDate(), LocalDateTime.now()) > 10) {
+            slotHistory.setStatus(StatusSlotHistoryEnum.EXPIRE);
+            slotHistory = slotHistoryRepository.save(slotHistory);
+        }
+        return SlotHistoryResponse.builder()
+                .semesterId(nextSemester.getId())
+                .semesterName(nextSemester.getName())
+                .dormId(slotHistory.getSlot().getRoom().getDorm().getId())
+                .dormName(slotHistory.getSlot().getRoom().getDorm().getDormName())
+                .roomId(slotHistory.getSlot().getRoom().getId())
+                .roomNumber(slotHistory.getSlot().getRoom().getRoomNumber())
+                .floor(slotHistory.getSlot().getRoom().getFloor())
+                .slotId(slotHistory.getSlot().getId())
+                .createdDate(slotHistory.getCreateDate())
+                .status(slotHistory.getStatus())
+                .build();
+    }
 
     @Transactional
     public SlotBookingResponse createBooking(UUID currentUserId, UUID slotId) {
-        // lock slot (so other user cannot book this slot)
         Slot slot = slotRepository.findById(slotId).orElseThrow();
+        Semester nextSemester = semesterRepository.findNextSemester();
+
+        // lock slot (so other user cannot book this slot)
         if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new RuntimeException("Slot is unavailable");
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
 
@@ -41,6 +69,7 @@ public class BookingService {
         slotHistory.setSlot(slot);
         var createDate = LocalDateTime.now();
         slotHistory.setCreateDate(createDate);
+        slotHistory.setSemester(nextSemester);
         User user = userRepository.getReferenceById(currentUserId);
         slotHistory.setUser(user);
         slotHistory.setStatus(StatusSlotHistoryEnum.PENDING);

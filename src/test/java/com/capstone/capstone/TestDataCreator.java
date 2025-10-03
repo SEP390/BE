@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @SpringBootTest
@@ -27,6 +28,8 @@ public class TestDataCreator {
     private DormRepository dormRepository;
     @Autowired
     private RoomRepository roomRepository;
+    @Autowired
+    private SemesterRepository semesterRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -160,5 +163,21 @@ public class TestDataCreator {
         generateRoom();
         generateSlot();
         generateUserSlot();
+    }
+
+    @Test
+    public void createSemester() {
+        // prev sem
+        Semester prev = new Semester();
+        prev.setName("SU25");
+        prev.setStartDate(LocalDate.of(2025, 5, 15));
+        prev.setEndDate(LocalDate.of(2025, 8, 15));
+        // next sem
+        Semester next = new Semester();
+        next.setName("FA25");
+        next.setStartDate(LocalDate.of(2025, 10, 15));
+        next.setEndDate(LocalDate.of(2025, 12, 15));
+        semesterRepository.save(next);
+        semesterRepository.save(prev);
     }
 }

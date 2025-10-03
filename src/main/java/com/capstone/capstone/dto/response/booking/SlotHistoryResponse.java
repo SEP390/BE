@@ -10,9 +10,15 @@ import java.util.UUID;
 @Data
 @Builder
 public class SlotHistoryResponse {
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private UUID semesterId;
+    private String semesterName;
     private UUID slotId;
+    private String slotName;
+    private String roomNumber;
+    private UUID roomId;
+    private String dormName;
+    private int floor;
+    private UUID dormId;
     private LocalDateTime createdDate;
     private String transactionDate;
     private StatusSlotHistoryEnum status;

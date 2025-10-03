@@ -1,5 +1,6 @@
 package com.capstone.capstone.repository;
 
+import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.entity.SlotHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,11 +11,14 @@ public interface SlotHistoryRepository extends JpaRepository<SlotHistory, UUID> 
     @Query("""
     FROM SlotHistory sh
     JOIN FETCH sh.slot
-    WHERE sh.user.id = :currentUserId
+    JOIN FETCH sh.slot.room
+    JOIN FETCH sh.slot.room.dorm
+    JOIN FETCH sh.slot.user
+    WHERE sh.user.id = :currentUserId AND sh.semester = :semester AND sh.status = com.capstone.capstone.dto.enums.StatusSlotHistoryEnum.SUCCESS
     ORDER BY sh.createDate DESC
     LIMIT 1
 """)
-    SlotHistory findCurrentSemesterSlotHistory(UUID currentUserId);
+    SlotHistory findCurrentSlotHistory(UUID currentUserId, Semester semester);
 
     @Query("""
         FROM SlotHistory sh
