@@ -30,6 +30,7 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
         LEFT JOIN r.slots s
         LEFT JOIN s.user slotUser
         WHERE r.status = 'AVAILABLE'
+            AND s.status = com.capstone.capstone.dto.enums.StatusSlotEnum.AVAILABLE
             AND (slotUser IS NULL OR slotUser.gender = (SELECT u.gender FROM User u WHERE u.id = :currentUserId))
             AND r.id NOT IN (
                 SELECT sl.room.id FROM Slot sl
@@ -64,6 +65,7 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
         LEFT JOIN r.slots s
         LEFT JOIN s.user slotUser
         WHERE r.status = 'AVAILABLE' AND r.dorm.id = :dormId AND r.totalSlot = :totalSlot AND r.floor = :floor
+            AND s.status = com.capstone.capstone.dto.enums.StatusSlotEnum.AVAILABLE
             AND (slotUser IS NULL OR slotUser.gender = (SELECT u.gender FROM User u WHERE u.id = :currentUserId))
             AND r.id NOT IN (
                 SELECT sl.room.id FROM Slot sl

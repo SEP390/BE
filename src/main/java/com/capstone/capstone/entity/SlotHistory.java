@@ -23,8 +23,8 @@ public class SlotHistory extends BaseEntity {
     @JsonIgnore
     private Slot slot;
 
-    private LocalDateTime createdDate;
-    private String paymentUrl;
+    private LocalDateTime createDate;
+
     @Enumerated(EnumType.STRING)
     private StatusSlotHistoryEnum status;
 }
