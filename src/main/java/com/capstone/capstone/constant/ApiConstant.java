@@ -9,4 +9,8 @@ public class ApiConstant {
     public static class AUTH {
         public static final String AUTH = API + "/auth";
     }
+
+    public static class SURVEY {
+        public static final String SURVEY = API + "/surveys";
+    }
 }
