@@ -1,23 +1,23 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.enums.StatusSlotHistoryEnum;
 import com.capstone.capstone.dto.response.booking.PaymentResultResponse;
 import com.capstone.capstone.dto.response.booking.SlotBookingResponse;
 import com.capstone.capstone.dto.response.booking.SlotHistoryResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
-import com.capstone.capstone.entity.Semester;
-import com.capstone.capstone.entity.Slot;
-import com.capstone.capstone.entity.SlotHistory;
-import com.capstone.capstone.entity.User;
+import com.capstone.capstone.entity.*;
 import com.capstone.capstone.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,18 +29,21 @@ public class BookingService {
     private final VNPayService vNPayService;
     private final RoomPricingRepository roomPricingRepository;
     private final SemesterRepository semesterRepository;
+    private final RoomRepository roomRepository;
 
     public SlotHistoryResponse getCurrentBooking(UUID currentUserId) {
         var nextSemester = semesterRepository.findNextSemester();
-        SlotHistory slotHistory = slotHistoryRepository.findCurrentSlotHistory(currentUserId, nextSemester);
+        SlotHistory slotHistory = slotHistoryRepository.findCurrentSlotHistory(currentUserId, nextSemester.getId());
 
         if (slotHistory == null) {
             return null;
         }
-        if (ChronoUnit.MINUTES.between(slotHistory.getCreateDate(), LocalDateTime.now()) > 10) {
+        if (slotHistory.getStatus() == StatusSlotHistoryEnum.PENDING && ChronoUnit.MINUTES.between(slotHistory.getCreateDate(), LocalDateTime.now()) > 10) {
             slotHistory.setStatus(StatusSlotHistoryEnum.EXPIRE);
             slotHistory = slotHistoryRepository.save(slotHistory);
         }
+        slotHistory = slotHistoryRepository.findByIdAndFetchDetails(slotHistory.getId());
+
         return SlotHistoryResponse.builder()
                 .semesterId(nextSemester.getId())
                 .semesterName(nextSemester.getName())
@@ -50,6 +53,7 @@ public class BookingService {
                 .roomNumber(slotHistory.getSlot().getRoom().getRoomNumber())
                 .floor(slotHistory.getSlot().getRoom().getFloor())
                 .slotId(slotHistory.getSlot().getId())
+                .slotName(slotHistory.getSlot().getSlotName())
                 .createdDate(slotHistory.getCreateDate())
                 .status(slotHistory.getStatus())
                 .build();
@@ -64,13 +68,28 @@ public class BookingService {
         if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new RuntimeException("Slot is unavailable");
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
 
+        // set user to slot
+        User user = userRepository.getReferenceById(currentUserId);
+        slot.setUser(user);
+        slot = slotRepository.save(slot);
+
+        Slot example = new Slot();
+        example.setRoom(slot.getRoom());
+        List<Slot> slots = slotRepository.findAll(Example.of(example));
+        if (slots.stream().allMatch(s -> s.getStatus().equals(StatusSlotEnum.UNAVAILABLE))) {
+            Room room = roomRepository.findById(slot.getRoom().getId()).orElseThrow();
+            room.setStatus(StatusRoomEnum.FULL);
+            roomRepository.save(room);
+        }
+
         // create history
         SlotHistory slotHistory = new SlotHistory();
         slotHistory.setSlot(slot);
         var createDate = LocalDateTime.now();
         slotHistory.setCreateDate(createDate);
         slotHistory.setSemester(nextSemester);
-        User user = userRepository.getReferenceById(currentUserId);
+
+
         slotHistory.setUser(user);
         slotHistory.setStatus(StatusSlotHistoryEnum.PENDING);
         slotHistory = slotHistoryRepository.save(slotHistory);
