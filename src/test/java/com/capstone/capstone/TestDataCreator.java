@@ -32,6 +32,7 @@ public class TestDataCreator {
 
     private static final int USER_COUNT = 10;
     private static final String USER_DEFAULT_PASSWORD = "resident";
+    private static final GenderEnum USER_DEFAULT_GENDER = GenderEnum.MALE;
     private static final Date USER_DEFAULT_DOB = Date.from(new GregorianCalendar(2025, Calendar.JANUARY, 1).toInstant());
     private static final int FLOOR_PER_DORM = 4;
     private static final int ROOM_PER_FLOOR = 10;
@@ -40,7 +41,7 @@ public class TestDataCreator {
     private final Random random = new Random();
 
     private String generateRandomString() {
-        return UUID.randomUUID().toString().replace("-", "");
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 10);
     }
 
     @Test
@@ -78,7 +79,7 @@ public class TestDataCreator {
             var username = generateRandomString();
             var email = "%s@gmail.com".formatted(generateRandomString());
             var password = USER_DEFAULT_PASSWORD;
-            var gender = random.nextInt(2) == 0 ? GenderEnum.MALE : GenderEnum.FEMALE;
+            var gender = USER_DEFAULT_GENDER;
             var dob = USER_DEFAULT_DOB;
             var role = RoleEnum.RESIDENT;
             users.add(createUser(username, email, password, role, gender, dob));
@@ -154,6 +155,10 @@ public class TestDataCreator {
     @Test
     public void generateAll() {
         generateUsers();
-
+        generateDorm();
+        generateRoomPricing();
+        generateRoom();
+        generateSlot();
+        generateUserSlot();
     }
 }
