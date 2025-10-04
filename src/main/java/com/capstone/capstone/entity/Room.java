@@ -2,10 +2,7 @@ package com.capstone.capstone.entity;
 
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +19,8 @@ public class Room extends BaseEntity {
     private String roomNumber;
     private int totalSlot;
     private int floor;
+
+    @Enumerated(EnumType.STRING)
     private StatusRoomEnum status;
     @OneToMany(mappedBy = "room")
     private List<Slot> slots;
