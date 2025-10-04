@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-
 public class SurveyQuestionService implements ISurveyQuestionService {
     private final SurveyQuestionRepository surveyQuestionRepository;
     private final SurveyOptionRepository surveyOptionRepository;
