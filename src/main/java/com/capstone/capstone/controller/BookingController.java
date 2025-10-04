@@ -42,4 +42,10 @@ public class BookingController {
         User user = (User) authentication.getPrincipal();
         return new BaseResponse<>(200, "success", bookingService.handlePaymentResult(request));
     }
+
+    @GetMapping("/api/booking/history")
+    public BaseResponse<?> getHistory(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return new BaseResponse<>(200, "success", bookingService.getHistory(user.getId()));
+    }
 }

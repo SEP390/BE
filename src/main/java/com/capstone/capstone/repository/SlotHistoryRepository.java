@@ -5,6 +5,7 @@ import com.capstone.capstone.entity.SlotHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface SlotHistoryRepository extends JpaRepository<SlotHistory, UUID> {
@@ -27,4 +28,14 @@ public interface SlotHistoryRepository extends JpaRepository<SlotHistory, UUID> 
     SlotHistory findByIdAndFetchDetails(UUID id);
 
     UUID id(UUID id);
+
+    @Query("""
+        FROM SlotHistory sh
+        JOIN FETCH sh.slot
+        JOIN FETCH sh.slot.room
+        JOIN FETCH sh.slot.room.dorm
+        JOIN FETCH sh.semester
+        WHERE sh.user.id = :currentUserId
+    """)
+    List<SlotHistory> findAllByUser(UUID currentUserId);
 }

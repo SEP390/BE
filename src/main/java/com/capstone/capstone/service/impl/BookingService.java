@@ -130,4 +130,21 @@ public class BookingService {
                 .result(result.getStatus())
                 .build();
     }
+
+    public List<SlotHistoryResponse> getHistory(UUID currentUserId) {
+        List<SlotHistory> shs = slotHistoryRepository.findAllByUser(currentUserId);
+        return shs.stream().map(sh -> SlotHistoryResponse.builder()
+                .semesterId(sh.getSemester().getId())
+                .semesterName(sh.getSemester().getName())
+                .dormId(sh.getSlot().getRoom().getDorm().getId())
+                .dormName(sh.getSlot().getRoom().getDorm().getDormName())
+                .roomId(sh.getSlot().getRoom().getId())
+                .roomNumber(sh.getSlot().getRoom().getRoomNumber())
+                .floor(sh.getSlot().getRoom().getFloor())
+                .slotId(sh.getSlot().getId())
+                .slotName(sh.getSlot().getSlotName())
+                .createdDate(sh.getCreateDate())
+                .status(sh.getStatus())
+                .build()).toList();
+    }
 }
