@@ -1,4 +1,4 @@
-package com.capstone.capstone.dto.request.auth;
+package com.capstone.capstone.dto.request.surveyOption;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class AuthRequest {
-    private String username;
-    private String password;
+public class UpdateOptionRequest {
+    private String content;
 }
