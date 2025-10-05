@@ -22,3 +22,4 @@ feat: crud room
 feat: crud semester
 feat: crud semester
 feat: crud booking
+feat: crud semester
