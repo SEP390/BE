@@ -1,5 +1,6 @@
 package com.capstone.capstone.repository;
 
+import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.response.room.RoomMatching;
 import com.capstone.capstone.entity.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,18 @@ import java.util.List;
 import java.util.UUID;
 
 public interface RoomRepository extends JpaRepository<Room, UUID> {
+
+    @Query("""
+    SELECT r
+    FROM Room r
+    JOIN r.slots s
+    LEFT JOIN s.user u
+    WHERE r.status = com.capstone.capstone.dto.enums.StatusRoomEnum.AVAILABLE
+    GROUP BY r
+    HAVING SUM(CASE WHEN u IS NOT NULL AND u.gender <> :gender THEN 1 ELSE 0 END) = 0
+    """)
+    List<Room> findAvailableForGender(GenderEnum gender);
+
     @Query(value = """
        SELECT
             r.id as id,
