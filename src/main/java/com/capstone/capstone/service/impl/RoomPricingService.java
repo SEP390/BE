@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.response.room.RoomPricingResponse;
+import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.repository.RoomPricingRepository;
 import com.capstone.capstone.service.interfaces.IRoomPricingService;
 import lombok.AllArgsConstructor;
@@ -20,5 +21,9 @@ public class RoomPricingService implements IRoomPricingService {
                 .id(pricing.getId())
                 .totalSlot(pricing.getTotalSlot())
                 .build()).toList();
+    }
+
+    public long getPriceOfRoom(Room room) {
+        return roomPricingRepository.findByRoom(room).getPrice();
     }
 }
