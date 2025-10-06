@@ -1,9 +1,12 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.StatusRoomEnum;
+import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
 import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.RoomPricing;
+import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.repository.RoomPricingRepository;
 import com.capstone.capstone.repository.RoomRepository;
 import com.capstone.capstone.service.interfaces.IRoomService;
@@ -59,5 +62,26 @@ public class RoomService implements IRoomService {
                         .status(slot.getStatus())
                         .build()).toList())
                 .build();
+    }
+
+    public boolean isFull(Room room) {
+        room = roomRepository.findSlots(room);
+        var isFull = true;
+        for (Slot slot : room.getSlots()) {
+            if (slot.getStatus().equals(StatusSlotEnum.AVAILABLE)) {
+                isFull = false;
+                break;
+            }
+        }
+        return isFull;
+    }
+
+    public void checkFullAndUpdate(Room room) {
+        if (isFull(room)) {
+            room.setStatus(StatusRoomEnum.FULL);
+        } else {
+            room.setStatus(StatusRoomEnum.AVAILABLE);
+        }
+        roomRepository.save(room);
     }
 }
