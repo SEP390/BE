@@ -1,7 +1,5 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.enums.StatusRoomEnum;
-import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.enums.StatusSlotHistoryEnum;
 import com.capstone.capstone.dto.response.booking.PaymentResultResponse;
 import com.capstone.capstone.dto.response.booking.SlotBookingResponse;
@@ -11,7 +9,6 @@ import com.capstone.capstone.entity.*;
 import com.capstone.capstone.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,29 +21,35 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BookingService {
     private final SlotRepository slotRepository;
-    private final UserRepository userRepository;
     private final SlotHistoryRepository slotHistoryRepository;
     private final VNPayService vNPayService;
-    private final RoomPricingRepository roomPricingRepository;
-    private final SemesterRepository semesterRepository;
-    private final RoomRepository roomRepository;
+    private final RoomPricingService roomPricingService;
+    private final SlotHistoryService slotHistoryService;
+    private final SlotService slotService;
+    private final RoomService roomService;
 
-    public SlotHistoryResponse getCurrentBooking(UUID currentUserId) {
-        var nextSemester = semesterRepository.findNextSemester();
-        SlotHistory slotHistory = slotHistoryRepository.findCurrentSlotHistory(currentUserId, nextSemester.getId());
+    public SlotHistoryResponse getCurrentBooking(User user) {
+        SlotHistory slotHistory = slotHistoryService.getCurrent(user);
 
         if (slotHistory == null) {
             return null;
         }
-        if (slotHistory.getStatus() == StatusSlotHistoryEnum.PENDING && ChronoUnit.MINUTES.between(slotHistory.getCreateDate(), LocalDateTime.now()) > 10) {
-            slotHistory.setStatus(StatusSlotHistoryEnum.EXPIRE);
-            slotHistory = slotHistoryRepository.save(slotHistory);
+
+        // Pending booking
+        if (slotHistory.getStatus() == StatusSlotHistoryEnum.PENDING) {
+            // Expired 10 minutes
+            if (ChronoUnit.MINUTES.between(slotHistory.getCreateDate(), LocalDateTime.now()) > 10) {
+                slotHistory.setStatus(StatusSlotHistoryEnum.EXPIRE);
+                slotHistory = slotHistoryRepository.save(slotHistory);
+            }
         }
-        slotHistory = slotHistoryRepository.findByIdAndFetchDetails(slotHistory.getId());
+
+        // Fetch details
+        slotHistory = slotHistoryService.getDetails(slotHistory);
 
         return SlotHistoryResponse.builder()
-                .semesterId(nextSemester.getId())
-                .semesterName(nextSemester.getName())
+                .semesterId(slotHistory.getSemester().getId())
+                .semesterName(slotHistory.getSemester().getName())
                 .dormId(slotHistory.getSlot().getRoom().getDorm().getId())
                 .dormName(slotHistory.getSlot().getRoom().getDorm().getDormName())
                 .roomId(slotHistory.getSlot().getRoom().getId())
@@ -60,67 +63,48 @@ public class BookingService {
     }
 
     @Transactional
-    public SlotBookingResponse createBooking(UUID currentUserId, UUID slotId) {
-        Slot slot = slotRepository.findById(slotId).orElseThrow();
-        Semester nextSemester = semesterRepository.findNextSemester();
+    public SlotBookingResponse createBooking(User user, UUID slotId) {
+        Slot slot = slotService.getById(slotId);
 
         // lock slot (so other user cannot book this slot)
-        if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new RuntimeException("Slot is unavailable");
-        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
+        slotService.lock(slot);
 
-        // set user to slot
-        User user = userRepository.findById(currentUserId).orElseThrow();
-        slot.setUser(user);
-        slot = slotRepository.save(slot);
+        // check if room is full and update room status to full
+        roomService.checkFullAndUpdate(slot.getRoom());
 
-        List<Slot> slots = slotRepository.findByRoom(slot.getRoom());
-        if (slots.stream().allMatch(s -> s.getStatus().equals(StatusSlotEnum.UNAVAILABLE))) {
-            Room room = roomRepository.findById(slot.getRoom().getId()).orElseThrow();
-            room.setStatus(StatusRoomEnum.FULL);
-            roomRepository.save(room);
-        }
-
-        // create history
-        SlotHistory slotHistory = new SlotHistory();
-        slotHistory.setSlot(slot);
-        var createDate = LocalDateTime.now();
-        slotHistory.setCreateDate(createDate);
-        slotHistory.setSemester(nextSemester);
-
-
-        slotHistory.setUser(user);
-        slotHistory.setStatus(StatusSlotHistoryEnum.PENDING);
-        slotHistory = slotHistoryRepository.save(slotHistory);
+        // create slot history
+        SlotHistory slotHistory = slotHistoryService.createNew(user, slot);
 
         // create payment url
-        long price = roomPricingRepository.findByTotalSlot(slot.getRoom().getTotalSlot()).getPrice();
-        var payment = vNPayService.createPaymentUrl(slotHistory.getId(), createDate, price);
+        long price = roomPricingService.getPriceOfRoom(slot.getRoom());
+        var payment = vNPayService.createPaymentUrl(slotHistory.getId(), slotHistory.getCreateDate(), price);
 
         // return url for frontend to redirect
         return new SlotBookingResponse(payment.getPaymentUrl());
     }
 
     @Transactional
-    public PaymentResultResponse handlePaymentResult(HttpServletRequest request) {
+    public PaymentResultResponse handlePaymentResult(HttpServletRequest request, User user) {
         var result = vNPayService.handleResult(request);
-        UUID slotHistoryId = result.getId();
-        var slotHistory = slotHistoryRepository.findById(slotHistoryId).orElseThrow();
-        if (slotHistory.getStatus().equals(StatusSlotHistoryEnum.PENDING) && result.getStatus().equals(VNPayStatus.SUCCESS)) {
-            slotHistory.setStatus(StatusSlotHistoryEnum.SUCCESS);
-            slotHistory = slotHistoryRepository.save(slotHistory);
-        }
-        if (slotHistory.getStatus().equals(StatusSlotHistoryEnum.PENDING) && result.getStatus() != VNPayStatus.SUCCESS) {
-            slotHistory.setStatus(StatusSlotHistoryEnum.FAIL);
-            slotHistoryRepository.save(slotHistory);
-        }
-        slotHistory = slotHistoryRepository.findByIdAndFetchDetails(slotHistoryId);
 
-        // unlock slot
-        Slot slot = slotHistory.getSlot();
-        slot = slotRepository.findById(slot.getId()).orElseThrow();
-        if (slotHistory.getStatus() != StatusSlotHistoryEnum.SUCCESS) {
-            slot.setStatus(StatusSlotEnum.AVAILABLE);
+        var slotHistory = slotHistoryService.getById(result.getId());
+
+        // unauthorize check
+        if (!slotHistory.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized");
         }
+
+        // payment success
+        if (slotHistory.getStatus() == StatusSlotHistoryEnum.PENDING && result.getStatus() == VNPayStatus.SUCCESS) {
+            slotHistoryService.success(slotHistory);
+        }
+
+        // payment fail
+        if (slotHistory.getStatus().equals(StatusSlotHistoryEnum.PENDING) && result.getStatus() != VNPayStatus.SUCCESS) {
+            slotHistoryService.fail(slotHistory);
+        }
+
+        slotHistory = slotHistoryService.getDetails(slotHistory);
 
         return PaymentResultResponse.builder()
                 .dormName(slotHistory.getSlot().getRoom().getDorm().getDormName())
