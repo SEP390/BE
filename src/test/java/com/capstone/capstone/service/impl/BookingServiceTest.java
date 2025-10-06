@@ -31,7 +31,7 @@ class BookingServiceTest {
         User user = userRepository.findById(UUID.fromString("0e7ba193-f3e9-4832-85ed-cc62d5487b1f")).get();
         Slot slot = slotRepository.findById(UUID.fromString("000797fa-4999-426f-8bdb-e03f7402dab9")).get();
         log.info("Slot: {}", slot.getId());
-        var resp = bookingService.createBooking(user.getId(), slot.getId());
+        var resp = bookingService.createBooking(user, slot.getId());
         log.info("Response: {}", resp);
     }
 }
