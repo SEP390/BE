@@ -85,4 +85,11 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     WHERE r.id = :id
 """)
     Room findDetails(UUID id);
+
+    @Query("""
+    FROM Room r
+    JOIN FETCH r.slots
+    WHERE r = :room
+    """)
+    Room findSlots(Room room);
 }
