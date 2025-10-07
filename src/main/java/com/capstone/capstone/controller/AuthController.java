@@ -5,6 +5,7 @@ import com.capstone.capstone.dto.request.auth.AuthRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.auth.AuthResponse;
 import com.capstone.capstone.service.interfaces.IAuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class AuthController {
     private final IAuthService authService;
 
     @PostMapping()
-    public ResponseEntity<BaseResponse<AuthResponse>> auth(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<BaseResponse<AuthResponse>> auth(@Valid @RequestBody AuthRequest authRequest) {
         AuthResponse authResponse = authService.login(authRequest);
         BaseResponse<AuthResponse> baseResponse = new BaseResponse<>();
         baseResponse.setData(authResponse);

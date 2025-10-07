@@ -23,6 +23,7 @@ public class AuthService implements IAuthService {
         AuthResponse authResponse = new AuthResponse();
         authResponse.setToken(token);
         authResponse.setFullName(user.getUsername());
+        authResponse.setRole(user.getRole());
         return authResponse;
     }
 }
