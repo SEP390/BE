@@ -14,4 +14,6 @@ public interface RoomDetails {
     int getFloor();
 
     long getPrice();
+
+    int getTotalSlot();
 }

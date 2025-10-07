@@ -56,18 +56,13 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
         r.dorm.dormName as dormName,
         r.floor as floor,
         rp.price as price,
-        r3.slotAvailable as slotAvailable
-    FROM Room r, (
-        SELECT r2, COUNT(*) - COUNT(u2) AS slotAvailable
-        FROM Room r2
-        JOIN r2.slots s2 LEFT JOIN s2.user u2
-        WHERE r2 IN :rooms GROUP BY r2
-    ) r3
+        r.totalSlot as totalSlot
+    FROM Room r
     JOIN RoomPricing rp ON r.totalSlot = rp.totalSlot
     JOIN r.dorm
     JOIN r.slots s
     LEFT JOIN s.user u
-    WHERE r = r3
+    WHERE r IN :rooms
     """)
     List<RoomDetails> findDetails(List<Room> rooms);
 

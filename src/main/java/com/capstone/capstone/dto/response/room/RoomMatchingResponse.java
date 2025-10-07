@@ -18,5 +18,5 @@ public class RoomMatchingResponse {
     private int floor;
     private long price;
     private double matching;
-    private int slotAvailable;
+    private int totalSlot;
 }

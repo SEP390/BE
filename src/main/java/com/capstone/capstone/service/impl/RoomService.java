@@ -36,6 +36,8 @@ public class RoomService {
                 .dormName(room.getDormName())
                 .floor(room.getFloor())
                 .matching(matching.get(room.getId()))
+                .totalSlot(room.getTotalSlot())
+                .price(room.getPrice())
                 .build()).toList();
     }
 
