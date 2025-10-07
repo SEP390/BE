@@ -4,8 +4,8 @@ import lombok.*;
 
 import java.util.UUID;
 
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
@@ -13,8 +13,10 @@ import java.util.UUID;
 public class RoomMatchingResponse {
     private UUID id;
     private String roomNumber;
+    private UUID dormId;
     private String dormName;
     private int floor;
+    private long price;
     private double matching;
     private int slotAvailable;
 }
