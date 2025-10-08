@@ -43,7 +43,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "api/auth","/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // test api doi register = ** test xong sua
+//                        .requestMatchers("/api/users/register", "api/auth","/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                                .requestMatchers("/api/**", "api/auth","/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

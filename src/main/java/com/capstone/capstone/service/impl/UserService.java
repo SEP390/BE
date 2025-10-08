@@ -2,13 +2,18 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.user.RegisterUserRequest;
+import com.capstone.capstone.dto.response.user.ProfileUserResponse;
 import com.capstone.capstone.dto.response.user.RegisterUserResponse;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +21,7 @@ public class UserService implements IUserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     @Override
     public RegisterUserResponse register(RegisterUserRequest registerUserRequest) {
@@ -32,5 +38,18 @@ public class UserService implements IUserService {
         registerUserResponse.setEmail(user.getEmail());
         registerUserResponse.setDob(user.getDob());
         return registerUserResponse;
+    }
+
+    @Override
+    public ProfileUserResponse getById(UUID id) {
+        User user = userRepository.findById(id).orElseThrow(()->new RuntimeException("User not found!"));
+        return modelMapper.map(user, ProfileUserResponse.class);
+    }
+
+    @Override
+    public List<ProfileUserResponse> getALl() {
+        return userRepository.findAll().stream()
+                .map(p -> modelMapper.map(p, ProfileUserResponse.class))
+                .toList();
     }
 }
