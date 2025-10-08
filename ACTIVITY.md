@@ -32,3 +32,4 @@ fix: crud semester validation
 fix: crud room validation
 fix: crud room validation
 feat: crud semester
+feat: crud semester
