@@ -16,5 +16,4 @@ public class NewsReponse {
     private String title;
     private String content;
     private Date date;
-    private Time time;
 }
