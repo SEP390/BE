@@ -90,8 +90,8 @@ public class TestDataCreator {
     public void generateUsers() {
         var users = new ArrayList<User>();
 
-        users.add(User.builder().username("resident").build());
-        users.add(User.builder().username("admin").role(RoleEnum.ADMIN).build());
+        users.add(createUser(User.builder().username("resident").build()));
+        users.add(createUser(User.builder().username("admin").role(RoleEnum.ADMIN).build()));
         for(var i = 0; i < USER_COUNT; i++) {
             User user = new User();
             users.add(createUser(user));
