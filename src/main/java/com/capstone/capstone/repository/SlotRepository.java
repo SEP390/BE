@@ -1,5 +1,6 @@
 package com.capstone.capstone.repository;
 
+import com.capstone.capstone.entity.Invoice;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.Slot;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,6 @@ public interface SlotRepository extends JpaRepository<Slot, UUID> {
     Slot getSlotWithRoom(UUID id);
 
     List<Slot> findByRoom(Room room);
+
+    Slot findByInvoice(Invoice invoice);
 }

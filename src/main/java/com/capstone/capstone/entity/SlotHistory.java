@@ -19,13 +19,14 @@ public class SlotHistory extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "slot_id")
     @JsonIgnore
     private Slot slot;
 
-    private LocalDateTime createDate;
+    @OneToOne
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
 
-    @Enumerated(EnumType.STRING)
-    private StatusSlotHistoryEnum status;
+    private LocalDateTime createDate;
 }

@@ -6,10 +6,11 @@ import lombok.Data;
 
 @Data
 @Builder
-public class PaymentResultResponse {
+public class PaymentVerifyResponse {
     private String dormName;
     private String roomNumber;
     private int floor;
     private String slotName;
-    private VNPayStatus result;
+    private long price;
+    private VNPayStatus status;
 }

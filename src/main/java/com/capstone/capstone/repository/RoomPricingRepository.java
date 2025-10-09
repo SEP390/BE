@@ -16,6 +16,7 @@ public interface RoomPricingRepository extends JpaRepository<RoomPricing, UUID> 
     @Query("""
         FROM RoomPricing rp
         JOIN Room r ON r.totalSlot = rp.totalSlot
+        AND r = :room
     """)
     RoomPricing findByRoom(Room room);
 }

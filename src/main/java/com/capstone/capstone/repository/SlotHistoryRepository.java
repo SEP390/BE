@@ -43,7 +43,7 @@ public interface SlotHistoryRepository extends JpaRepository<SlotHistory, UUID> 
         JOIN FETCH sh.slot.room
         JOIN FETCH sh.slot.room.dorm
         JOIN FETCH sh.semester
-        WHERE sh.user.id = :currentUserId
+        WHERE sh.user = :user
     """)
-    List<SlotHistory> findAllByUser(UUID currentUserId);
+    List<SlotHistory> findAllByUser(User user);
 }

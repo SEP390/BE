@@ -5,6 +5,6 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class SlotBookingRequest {
+public class BookingRequest {
     private UUID id;
 }

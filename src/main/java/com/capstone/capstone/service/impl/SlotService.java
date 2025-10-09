@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
+import com.capstone.capstone.entity.Invoice;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
@@ -22,10 +23,13 @@ public class SlotService {
         return slotRepository.findById(id).orElse(null);
     }
 
-    public void lock(Slot slot) {
-        if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new RuntimeException("Slot already locked");
-        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
+    @Transactional
+    public void lock(Slot slot, User user) {
+        if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new RuntimeException("Slot unavailable");
+        slot.setStatus(StatusSlotEnum.LOCK);
+        slot.setUser(user);
         slotRepository.save(slot);
+        roomService.checkFullAndUpdate(slot.getRoom());
     }
 
     public List<Slot> getAllByRoom(Room room) {
@@ -42,7 +46,16 @@ public class SlotService {
     public void unlock(Slot slot) {
         slot.setUser(null);
         slot.setStatus(StatusSlotEnum.AVAILABLE);
+        slot.setInvoice(null);
         slotRepository.save(slot);
         roomService.checkFullAndUpdate(slot.getRoom());
+    }
+
+    public Slot findByInvoice(Invoice invoice) {
+        return slotRepository.findByInvoice(invoice);
+    }
+
+    public Slot save(Slot slot) {
+        return slotRepository.save(slot);
     }
 }
