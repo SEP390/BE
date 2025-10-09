@@ -48,6 +48,8 @@ public class TestDataCreator {
     private static final int ROOM_PER_DORM = ROOM_PER_FLOOR * FLOOR_PER_DORM;
 
     private final Random random = new Random();
+    @Autowired
+    private SlotHistoryRepository slotHistoryRepository;
 
     private String generateRandomString() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 10);
@@ -164,6 +166,7 @@ public class TestDataCreator {
 
     @Test
     public void generateAll() {
+        deleteAllData();
         generateSemester();
         generateUsers();
         generateDorm();
@@ -192,9 +195,6 @@ public class TestDataCreator {
 
     @Test
     public void generateSurveyData() {
-        surveySelectRepository.deleteAll();
-        surveyOptionRepository.deleteAll();
-        surveyQuestionRepository.deleteAll();
         final List<SurveyQuestion> questions = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
             SurveyQuestion q = new SurveyQuestion();
@@ -221,5 +221,19 @@ public class TestDataCreator {
                 surveySelectRepository.save(s);
             });
         });
+    }
+
+    @Test
+    void deleteAllData() {
+        slotHistoryRepository.deleteAll();
+        slotRepository.deleteAll();
+        roomRepository.deleteAll();
+        dormRepository.deleteAll();
+        roomPricingRepository.deleteAll();
+        semesterRepository.deleteAll();
+        surveySelectRepository.deleteAll();
+        surveyOptionRepository.deleteAll();
+        surveyQuestionRepository.deleteAll();
+        userRepository.deleteAll();
     }
 }
