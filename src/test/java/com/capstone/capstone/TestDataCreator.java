@@ -59,39 +59,40 @@ public class TestDataCreator {
         roomPricingRepository.saveAll(roomPricing);
     }
 
-    private User createUser(String username, String email, String password, RoleEnum role, GenderEnum gender, Date dob) {
-        User user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setDob(dob);
-        user.setGender(gender);
-        user.setRole(role);
+    private User createUser(User user) {
+        if (user.getUsername() == null) {
+            user.setUsername(generateRandomString());
+        }
+        if (user.getEmail() == null) {
+            var email = "%s@gmail.com".formatted(user.getUsername());
+            user.setEmail(email);
+        }
+        if (user.getPassword() == null) {
+            user.setPassword(passwordEncoder.encode(USER_DEFAULT_PASSWORD));
+        } else {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        if (user.getDob() == null) {
+            user.setDob(USER_DEFAULT_DOB);
+        }
+        if (user.getGender() == null) {
+            user.setGender(USER_DEFAULT_GENDER);
+        }
+        if (user.getRole() == null) {
+            user.setRole(RoleEnum.RESIDENT);
+        }
         return user;
-    }
-
-    @Test
-    public void generateUser() {
-        var username = "hieulm";
-        var email = "hieulmhe17623@fpt.edu.vn";
-        var password = "hieulm";
-        var role = RoleEnum.ADMIN;
-        var gender = GenderEnum.MALE;
-        var dob = USER_DEFAULT_DOB;
-        userRepository.save(createUser(username, email, password, role, gender, dob));
     }
 
     @Test
     public void generateUsers() {
         var users = new ArrayList<User>();
+
+        users.add(User.builder().username("resident").build());
+        users.add(User.builder().username("admin").role(RoleEnum.ADMIN).build());
         for(var i = 0; i < USER_COUNT; i++) {
-            var username = generateRandomString();
-            var email = "%s@gmail.com".formatted(generateRandomString());
-            var password = USER_DEFAULT_PASSWORD;
-            var gender = USER_DEFAULT_GENDER;
-            var dob = USER_DEFAULT_DOB;
-            var role = RoleEnum.RESIDENT;
-            users.add(createUser(username, email, password, role, gender, dob));
+            User user = new User();
+            users.add(createUser(user));
         }
         userRepository.saveAll(users);
     }

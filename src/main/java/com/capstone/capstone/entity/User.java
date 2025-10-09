@@ -20,6 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class User extends BaseEntity implements UserDetails {
     private String username;
     private String password;
