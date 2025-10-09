@@ -31,6 +31,12 @@ public class TestDataCreator {
     @Autowired
     private SemesterRepository semesterRepository;
     @Autowired
+    private SurveyQuestionRepository surveyQuestionRepository;
+    @Autowired
+    private SurveyOptionRepository surveyOptionRepository;
+    @Autowired
+    private SurveySelectRepository surveySelectRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private static final int USER_COUNT = 10;
@@ -157,16 +163,18 @@ public class TestDataCreator {
 
     @Test
     public void generateAll() {
+        generateSemester();
         generateUsers();
         generateDorm();
         generateRoomPricing();
         generateRoom();
         generateSlot();
         generateUserSlot();
+        generateSurveyData();
     }
 
     @Test
-    public void createSemester() {
+    public void generateSemester() {
         // prev sem
         Semester prev = new Semester();
         prev.setName("SU25");
@@ -179,5 +187,38 @@ public class TestDataCreator {
         next.setEndDate(LocalDate.of(2025, 12, 15));
         semesterRepository.save(next);
         semesterRepository.save(prev);
+    }
+
+    @Test
+    public void generateSurveyData() {
+        surveySelectRepository.deleteAll();
+        surveyOptionRepository.deleteAll();
+        surveyQuestionRepository.deleteAll();
+        final List<SurveyQuestion> questions = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            SurveyQuestion q = new SurveyQuestion();
+            q.setQuestionContent(generateRandomString());
+            questions.add(surveyQuestionRepository.save(q));
+        }
+        questions.forEach(surveyQuestion -> {
+            final List<SurveyOption> options = new ArrayList<>();
+            for (int i = 0; i < 3; i++) {
+                SurveyOption o = new SurveyOption();
+                o.setSurveyQuestion(surveyQuestion);
+                o.setOptionContent(generateRandomString());
+                options.add(surveyOptionRepository.save(o));
+            }
+            surveyQuestion.setSurveyOptions(options);
+        });
+        final List<User> users = userRepository.findAll();
+        users.forEach(user -> {
+            questions.forEach(surveyQuestion -> {
+                SurveyOption o = surveyQuestion.getSurveyOptions().get(random.nextInt(surveyQuestion.getSurveyOptions().size()));
+                SurveyQuetionSelected s = new SurveyQuetionSelected();
+                s.setSurveyOption(o);
+                s.setUser(user);
+                surveySelectRepository.save(s);
+            });
+        });
     }
 }
