@@ -29,7 +29,9 @@ public class RoomService {
             var users = roomRepository.findUsers(room);
             matching.put(room.getId(), users.stream().mapToDouble(u -> roomRepository.computeMatching(user, u, totalQuestion)).average().orElse(0.0));
         });
-        return roomRepository.findDetails(rooms).stream().map(room -> RoomMatchingResponse.builder()
+        Comparator<Room> comparator = Comparator.comparingDouble(o -> matching.get(o.getId()));
+        rooms.sort(comparator.reversed());
+        return roomRepository.findDetails(rooms.subList(0, 5)).stream().map(room -> RoomMatchingResponse.builder()
                 .id(room.getId())
                 .roomNumber(room.getRoomNumber())
                 .dormId(room.getDormId())

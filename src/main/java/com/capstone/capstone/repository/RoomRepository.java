@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface RoomRepository extends JpaRepository<Room, UUID> {
 
     @Query("""
-    SELECT r
+    SELECT DISTINCT r
     FROM Room r
     JOIN r.slots s
     LEFT JOIN s.user u
@@ -49,7 +49,7 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     int totalQuestion();
 
     @Query("""
-    SELECT
+    SELECT DISTINCT
         r.id as id,
         r.roomNumber as roomNumber,
         r.dorm.id as dormId,
@@ -60,8 +60,6 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     FROM Room r
     JOIN RoomPricing rp ON r.totalSlot = rp.totalSlot
     JOIN r.dorm
-    JOIN r.slots s
-    LEFT JOIN s.user u
     WHERE r IN :rooms
     """)
     List<RoomDetails> findDetails(List<Room> rooms);
