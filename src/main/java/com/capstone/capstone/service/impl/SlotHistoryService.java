@@ -21,12 +21,13 @@ public class SlotHistoryService {
     private final SemesterService semesterService;
     private final SlotService slotService;
 
-    public SlotHistory create(Slot slot, Invoice invoice) {
+    public SlotHistory create(User user, Slot slot, Invoice invoice) {
         SlotHistory slotHistory = new SlotHistory();
         slotHistory.setSlot(slotService.findByInvoice(invoice));
         var createDate = LocalDateTime.now();
         slotHistory.setCreateDate(createDate);
         slotHistory.setInvoice(invoice);
+        slotHistory.setUser(user);
         slotHistory.setSlot(slot);
         slotHistory.setSemester(semesterService.getNextSemester());
 
@@ -37,5 +38,9 @@ public class SlotHistoryService {
 
     public SlotHistory getById(UUID id) {
         return slotHistoryRepository.findById(id).orElseThrow();
+    }
+
+    public SlotHistory findByInvoice(Invoice invoice) {
+        return slotHistoryRepository.findByInvoice(invoice);
     }
 }

@@ -1,5 +1,6 @@
 package com.capstone.capstone.repository;
 
+import com.capstone.capstone.entity.Invoice;
 import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.entity.SlotHistory;
 import com.capstone.capstone.entity.User;
@@ -46,4 +47,6 @@ public interface SlotHistoryRepository extends JpaRepository<SlotHistory, UUID> 
         WHERE sh.user = :user
     """)
     List<SlotHistory> findAllByUser(User user);
+
+    SlotHistory findByInvoice(Invoice invoice);
 }

@@ -7,6 +7,7 @@ import com.capstone.capstone.dto.response.booking.PaymentVerifyResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.Invoice;
 import com.capstone.capstone.entity.Slot;
+import com.capstone.capstone.entity.SlotHistory;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.mapper.InvoiceMapper;
 import com.capstone.capstone.repository.InvoiceRepository;
@@ -63,8 +64,9 @@ public class PaymentService {
     @Transactional
     public PaymentVerifyResponse verifyForSlot(HttpServletRequest request, User user) {
         var result = vNPayService.verify(request);
-        var invoice = invoiceRepository.findById(result.getId()).orElseThrow();
-        var slot = slotService.findByInvoice(invoice);
+        Invoice invoice = invoiceRepository.findById(result.getId()).orElseThrow();
+        SlotHistory slotHistory = slotHistoryService.findByInvoice(invoice);
+        Slot slot = slotHistory.getSlot();
         if (!invoice.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Unauthorized");
         }
@@ -91,7 +93,6 @@ public class PaymentService {
         slotService.save(slot);
         invoice.setStatus(InvoiceStatus.SUCCESS);
         invoiceRepository.save(invoice);
-        slotHistoryService.create(slot, invoice);
     }
 
     public void failForSlot(Slot slot, Invoice invoice) {

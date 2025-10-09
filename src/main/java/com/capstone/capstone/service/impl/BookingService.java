@@ -17,6 +17,7 @@ public class BookingService {
     private final SlotHistoryRepository slotHistoryRepository;
     private final SlotService slotService;
     private final PaymentService paymentService;
+    private final SlotHistoryService slotHistoryService;
 
     @Transactional
     public SlotBookingResponse create(User user, UUID slotId) {
@@ -24,6 +25,8 @@ public class BookingService {
         Slot slot = slotService.getById(slotId);
         // create invoice
         Invoice invoice = paymentService.createForSlot(user, slot);
+        // create slot history
+        slotHistoryService.create(user, slot, invoice);
         // create payment url for invoice
         String paymentUrl = paymentService.createPaymentUrl(invoice);
         // lock slot (so other user cannot book this slot)
