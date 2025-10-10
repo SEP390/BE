@@ -4,11 +4,14 @@ import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.user.RegisterUserRequest;
 import com.capstone.capstone.dto.response.user.RegisterUserResponse;
 import com.capstone.capstone.entity.User;
+import com.capstone.capstone.exception.BadHttpRequestException;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,13 @@ public class UserService implements IUserService {
 
     @Override
     public RegisterUserResponse register(RegisterUserRequest registerUserRequest) {
+        List<User> users = userRepository.findAll();
+        if (users.stream().anyMatch(user -> user.getUsername().equals(registerUserRequest.getUsername()))) {
+            throw new BadHttpRequestException("Username is already taken");
+        }
+        if (users.stream().anyMatch(user -> user.getEmail().equals(registerUserRequest.getEmail()))) {
+            throw new BadHttpRequestException("Email is already taken");
+        }
         User user = new User();
         user.setUsername(registerUserRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registerUserRequest.getPassword()));
