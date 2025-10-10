@@ -32,10 +32,10 @@ public class User extends BaseEntity implements UserDetails {
     private RoleEnum role;
 
     @OneToMany(mappedBy = "user")
-    private List<SurveyQuetionSelected> surveyQuetionSelected;
+    private List<SurveyQuetionSelected> surveyQuestionSelected;
 
     @OneToMany(mappedBy = "user")
-    private List<Request> surveyQuestion;
+    private List<Request> requests;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

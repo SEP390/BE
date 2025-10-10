@@ -29,4 +29,9 @@ public class Request extends BaseEntity {
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "semester_id")
+    @JsonIgnore
+    private Semester semester;
 }
