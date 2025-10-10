@@ -20,6 +20,5 @@ public class SlotHistoryResponse {
     private int floor;
     private UUID dormId;
     private LocalDateTime createdDate;
-    private String transactionDate;
     private StatusSlotHistoryEnum status;
 }

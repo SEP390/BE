@@ -1,6 +1,5 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.response.vnpay.VNPayRequest;
 import com.capstone.capstone.dto.response.vnpay.VNPayResult;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +34,7 @@ public class VNPayService {
     private static final String QUERY_URL = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
     private static final String RETURN_URL = "http://localhost:5173/vnpay";
 
-    public VNPayRequest createPaymentUrl(UUID id, LocalDateTime createDate, long amount) {
+    public String createPaymentUrl(UUID id, LocalDateTime createDate, long amount) {
         amount = amount * 100;
         Map<String, String> params = new HashMap<>();
         params.put("vnp_Version", "2.1.0");
@@ -58,7 +57,7 @@ public class VNPayService {
         String encodedParams = encodeParams(params);
         String vnp_SecureHash = hashParams(encodedParams);
         String paymentUrl = PAY_URL + "?" + encodedParams + "&vnp_SecureHash=" + vnp_SecureHash;
-        return new VNPayRequest(paymentUrl, vnp_CreateDate);
+        return paymentUrl;
     }
 
     public String encodeParams(Map<String, String> params) {
@@ -74,7 +73,7 @@ public class VNPayService {
         return fields;
     }
 
-    public VNPayResult handleResult(HttpServletRequest req) {
+    public VNPayResult verify(HttpServletRequest req) {
         final Map<String, String> params = getAllParams(req);
         var result = new VNPayResult();
         result.setId(UUID.fromString(params.get("vnp_TxnRef")));
