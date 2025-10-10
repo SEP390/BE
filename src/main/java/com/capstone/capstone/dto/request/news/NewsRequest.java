@@ -7,12 +7,14 @@ import lombok.Setter;
 
 import java.sql.Time;
 import java.util.Date;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class NewsRequest {
+    private UUID usersId;
     private String title;
     private String content;
     private Date date;

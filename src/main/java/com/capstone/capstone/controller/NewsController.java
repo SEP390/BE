@@ -1,15 +1,15 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.constant.ApiConstant;
+import com.capstone.capstone.dto.request.news.NewsRequest;
 import com.capstone.capstone.dto.response.news.NewsReponse;
 import com.capstone.capstone.entity.News;
 import com.capstone.capstone.service.impl.NewsService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,4 +24,9 @@ public class NewsController {
         return ResponseEntity.ok(newsService.getAllNews());
     }
 
+    @PostMapping("/createNews")
+    public ResponseEntity<NewsReponse> createNews(@RequestBody NewsRequest newsRequest) {
+        NewsReponse newsReponse =newsService.createNews(newsRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(newsReponse);
+    }
 }
