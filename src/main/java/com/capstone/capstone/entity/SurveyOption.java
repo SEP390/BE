@@ -25,5 +25,5 @@ public class SurveyOption extends BaseEntity {
     private String optionContent;
 
     @OneToMany(mappedBy = "surveyOption")
-    private List<SurveyQuetionSelected> surveyQuetionSelected;
+    private List<SurveyQuetionSelected> surveyQuestionSelected;
 }
