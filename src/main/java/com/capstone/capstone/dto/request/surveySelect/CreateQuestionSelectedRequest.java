@@ -1,4 +1,4 @@
-package com.capstone.capstone.dto.request.SurveySellect;
+package com.capstone.capstone.dto.request.surveySelect;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
