@@ -3,9 +3,7 @@ package com.capstone.capstone.entity;
 import com.capstone.capstone.dto.enums.RequestStatusEnum;
 import com.capstone.capstone.dto.enums.RequestTypeEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +21,9 @@ public class Request extends BaseEntity {
     private String responseMessage;
     private LocalDateTime executeTime;
     private LocalDateTime createTime;
+    @Enumerated(EnumType.STRING)
     private RequestTypeEnum requestType;
+    @Enumerated(EnumType.STRING)
     private RequestStatusEnum requestStatus;
     @ManyToOne
     @JoinColumn(name = "user_id")

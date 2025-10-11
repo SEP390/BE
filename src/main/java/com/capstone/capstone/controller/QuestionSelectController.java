@@ -1,10 +1,9 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.constant.ApiConstant;
-import com.capstone.capstone.dto.request.SurveySellect.CreateQuestionSelectedRequest;
+import com.capstone.capstone.dto.request.surveySelect.CreateQuestionSelectedRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.surveySellect.CreateQuestionSelectedResponse;
-import com.capstone.capstone.entity.BaseEntity;
 import com.capstone.capstone.service.interfaces.ISurveySelectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

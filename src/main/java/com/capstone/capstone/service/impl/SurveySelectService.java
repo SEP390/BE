@@ -1,6 +1,6 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.request.SurveySellect.CreateQuestionSelectedRequest;
+import com.capstone.capstone.dto.request.surveySelect.CreateQuestionSelectedRequest;
 import com.capstone.capstone.dto.response.surveySellect.CreateQuestionSelectedResponse;
 import com.capstone.capstone.entity.SurveyOption;
 import com.capstone.capstone.entity.SurveyQuestion;
