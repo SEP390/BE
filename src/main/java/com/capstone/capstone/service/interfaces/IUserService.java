@@ -10,7 +10,6 @@ import java.util.UUID;
 
 public interface IUserService {
     RegisterUserResponse register(RegisterUserRequest registerUserRequest);
-    public ProfileUserResponse getById (UUID id);
-    public List<ProfileUserResponse> getALl();
-    //hgghhg
+    ProfileUserResponse getById (UUID id);
+    List<ProfileUserResponse> getALl();
 }
