@@ -13,17 +13,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-
 @RestController
 @AllArgsConstructor
 public class PaymentController {
     private final PaymentService paymentService;
 
-    @GetMapping("/api/payment/verify-slot")
+    @GetMapping("/api/payment/verify")
     public BaseResponse<PaymentVerifyResponse> verify(HttpServletRequest request, Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        return new BaseResponse<>(200, "success", paymentService.verifyForSlot(request, user));
+        return new BaseResponse<>(200, "success", paymentService.verify(request, user));
     }
 
     @GetMapping("/api/payment/history")

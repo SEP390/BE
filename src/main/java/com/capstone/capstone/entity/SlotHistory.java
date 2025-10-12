@@ -27,5 +27,5 @@ public class SlotHistory extends BaseEntity {
     @JsonIgnore
     private Slot slot;
 
-    private long price;
+    private Long price;
 }

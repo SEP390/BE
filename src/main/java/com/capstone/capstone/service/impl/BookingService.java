@@ -55,7 +55,8 @@ public class BookingService {
     }
 
     public Page<BookingHistoryResponse> history(PaymentStatus status, int page) {
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        User user = new User();
+        user.setId(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         return paymentService.bookingHistory(user, status, page);
     }
 

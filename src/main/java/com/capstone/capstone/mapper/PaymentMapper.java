@@ -22,7 +22,8 @@ public interface PaymentMapper {
             @Mapping(target = "dormId", source = "slotHistory.slot.room.dorm.id"),
             @Mapping(target = "floor", source = "slotHistory.slot.room.floor"),
             @Mapping(target = "status", source = "status"),
-            @Mapping(target = "createDate", source = "createDate")
+            @Mapping(target = "createDate", source = "createDate"),
+            @Mapping(target = "price", source = "price")
     })
     BookingHistoryResponse toBookingHistoryResponse(Payment payment);
 }

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 public class Payment extends BaseEntity {
     private LocalDateTime createDate;
-    private long price;
+    private Long price;
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 

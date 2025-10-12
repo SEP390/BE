@@ -7,10 +7,6 @@ import lombok.Data;
 @Data
 @Builder
 public class PaymentVerifyResponse {
-    private String dormName;
-    private String roomNumber;
-    private int floor;
-    private String slotName;
     private long price;
     private VNPayStatus status;
 }

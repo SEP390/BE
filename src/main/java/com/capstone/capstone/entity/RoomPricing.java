@@ -11,6 +11,6 @@ import lombok.*;
 @Builder
 @ToString
 public class RoomPricing extends BaseEntity {
-    private long price;
-    private int totalSlot;
+    private Long price;
+    private Integer totalSlot;
 }

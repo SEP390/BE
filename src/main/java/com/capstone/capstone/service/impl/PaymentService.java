@@ -68,7 +68,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentVerifyResponse verifyForSlot(HttpServletRequest request, User user) {
+    public PaymentVerifyResponse verify(HttpServletRequest request, User user) {
         // vnpay verify hash
         var result = vNPayService.verify(request);
 
@@ -89,39 +89,28 @@ public class PaymentService {
 
         // payment success
         if (payment.getStatus() == PaymentStatus.PENDING && result.getStatus() == VNPayStatus.SUCCESS) {
-            successForSlot(slot, payment);
+            payment.setStatus(PaymentStatus.SUCCESS);
+            payment = paymentRepository.save(payment);
+
+            // success, change slot status to unavailable
+            if (payment.getType() == PaymentType.BOOKING) {
+                slotService.lockToUnavailable(slot);
+            }
         }
 
         // payment fail
         if (payment.getStatus() == PaymentStatus.PENDING && result.getStatus() != VNPayStatus.SUCCESS) {
-            failForSlot(slot, payment);
-        }
+            payment.setStatus(PaymentStatus.CANCEL);
+            payment = paymentRepository.save(payment);
 
+            if (payment.getType() == PaymentType.BOOKING) {
+                slotService.unlock(slot);
+            }
+        }
         return PaymentVerifyResponse.builder()
-                .dormName(slot.getRoom().getDorm().getDormName())
-                .slotName(slot.getSlotName())
-                .floor(slot.getRoom().getFloor())
-                .roomNumber(slot.getRoom().getRoomNumber())
                 .status(result.getStatus())
                 .price(payment.getPrice())
                 .build();
-    }
-
-    public void success(Payment payment) {
-        payment.setStatus(PaymentStatus.SUCCESS);
-        paymentRepository.save(payment);
-    }
-
-    @Transactional
-    public void successForSlot(Slot slot, Payment payment) {
-        slotService.lockToUnavailable(slot);
-        success(payment);
-    }
-
-    public void failForSlot(Slot slot, Payment payment) {
-        payment.setStatus(PaymentStatus.CANCEL);
-        paymentRepository.save(payment);
-        slotService.unlock(slot);
     }
 
     public Page<BookingHistoryResponse> bookingHistory(User user, PaymentStatus status, int page) {

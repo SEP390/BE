@@ -4,22 +4,24 @@ import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
 import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
-import com.capstone.capstone.entity.Room;
-import com.capstone.capstone.entity.RoomPricing;
-import com.capstone.capstone.entity.Slot;
-import com.capstone.capstone.entity.User;
+import com.capstone.capstone.dto.response.room.RoommateResponse;
+import com.capstone.capstone.entity.*;
 import com.capstone.capstone.repository.RoomPricingRepository;
 import com.capstone.capstone.repository.RoomRepository;
+import com.capstone.capstone.util.AuthenUtil;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class RoomService {
     private final RoomRepository roomRepository;
     private final RoomPricingRepository roomPricingRepository;
+    private final ModelMapper modelMapper;
 
     public List<RoomMatchingResponse> getRoomMatching(User user) {
         var rooms = roomRepository.findAvailableForGender(user.getGender());
@@ -60,6 +62,20 @@ public class RoomService {
                         .status(slot.getStatus())
                         .build()).toList())
                 .build();
+    }
+
+    public List<RoommateResponse> getRoommates(UUID id) {
+        UUID userId = AuthenUtil.getCurrentUserId();
+        User current = new User();
+        current.setId(userId);
+        Room room = roomRepository.getReferenceById(id);
+        int totalQuestion = roomRepository.totalQuestion();
+        List<User> users = roomRepository.findUsers(room).stream().filter(user -> !user.getId().equals(userId)).toList();
+        Map<UUID, Double> matching = users.stream().collect(Collectors.toMap(BaseEntity::getId, u -> roomRepository.computeMatching(current, u, totalQuestion)));
+        return users.stream().map(user -> modelMapper.map(user, RoommateResponse.class)).map(rm -> {
+            rm.setMatching(matching.get(rm.getId()));
+            return rm;
+        }).toList();
     }
 
     public boolean isFull(Room room) {

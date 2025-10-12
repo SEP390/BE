@@ -19,6 +19,7 @@ public class BookingHistoryResponse {
     private String dormName;
     private int floor;
     private UUID dormId;
+    private long price;
     private LocalDateTime createDate;
     private PaymentStatus status;
 }
