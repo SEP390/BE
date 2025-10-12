@@ -57,7 +57,7 @@ public class TestDataCreator {
 
     @Test
     public void generateRoomPricing() {
-        var roomPricing = List.of(RoomPricing.builder().price(1200000).totalSlot(2).build(), RoomPricing.builder().price(1000000).totalSlot(4).build(), RoomPricing.builder().price(800000).totalSlot(6).build());
+        var roomPricing = List.of(RoomPricing.builder().price(1200000L).totalSlot(2).build(), RoomPricing.builder().price(1000000L).totalSlot(4).build(), RoomPricing.builder().price(800000L).totalSlot(6).build());
         roomPricingRepository.saveAll(roomPricing);
     }
 
@@ -212,15 +212,13 @@ public class TestDataCreator {
             surveyQuestion.setSurveyOptions(options);
         });
         final List<User> users = userRepository.findAll();
-        users.forEach(user -> {
-            questions.forEach(surveyQuestion -> {
-                SurveyOption o = surveyQuestion.getSurveyOptions().get(random.nextInt(surveyQuestion.getSurveyOptions().size()));
-                SurveyQuetionSelected s = new SurveyQuetionSelected();
-                s.setSurveyOption(o);
-                s.setUser(user);
-                surveySelectRepository.save(s);
-            });
-        });
+        users.forEach(user -> questions.forEach(surveyQuestion -> {
+            SurveyOption o = surveyQuestion.getSurveyOptions().get(random.nextInt(surveyQuestion.getSurveyOptions().size()));
+            SurveyQuetionSelected s = new SurveyQuetionSelected();
+            s.setSurveyOption(o);
+            s.setUser(user);
+            surveySelectRepository.save(s);
+        }));
     }
 
     @Test
