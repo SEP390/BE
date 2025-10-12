@@ -19,8 +19,8 @@ import java.util.List;
 @Setter
 public class Dorm extends BaseEntity {
     private String dormName;
-    private int totalRoom;
-    private int totalFloor;
+    private Integer totalRoom;
+    private Integer totalFloor;
 
     @OneToMany(mappedBy = "dorm")
     private List<Room> rooms;

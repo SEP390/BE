@@ -13,4 +13,8 @@ public class SemesterService {
     public Semester getNextSemester() {
         return semesterRepository.findNextSemester();
     }
+
+    public Semester getCurrent() {
+        return semesterRepository.findCurrent();
+    }
 }

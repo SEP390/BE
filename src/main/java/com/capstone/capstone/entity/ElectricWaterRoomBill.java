@@ -16,10 +16,14 @@ import java.util.List;
 @Setter
 @Builder
 public class ElectricWaterRoomBill extends BaseEntity {
-    private long price;
-    private int kw;
-    private int m3;
+    private Long price;
+    private Integer kw;
+    private Integer m3;
     private LocalDateTime createDate;
+
+    @ManyToOne
+    @JoinColumn(name = "semester_id")
+    private Semester semester;
 
     @ManyToOne
     @JoinColumn(name = "room_id")

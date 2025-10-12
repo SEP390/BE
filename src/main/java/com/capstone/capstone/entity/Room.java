@@ -17,8 +17,8 @@ import java.util.List;
 @Setter
 public class Room extends BaseEntity {
     private String roomNumber;
-    private int totalSlot;
-    private int floor;
+    private Integer totalSlot;
+    private Integer floor;
 
     @Enumerated(EnumType.STRING)
     private StatusRoomEnum status;

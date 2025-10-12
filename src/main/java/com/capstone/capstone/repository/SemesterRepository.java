@@ -23,4 +23,12 @@ public interface SemesterRepository extends JpaRepository<Semester, UUID> {
         WHERE :currentDate BETWEEN s.startDate AND s.endDate
 """)
     Optional<Semester> findSemesterByCurrentDate(@Param("currentDate") LocalDate currentDate);
+
+    @Query("""
+        FROM Semester
+        WHERE CURRENT_DATE BETWEEN startDate AND endDate
+        ORDER BY startDate DESC
+        LIMIT 1
+    """)
+    Semester findCurrent();
 }
