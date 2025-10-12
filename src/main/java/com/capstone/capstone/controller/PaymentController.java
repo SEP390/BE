@@ -25,7 +25,7 @@ public class PaymentController {
     }
 
     @GetMapping("/api/payment/history")
-    public BaseResponse<Page<PaymentResponse>> history(@RequestParam(required = false) Integer page) {
+    public BaseResponse<Page<PaymentResponse>> history(@RequestParam(defaultValue = "0") Integer page) {
         return new BaseResponse<>(200, "success", paymentService.history(page));
     }
 }
