@@ -1,11 +1,14 @@
 package com.capstone.capstone.entity;
 
-import com.capstone.capstone.dto.enums.StatusSlotHistoryEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.*;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -13,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SlotHistory extends BaseEntity {
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "semester_id")
     private Semester semester;
     @ManyToOne
@@ -24,9 +27,5 @@ public class SlotHistory extends BaseEntity {
     @JsonIgnore
     private Slot slot;
 
-    @OneToOne
-    @JoinColumn(name = "invoice_id")
-    private Invoice invoice;
-
-    private LocalDateTime createDate;
+    private long price;
 }

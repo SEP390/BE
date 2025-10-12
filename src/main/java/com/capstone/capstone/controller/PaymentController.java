@@ -1,7 +1,7 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.booking.InvoiceResponse;
+import com.capstone.capstone.dto.response.booking.PaymentResponse;
 import com.capstone.capstone.dto.response.booking.PaymentVerifyResponse;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.service.impl.PaymentService;
@@ -27,8 +27,7 @@ public class PaymentController {
     }
 
     @GetMapping("/api/payment/history")
-    public BaseResponse<Page<InvoiceResponse>> history(@RequestParam(required = false) Integer page, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        return new BaseResponse<>(200, "success", paymentService.history(user, Optional.ofNullable(page).orElse(0)));
+    public BaseResponse<Page<PaymentResponse>> history(@RequestParam(required = false) Integer page) {
+        return new BaseResponse<>(200, "success", paymentService.history(page));
     }
 }

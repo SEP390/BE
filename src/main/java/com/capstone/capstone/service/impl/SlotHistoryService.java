@@ -1,46 +1,46 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.enums.StatusSlotHistoryEnum;
-import com.capstone.capstone.entity.Invoice;
+import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.SlotHistory;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.repository.SlotHistoryRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class SlotHistoryService {
     private final SlotHistoryRepository slotHistoryRepository;
-
     private final SemesterService semesterService;
-    private final SlotService slotService;
+    private final RoomPricingService roomPricingService;
 
-    public SlotHistory create(User user, Slot slot, Invoice invoice) {
+    /**
+     * Create slot history for user in next semester
+     * @param user user
+     * @param slot slot
+     * @return history
+     */
+    public SlotHistory create(User user, Slot slot) {
+        // get next semester
+        Semester semester = semesterService.getNextSemester();
+
+        LocalDateTime createDate = LocalDateTime.now();
+
+        // get current price of slot (can be updated in future)
+        long price = roomPricingService.getPriceOfSlot(slot);
+
+        // create slot history
         SlotHistory slotHistory = new SlotHistory();
-        slotHistory.setSlot(slotService.findByInvoice(invoice));
-        var createDate = LocalDateTime.now();
-        slotHistory.setCreateDate(createDate);
-        slotHistory.setInvoice(invoice);
-        slotHistory.setUser(user);
         slotHistory.setSlot(slot);
-        slotHistory.setSemester(semesterService.getNextSemester());
-
-        slotHistory.setUser(invoice.getUser());
+        slotHistory.setUser(user);
+        slotHistory.setPrice(price);
+        slotHistory.setSlot(slot);
+        slotHistory.setSemester(semester);
         slotHistory = slotHistoryRepository.save(slotHistory);
+
         return slotHistory;
-    }
-
-    public SlotHistory getById(UUID id) {
-        return slotHistoryRepository.findById(id).orElseThrow();
-    }
-
-    public SlotHistory findByInvoice(Invoice invoice) {
-        return slotHistoryRepository.findByInvoice(invoice);
     }
 }

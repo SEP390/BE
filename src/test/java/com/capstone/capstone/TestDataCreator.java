@@ -173,7 +173,7 @@ public class TestDataCreator {
         generateRoomPricing();
         generateRoom();
         generateSlot();
-        generateUserSlot();
+        // generateUserSlot();
         generateSurveyData();
     }
 

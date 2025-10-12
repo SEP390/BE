@@ -1,21 +1,17 @@
 package com.capstone.capstone.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class ElectricWaterBill extends BaseEntity {
     private long price;
     private LocalDateTime createDate;
@@ -28,7 +24,6 @@ public class ElectricWaterBill extends BaseEntity {
     @JoinColumn(name = "room_bill_id")
     private ElectricWaterRoomBill roomBill;
 
-    @ManyToOne
-    @JoinColumn(name = "invoice_id")
-    private Invoice invoice;
+    @OneToMany
+    private List<Payment> payment;
 }

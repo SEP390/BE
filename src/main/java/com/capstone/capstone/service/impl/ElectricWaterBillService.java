@@ -1,0 +1,62 @@
+package com.capstone.capstone.service.impl;
+
+import com.capstone.capstone.dto.request.electricwater.ElectricWaterBillRequest;
+import com.capstone.capstone.entity.ElectricWaterBill;
+import com.capstone.capstone.entity.ElectricWaterRoomBill;
+import com.capstone.capstone.entity.Room;
+import com.capstone.capstone.entity.User;
+import com.capstone.capstone.repository.ElectricWaterBillRepository;
+import com.capstone.capstone.repository.ElectricWaterRoomBillRepository;
+import com.capstone.capstone.repository.RoomRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@AllArgsConstructor
+public class ElectricWaterBillService {
+    private final RoomRepository roomRepository;
+    private final ElectricWaterRoomBillRepository electricWaterRoomBillRepository;
+    private final ElectricWaterBillRepository electricWaterBillRepository;
+
+    public ElectricWaterRoomBill getByRoom(UUID roomId) {
+        Room room = new Room();
+        room.setId(roomId);
+        getByRoom(room);
+        return null;
+    }
+
+    public ElectricWaterRoomBill getByRoom(Room room) {
+        return electricWaterRoomBillRepository.findByRoom(room);
+    }
+
+    public void create(ElectricWaterBillRequest request) {
+        Room room = roomRepository.getReferenceById(request.getRoomId());
+        List<User> users = roomRepository.findUsers(room);
+        if (users.isEmpty()) {
+            throw new RuntimeException("No users in room");
+        }
+        long price = request.getPrice();
+        int kw = request.getKw();
+        int m3 = request.getM3();
+
+        ElectricWaterRoomBill roomBill = ElectricWaterRoomBill.builder()
+                .room(room)
+                .price(price)
+                .kw(kw)
+                .m3(m3)
+                .build();
+        roomBill = electricWaterRoomBillRepository.save(roomBill);
+        long userPrice = Math.round(Math.ceil((double) price / users.size()));
+        for (User user : users) {
+            ElectricWaterBill bill = ElectricWaterBill.builder()
+                    .user(user)
+                    .price(userPrice)
+                    .roomBill(roomBill)
+                    .build();
+            electricWaterBillRepository.save(bill);
+        }
+    }
+}
