@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -14,10 +16,11 @@ import java.util.UUID;
 @Getter
 @Setter
 public class NewsReponse {
-    private UUID usersID;
+    private UUID newsid;
+    private UUID userId;
     private String title;
     private String content;
-    private Date date;
-    private Time time;
+    private LocalDate date;
+    private LocalTime time;
     private String name;
 }

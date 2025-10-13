@@ -3,6 +3,7 @@ package com.capstone.capstone.controller;
 import com.capstone.capstone.constant.ApiConstant;
 import com.capstone.capstone.dto.request.news.NewsRequest;
 import com.capstone.capstone.dto.response.news.NewsReponse;
+import com.capstone.capstone.dto.response.user.ProfileUserResponse;
 import com.capstone.capstone.entity.News;
 import com.capstone.capstone.service.impl.NewsService;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,4 +31,18 @@ public class NewsController {
         NewsReponse newsReponse =newsService.createNews(newsRequest);
         return ResponseEntity.status(HttpStatus.OK).body(newsReponse);
     }
+
+    @GetMapping("/getnewsdetail/{id}")
+    public ResponseEntity<NewsReponse> getNewsDetail(@PathVariable UUID id) {
+        NewsReponse newsReponse = newsService.getNewsDetail(id);
+        return ResponseEntity.status(HttpStatus.OK).body(newsReponse);
+    }
+
+    @PutMapping("/updatenews/{id}")
+    public ResponseEntity<NewsReponse> updateNews(@RequestBody NewsRequest newsRequest, @PathVariable UUID id) {
+        NewsReponse newsReponse = newsService.updateNews(id, newsRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(newsReponse);
+    }
+
+
 }

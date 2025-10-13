@@ -11,4 +11,5 @@ public interface INewsService {
     public List<NewsReponse> getAllNews();
     NewsReponse getNewsDetail(UUID id);
     NewsReponse createNews(NewsRequest newsRequest);
+    NewsReponse updateNews(UUID newsId, NewsRequest newsRequest);
 }
