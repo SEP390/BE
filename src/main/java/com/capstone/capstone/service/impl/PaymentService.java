@@ -9,6 +9,7 @@ import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.mapper.PaymentMapper;
+import com.capstone.capstone.repository.ElectricWaterBillRepository;
 import com.capstone.capstone.repository.PaymentRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.AuthenUtil;
@@ -34,8 +35,7 @@ public class PaymentService {
     private final SlotService slotService;
     private final PaymentMapper paymentMapper;
     private final UserRepository userRepository;
-    private final SemesterService semesterService;
-    private final ModelMapper modelMapper;
+    private final ElectricWaterBillRepository electricWaterBillRepository;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
@@ -83,6 +83,11 @@ public class PaymentService {
             SlotHistory slotHistory = payment.getSlotHistory();
             Slot slot = slotHistory.getSlot();
             slotService.lockToUnavailable(slot);
+        }
+        if (payment.getType() == PaymentType.ELECTRIC_WATER) {
+            ElectricWaterBill bill = payment.getElectricWaterBill();
+            bill.setStatus(PaymentStatus.SUCCESS);
+            electricWaterBillRepository.save(bill);
         }
     }
 

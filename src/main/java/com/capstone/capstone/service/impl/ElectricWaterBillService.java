@@ -79,21 +79,12 @@ public class ElectricWaterBillService {
         return modelMapper.map(roomBill, ElectricWaterRoomBillResponse.class);
     }
 
-    public ElectricWaterBillResponse getCurrent() {
+    public List<ElectricWaterBillResponse> getCurrent() {
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
-        CurrentSlotResponse currentSlot = bookingService.current();
-        if (currentSlot == null || currentSlot.getStatus() != StatusSlotEnum.UNAVAILABLE) {
-            throw new AppException("NO_BOOKING_FOUND");
-        }
-        Room room = new Room();
-        room.setId(currentSlot.getRoom().getId());
-        ElectricWaterRoomBill roomBill = electricWaterRoomBillRepository.findByRoom(room);
-        if (roomBill == null) return null;
         ElectricWaterBill example = new ElectricWaterBill();
-        example.setRoomBill(roomBill);
         example.setUser(user);
-        ElectricWaterBill bill = electricWaterBillRepository.findOne(Example.of(example)).orElse(null);
-        return modelMapper.map(bill, ElectricWaterBillResponse.class);
+        List<ElectricWaterBill> bills = electricWaterBillRepository.findAll(Example.of(example));
+        return bills.stream().map(bill -> modelMapper.map(bill, ElectricWaterBillResponse.class)).toList();
     }
 
     public String getBillPayment(UUID id) {

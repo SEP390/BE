@@ -1,5 +1,6 @@
 package com.capstone.capstone.entity;
 
+import com.capstone.capstone.dto.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,6 +24,9 @@ public class ElectricWaterBill extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_bill_id")
     private ElectricWaterRoomBill roomBill;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
 
     @OneToMany
     private List<Payment> payment;
