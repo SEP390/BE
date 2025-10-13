@@ -28,7 +28,7 @@ public class BookingController {
     }
 
     @GetMapping("/api/booking/current")
-    public BaseResponse<BookingHistoryResponse> current() {
+    public BaseResponse<?> current() {
         return new BaseResponse<>(200, "success", bookingService.current());
     }
 

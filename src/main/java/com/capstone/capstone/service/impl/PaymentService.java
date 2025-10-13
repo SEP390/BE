@@ -14,6 +14,7 @@ import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.AuthenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,26 +35,32 @@ public class PaymentService {
     private final PaymentMapper paymentMapper;
     private final UserRepository userRepository;
     private final SemesterService semesterService;
+    private final ModelMapper modelMapper;
 
-    /**
-     * Create payment for slot
-     */
-    public Payment createForSlot(User user, SlotHistory slotHistory) {
-        long price = slotHistory.getPrice();
-        LocalDateTime createDate = LocalDateTime.now();
-        PaymentStatus status =  PaymentStatus.PENDING;
-        PaymentType type = PaymentType.BOOKING;
+    public Payment create(Payment payment) {
+        return paymentRepository.save(payment);
+    }
 
-        Payment payment = new Payment();
-        payment.setStatus(status);
-        payment.setUser(user);
-        payment.setPrice(price);
-        payment.setCreateDate(createDate);
-        payment.setSlotHistory(slotHistory);
-        payment.setType(type);
-        payment = paymentRepository.save(payment);
+    public Payment create(SlotHistory slotHistory) {
+        return create(Payment.builder()
+                .type(PaymentType.BOOKING)
+                .status(PaymentStatus.PENDING)
+                .createDate(LocalDateTime.now())
+                .price(slotHistory.getPrice())
+                .slotHistory(slotHistory)
+                .user(slotHistory.getUser())
+                .build());
+    }
 
-        return payment;
+    public Payment create(ElectricWaterBill bill) {
+        return create(Payment.builder()
+                .type(PaymentType.ELECTRIC_WATER)
+                .status(PaymentStatus.PENDING)
+                .createDate(LocalDateTime.now())
+                .price(bill.getPrice())
+                .electricWaterBill(bill)
+                .user(bill.getUser())
+                .build());
     }
 
     /**
@@ -67,46 +74,53 @@ public class PaymentService {
         return paymentRepository.findById(id).orElseThrow();
     }
 
+    public void handleSuccess(Payment payment) {
+        payment.setStatus(PaymentStatus.SUCCESS);
+        payment = paymentRepository.save(payment);
+
+        // success, change slot status to unavailable
+        if (payment.getType() == PaymentType.BOOKING) {
+            SlotHistory slotHistory = payment.getSlotHistory();
+            Slot slot = slotHistory.getSlot();
+            slotService.lockToUnavailable(slot);
+        }
+    }
+
+    public void handleFail(Payment payment) {
+        payment.setStatus(PaymentStatus.CANCEL);
+        payment = paymentRepository.save(payment);
+
+        if (payment.getType() == PaymentType.BOOKING) {
+            SlotHistory slotHistory = payment.getSlotHistory();
+            Slot slot = slotHistory.getSlot();
+            slotService.unlock(slot);
+        }
+    }
+
+    public Payment handle(UUID paymentId, VNPayStatus status) {
+        Payment payment = getById(paymentId);
+        // invalid payment
+        if (payment == null) {
+            throw new AppException("PAYMENT_NOT_FOUND", paymentId);
+        }
+        // payment success
+        if (payment.getStatus() == PaymentStatus.PENDING && status == VNPayStatus.SUCCESS) {
+            handleSuccess(payment);
+        }
+        // payment fail
+        if (payment.getStatus() == PaymentStatus.PENDING && status != VNPayStatus.SUCCESS) {
+            handleFail(payment);
+        }
+        return payment;
+    }
+
     @Transactional
-    public PaymentVerifyResponse verify(HttpServletRequest request, User user) {
+    public PaymentVerifyResponse verify(HttpServletRequest request) {
         // vnpay verify hash
         var result = vNPayService.verify(request);
 
-        Payment payment = getById(result.getId());
+        Payment payment = handle(result.getId(), result.getStatus());
 
-        // invalid payment
-        if (payment == null) {
-            throw new AppException("PAYMENT_NOT_FOUND", result.getId());
-        }
-
-        SlotHistory slotHistory = payment.getSlotHistory();
-        Slot slot = slotHistory.getSlot();
-
-        // unauthorized
-        if (!payment.getUser().getId().equals(user.getId())) {
-            throw new AppException("UNAUTHORIZED");
-        }
-
-        // payment success
-        if (payment.getStatus() == PaymentStatus.PENDING && result.getStatus() == VNPayStatus.SUCCESS) {
-            payment.setStatus(PaymentStatus.SUCCESS);
-            payment = paymentRepository.save(payment);
-
-            // success, change slot status to unavailable
-            if (payment.getType() == PaymentType.BOOKING) {
-                slotService.lockToUnavailable(slot);
-            }
-        }
-
-        // payment fail
-        if (payment.getStatus() == PaymentStatus.PENDING && result.getStatus() != VNPayStatus.SUCCESS) {
-            payment.setStatus(PaymentStatus.CANCEL);
-            payment = paymentRepository.save(payment);
-
-            if (payment.getType() == PaymentType.BOOKING) {
-                slotService.unlock(slot);
-            }
-        }
         return PaymentVerifyResponse.builder()
                 .status(result.getStatus())
                 .price(payment.getPrice())
@@ -130,9 +144,13 @@ public class PaymentService {
         return paymentRepository.findAll(Example.of(example), pageable).map(paymentMapper::toPaymentResponse);
     }
 
-    public BookingHistoryResponse currentBooking() {
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
-        Semester semester = semesterService.getNextSemester();
-        return paymentMapper.toBookingHistoryResponse(paymentRepository.findCurrentBooking(user, semester));
+    public Payment latest(User user, Slot slot) {
+        Payment example = new Payment();
+        example.setUser(user);
+        example.setType(PaymentType.BOOKING);
+        SlotHistory slotHistoryExample = new SlotHistory();
+        slotHistoryExample.setSlot(slot);
+        example.setSlotHistory(slotHistoryExample);
+        return paymentRepository.findOne(Example.of(example)).orElse(null);
     }
 }

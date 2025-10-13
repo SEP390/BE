@@ -19,9 +19,8 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping("/api/payment/verify")
-    public BaseResponse<PaymentVerifyResponse> verify(HttpServletRequest request, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        return new BaseResponse<>(200, "success", paymentService.verify(request, user));
+    public BaseResponse<PaymentVerifyResponse> verify(HttpServletRequest request) {
+        return new BaseResponse<>(200, "success", paymentService.verify(request));
     }
 
     @GetMapping("/api/payment/history")

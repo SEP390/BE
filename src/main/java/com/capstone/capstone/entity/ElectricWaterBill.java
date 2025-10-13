@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @Builder
 public class ElectricWaterBill extends BaseEntity {
-    private long price;
+    private Long price;
     private LocalDateTime createDate;
 
     @ManyToOne

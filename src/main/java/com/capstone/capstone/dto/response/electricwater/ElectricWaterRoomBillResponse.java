@@ -10,4 +10,11 @@ public class ElectricWaterRoomBillResponse {
     private Long price;
     private Integer kw;
     private Integer m3;
+    private SemesterDto semester;
+
+    @Data
+    public static class SemesterDto {
+        private String name;
+        private UUID id;
+    }
 }

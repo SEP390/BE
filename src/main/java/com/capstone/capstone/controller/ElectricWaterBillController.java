@@ -20,6 +20,16 @@ public class ElectricWaterBillController {
 
     @GetMapping("/api/electric-water-room/{id}")
     public BaseResponse<?> getRoomBill(@PathVariable UUID id) {
-        return new BaseResponse<>(200, "SUCCESS", electricWaterBillService.getByRoomId(id));
+        return new BaseResponse<>(200, "success", electricWaterBillService.getByRoomId(id));
+    }
+
+    @GetMapping("/api/electric-water")
+    public BaseResponse<?> getBill() {
+        return new BaseResponse<>(200, "success", electricWaterBillService.getCurrent());
+    }
+
+    @GetMapping("/api/electric-water/{id}")
+    public BaseResponse<?> getBillPayment(@PathVariable UUID id) {
+        return new BaseResponse<>(200, "success", electricWaterBillService.getBillPayment(id));
     }
 }

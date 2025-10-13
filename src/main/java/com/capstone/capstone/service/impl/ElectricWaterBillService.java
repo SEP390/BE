@@ -1,18 +1,26 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.PaymentStatus;
+import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.electricwater.ElectricWaterBillRequest;
+import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
+import com.capstone.capstone.dto.response.booking.CurrentSlotResponse;
+import com.capstone.capstone.dto.response.electricwater.ElectricWaterBillResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterRoomBillResponse;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.ElectricWaterBillRepository;
 import com.capstone.capstone.repository.ElectricWaterRoomBillRepository;
 import com.capstone.capstone.repository.RoomRepository;
+import com.capstone.capstone.repository.UserRepository;
+import com.capstone.capstone.util.AuthenUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -23,6 +31,10 @@ public class ElectricWaterBillService {
     private final ElectricWaterBillRepository electricWaterBillRepository;
     private final ModelMapper modelMapper;
     private final SemesterService semesterService;
+    private final PaymentService paymentService;
+    private final UserRepository userRepository;
+    private final SlotService slotService;
+    private final BookingService bookingService;
 
     public ElectricWaterRoomBillResponse create(ElectricWaterBillRequest request) {
         Room room = roomRepository.getReferenceById(request.getRoomId());
@@ -65,5 +77,28 @@ public class ElectricWaterBillService {
         ElectricWaterRoomBill roomBill = electricWaterRoomBillRepository.findOne(Example.of(example)).orElse(null);
         if (roomBill == null) return null;
         return modelMapper.map(roomBill, ElectricWaterRoomBillResponse.class);
+    }
+
+    public ElectricWaterBillResponse getCurrent() {
+        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        CurrentSlotResponse currentSlot = bookingService.current();
+        if (currentSlot == null || currentSlot.getStatus() != StatusSlotEnum.UNAVAILABLE) {
+            throw new AppException("NO_BOOKING_FOUND");
+        }
+        Room room = new Room();
+        room.setId(currentSlot.getRoom().getId());
+        ElectricWaterRoomBill roomBill = electricWaterRoomBillRepository.findByRoom(room);
+        if (roomBill == null) return null;
+        ElectricWaterBill example = new ElectricWaterBill();
+        example.setRoomBill(roomBill);
+        example.setUser(user);
+        ElectricWaterBill bill = electricWaterBillRepository.findOne(Example.of(example)).orElse(null);
+        return modelMapper.map(bill, ElectricWaterBillResponse.class);
+    }
+
+    public String getBillPayment(UUID id) {
+        ElectricWaterBill bill =  electricWaterBillRepository.findById(id).orElseThrow();
+        Payment payment = paymentService.create(bill);
+        return paymentService.createPaymentUrl(payment);
     }
 }
