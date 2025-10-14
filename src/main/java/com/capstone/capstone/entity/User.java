@@ -2,10 +2,7 @@ package com.capstone.capstone.entity;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.RoleEnum;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,22 +17,24 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@Builder
 public class User extends BaseEntity implements UserDetails {
+
     private String username;
     private String password;
     private String email;
     private Date dob;
+    private String numberphone;
+
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
 
     @OneToMany(mappedBy = "user")
-    private List<SurveyQuetionSelected> surveyQuestionSelected;
+    private List<SurveyQuetionSelected> surveyQuetionSelected;
 
     @OneToMany(mappedBy = "user")
-    private List<Request> requests;
+    private List<News> news;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
