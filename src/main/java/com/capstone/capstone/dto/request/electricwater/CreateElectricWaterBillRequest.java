@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class ElectricWaterBillRequest {
+public class CreateElectricWaterBillRequest {
     private UUID roomId;
     private long price;
     private int kw;

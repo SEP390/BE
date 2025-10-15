@@ -1,6 +1,6 @@
 package com.capstone.capstone.controller;
 
-import com.capstone.capstone.dto.request.electricwater.ElectricWaterBillRequest;
+import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterBillRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.service.impl.ElectricWaterBillService;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ public class ElectricWaterBillController {
     private final ElectricWaterBillService electricWaterBillService;
 
     @PostMapping("/api/electric-water-room")
-    public BaseResponse<?> createRoomBill(@RequestBody ElectricWaterBillRequest request) {
+    public BaseResponse<?> createRoomBill(@RequestBody CreateElectricWaterBillRequest request) {
         return new BaseResponse<>(200, "success", electricWaterBillService.create(request));
     }
 

@@ -1,10 +1,6 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.enums.PaymentStatus;
-import com.capstone.capstone.dto.enums.StatusSlotEnum;
-import com.capstone.capstone.dto.request.electricwater.ElectricWaterBillRequest;
-import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
-import com.capstone.capstone.dto.response.booking.CurrentSlotResponse;
+import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterBillRequest;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterBillResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterRoomBillResponse;
 import com.capstone.capstone.entity.*;
@@ -34,7 +30,7 @@ public class ElectricWaterBillService {
     private final PaymentService paymentService;
     private final UserRepository userRepository;
 
-    public ElectricWaterRoomBillResponse create(ElectricWaterBillRequest request) {
+    public ElectricWaterRoomBillResponse create(CreateElectricWaterBillRequest request) {
         Room room = roomRepository.getReferenceById(request.getRoomId());
         Semester semester = semesterService.getCurrent();
         List<User> users = roomRepository.findUsers(room);
