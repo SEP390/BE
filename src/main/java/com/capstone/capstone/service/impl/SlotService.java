@@ -21,7 +21,6 @@ public class SlotService {
         return slotRepository.findById(id).orElse(null);
     }
 
-    @Transactional
     public void lock(Slot slot, User user) {
         if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new AppException("SLOT_UNAVAILABLE", slot.getId());
         slot.setStatus(StatusSlotEnum.LOCK);

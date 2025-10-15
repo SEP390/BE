@@ -10,6 +10,7 @@ import com.capstone.capstone.service.impl.BookingService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +34,7 @@ public class BookingController {
     }
 
     @GetMapping("/api/booking/history")
-    public BaseResponse<Page<BookingHistoryResponse>> history(@RequestParam(required = false) PaymentStatus status, @RequestParam(defaultValue = "0") int page) {
-        return new BaseResponse<>(200, "success", bookingService.history(status, page));
+    public BaseResponse<Page<BookingHistoryResponse>> history(@RequestParam(required = false) List<PaymentStatus> status, Pageable pageable) {
+        return new BaseResponse<>(200, "success", bookingService.history(status, pageable));
     }
 }

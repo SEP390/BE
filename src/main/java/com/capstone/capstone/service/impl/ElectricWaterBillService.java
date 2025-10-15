@@ -33,8 +33,6 @@ public class ElectricWaterBillService {
     private final SemesterService semesterService;
     private final PaymentService paymentService;
     private final UserRepository userRepository;
-    private final SlotService slotService;
-    private final BookingService bookingService;
 
     public ElectricWaterRoomBillResponse create(ElectricWaterBillRequest request) {
         Room room = roomRepository.getReferenceById(request.getRoomId());

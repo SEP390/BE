@@ -13,18 +13,21 @@ import com.capstone.capstone.repository.ElectricWaterBillRepository;
 import com.capstone.capstone.repository.PaymentRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.AuthenUtil;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.domain.jaxb.SpringDataJaxb;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -132,21 +135,26 @@ public class PaymentService {
                 .build();
     }
 
-    public Page<BookingHistoryResponse> bookingHistory(User user, PaymentStatus status, int page) {
-        Pageable pageable = PageRequest.of(page, 5);
-        Payment example = new Payment();
-        example.setStatus(status);
-        example.setUser(user);
-        example.setType(PaymentType.BOOKING);
-        return paymentRepository.findAll(Example.of(example), pageable).map(paymentMapper::toBookingHistoryResponse);
+    public Page<BookingHistoryResponse> bookingHistory(User user, List<PaymentStatus> status, Pageable pageable) {
+        Sort validSort = Sort.by(Optional.ofNullable(pageable.getSort().getOrderFor("createDate"))
+                .orElse(Sort.Order.desc("createDate")));
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), 5, validSort);
+        return paymentRepository.findAll(Specification.allOf(
+                (root, query, cb) -> cb.equal(root.get("user"), user),
+                (root, query, cb) -> cb.equal(root.get("type"), PaymentType.BOOKING),
+                status != null ? (root, query, cb) -> root.get("status").in(status) : Specification.unrestricted()
+        ), validPageable).map(paymentMapper::toBookingHistoryResponse);
     }
 
-    public Page<PaymentResponse> history(int page) {
-        Pageable pageable = PageRequest.of(page, 5);
+    public PagedModel<PaymentResponse> history(List<PaymentStatus> status, Pageable pageable) {
+        Sort validSort = Sort.by(Optional.ofNullable(pageable.getSort().getOrderFor("createDate"))
+                .orElse(Sort.Order.desc("createDate")));
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), 5, validSort);
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
-        Payment example = new Payment();
-        example.setUser(user);
-        return paymentRepository.findAll(Example.of(example), pageable).map(paymentMapper::toPaymentResponse);
+        return new PagedModel<>(paymentRepository.findAll(Specification.allOf(
+                (root, query, cb) -> cb.equal(root.get("user"), user),
+                status != null ? (root, query, cb) -> root.get("status").in(status) : Specification.unrestricted()
+        ), validPageable).map(paymentMapper::toPaymentResponse));
     }
 
     public Payment latest(User user, Slot slot) {

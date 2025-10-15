@@ -13,10 +13,12 @@ import com.capstone.capstone.util.AuthenUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -28,6 +30,7 @@ public class BookingService {
     private final SlotHistoryService slotHistoryService;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final RoomPricingService roomPricingService;
 
     @Transactional
     public CreateBookingResponse create(CreateBookingRequest request) {
@@ -59,10 +62,10 @@ public class BookingService {
         return new CreateBookingResponse(paymentUrl);
     }
 
-    public Page<BookingHistoryResponse> history(PaymentStatus status, int page) {
+    public Page<BookingHistoryResponse> history(List<PaymentStatus> status, Pageable pageable) {
         User user = new User();
         user.setId(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
-        return paymentService.bookingHistory(user, status, page);
+        return paymentService.bookingHistory(user, status, pageable);
     }
 
     @Transactional
@@ -72,8 +75,10 @@ public class BookingService {
         if (currentSlot == null) return null;
         Payment payment = paymentService.latest(user, currentSlot);
         var res = modelMapper.map(currentSlot, CurrentSlotResponse.class);
-        res.setSemester(modelMapper.map(payment.getSlotHistory().getSemester(), CurrentSlotResponse.SemesterDto.class));
-        res.setPrice(payment.getSlotHistory().getPrice());
+        if (payment != null) {
+            res.setSemester(modelMapper.map(payment.getSlotHistory().getSemester(), CurrentSlotResponse.SemesterDto.class));
+        }
+        res.setPrice(roomPricingService.getPriceOfSlot(currentSlot));
         return res;
     }
 }

@@ -25,7 +25,7 @@ public class Room extends BaseEntity {
     @OneToMany(mappedBy = "room")
     private List<Slot> slots;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dorm_id")
     @JsonIgnore
     private Dorm dorm;
