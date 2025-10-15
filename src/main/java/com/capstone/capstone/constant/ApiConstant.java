@@ -27,6 +27,7 @@ public class ApiConstant {
     public static class REQUEST {
         public static final String REQUEST = API + "/requests";
         public static final String CREATE = "/create-request";
-
+        public static final String UPDATE = "requests/{id}";
+        public static final String GET_BY_ID = "requests/{id}";
     }
 }

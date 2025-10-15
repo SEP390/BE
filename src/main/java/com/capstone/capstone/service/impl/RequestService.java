@@ -2,7 +2,10 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.RequestStatusEnum;
 import com.capstone.capstone.dto.request.request.CreateRequestRequest;
+import com.capstone.capstone.dto.request.request.UpdateRequestRequest;
 import com.capstone.capstone.dto.response.request.CreateRequestResponse;
+import com.capstone.capstone.dto.response.request.GetRequestByIdResponse;
+import com.capstone.capstone.dto.response.request.UpdateRequestResponse;
 import com.capstone.capstone.entity.Request;
 import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.entity.User;
@@ -49,5 +52,31 @@ public class RequestService implements IRequestService {
         createRequestResponse.setCreateTime(newRequest.getCreateTime());
         createRequestResponse.setExecuteTime(newRequest.getExecuteTime());
         return createRequestResponse;
+    }
+
+    @Override
+    public UpdateRequestResponse updateRequest(UpdateRequestRequest request, UUID id) {
+        Request currentRequest = requestRepository.findById(id).orElseThrow(() -> new NotFoundException("Request not found"));
+        currentRequest.setResponseMessage(request.getResponseMessage());
+        currentRequest.setRequestStatus(request.getRequestStatus());
+        requestRepository.save(currentRequest);
+        UpdateRequestResponse updateRequestResponse = new UpdateRequestResponse();
+        updateRequestResponse.setRequestStatus(request.getRequestStatus());
+        updateRequestResponse.setResponseMessage(request.getResponseMessage());
+        return updateRequestResponse;
+    }
+
+    @Override
+    public GetRequestByIdResponse getRequestById(UUID id) {
+        Request currentRequest = requestRepository.findById(id).orElseThrow(() -> new NotFoundException("Request not found"));
+        GetRequestByIdResponse getRequestByIdResponse = new GetRequestByIdResponse();
+        getRequestByIdResponse.setRequestType(currentRequest.getRequestType());
+        getRequestByIdResponse.setResponseMessage(currentRequest.getResponseMessage());
+        getRequestByIdResponse.setContent(currentRequest.getContent());
+        getRequestByIdResponse.setCreateTime(currentRequest.getCreateTime());
+        getRequestByIdResponse.setExecuteTime(currentRequest.getExecuteTime());
+        getRequestByIdResponse.setResponseMessage(currentRequest.getResponseMessage());
+        getRequestByIdResponse.setSemester(currentRequest.getSemester());
+        return getRequestByIdResponse;
     }
 }
