@@ -34,3 +34,7 @@ Content-Type: application/json
   "startDate": "2026-01-01",
   "endDate": "2026-04-01"
 }
+
+###
+GET http://localhost:8080/api/rooms?totalSlot=4
+Authorization: Bearer {{token}}

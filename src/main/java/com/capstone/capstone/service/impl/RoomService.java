@@ -9,7 +9,11 @@ import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.AuthenUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedModel;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +30,7 @@ public class RoomService {
     private final UserRepository userRepository;
     private final SurveyQuestionRepository surveyQuestionRepository;
     private final MatchingRepository matchingRepository;
+    private final DormRepository dormRepository;
 
     @Transactional
     public List<RoomMatchingResponse> getRoomMatching(User user) {
@@ -101,5 +106,18 @@ public class RoomService {
             room.setStatus(StatusRoomEnum.AVAILABLE);
         }
         roomRepository.save(room);
+    }
+
+    public PagedModel<RoomResponse> get(@Nullable UUID dormId, Integer floor, Integer totalSlot, Pageable pageable) {
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), 5);
+
+        return new PagedModel<>(roomRepository.findAll(
+                Specification.allOf(
+                        dormId != null ? (root, query, cb) -> cb.equal(root.get("dorm").get("id"), dormId) : Specification.unrestricted(),
+                        floor != null ? (root, query, cb) -> cb.equal(root.get("floor"), floor) : Specification.unrestricted(),
+                        totalSlot != null ? (root, query, cb) -> cb.equal(root.get("totalSlot"), totalSlot) : Specification.unrestricted()
+                ),
+                validPageable
+        ).map(room -> modelMapper.map(room, RoomResponse.class)));
     }
 }
