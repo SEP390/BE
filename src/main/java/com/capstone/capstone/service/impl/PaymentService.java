@@ -15,10 +15,7 @@ import com.capstone.capstone.util.AuthenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
@@ -39,6 +36,7 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final ElectricWaterBillRepository electricWaterBillRepository;
     private final ModelMapper modelMapper;
+    private final SemesterService semesterService;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
@@ -191,21 +189,5 @@ public class PaymentService {
                 (root, query, cb) -> cb.equal(root.get("user"), user),
                 status != null ? (root, query, cb) -> root.get("status").in(status) : Specification.unrestricted()
         ), validPageable).map(p -> modelMapper.map(p, PaymentResponse.class)));
-    }
-
-    /**
-     * Get latest booking of user for slot
-     * @param user user
-     * @param slot slot
-     * @return latest booking of user for slot
-     */
-    public Payment getLatestBooking(User user, Slot slot) {
-        Payment example = new Payment();
-        example.setUser(user);
-        example.setType(PaymentType.BOOKING);
-        SlotHistory slotHistoryExample = new SlotHistory();
-        slotHistoryExample.setSlot(slot);
-        example.setSlotHistory(slotHistoryExample);
-        return paymentRepository.findOne(Example.of(example)).orElse(null);
     }
 }

@@ -73,11 +73,7 @@ public class BookingService {
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         Slot currentSlot = slotService.getByUser(user);
         if (currentSlot == null) return null;
-        Payment payment = paymentService.getLatestBooking(user, currentSlot);
         var res = modelMapper.map(currentSlot, CurrentSlotResponse.class);
-        if (payment != null) {
-            res.setSemester(modelMapper.map(payment.getSlotHistory().getSemester(), CurrentSlotResponse.SemesterDto.class));
-        }
         res.setPrice(roomPricingService.getPriceOfSlot(currentSlot));
         return res;
     }
