@@ -23,7 +23,6 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
     private String email;
     private Date dob;
-    private String numberphone;
 
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
