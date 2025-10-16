@@ -1,6 +1,6 @@
 package com.capstone.capstone.dto.response.booking;
 
-import com.capstone.capstone.dto.enums.StatusSlotHistoryEnum;
+import com.capstone.capstone.dto.enums.PaymentStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class SlotHistoryResponse {
+public class BookingHistoryResponse {
     private UUID semesterId;
     private String semesterName;
     private UUID slotId;
@@ -19,6 +19,7 @@ public class SlotHistoryResponse {
     private String dormName;
     private int floor;
     private UUID dormId;
-    private LocalDateTime createdDate;
-    private StatusSlotHistoryEnum status;
+    private long price;
+    private LocalDateTime createDate;
+    private PaymentStatus status;
 }

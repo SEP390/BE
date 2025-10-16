@@ -4,6 +4,7 @@ import com.capstone.capstone.dto.response.room.RoomPricingRequest;
 import com.capstone.capstone.dto.response.room.RoomPricingResponse;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.RoomPricing;
+import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.repository.RoomPricingRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,10 @@ public class RoomPricingService {
 
     public long getPriceOfRoom(Room room) {
         return roomPricingRepository.findByRoom(room).getPrice();
+    }
+
+    public long getPriceOfSlot(Slot slot) {
+        return roomPricingRepository.findBySlot(slot).getPrice();
     }
 
     public RoomPricingResponse create(RoomPricingRequest request) {

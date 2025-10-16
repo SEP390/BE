@@ -1,5 +1,5 @@
 package com.capstone.capstone.dto.enums;
 
-public enum InvoiceStatus {
+public enum PaymentStatus {
     PENDING, CANCEL, SUCCESS
 }

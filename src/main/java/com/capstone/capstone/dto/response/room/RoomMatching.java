@@ -3,15 +3,9 @@ package com.capstone.capstone.dto.response.room;
 import java.util.UUID;
 
 public interface RoomMatching {
-    UUID getId();
+    UUID getRoomId();
 
-    String getDormName();
+    Integer getUserCount();
 
-    int getFloor();
-
-    String getRoomNumber();
-
-    Double getMatching();
-
-    int getSlotAvailable();
+    Integer getSameOptionCount();
 }

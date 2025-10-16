@@ -2,49 +2,57 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
-import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
-import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
-import com.capstone.capstone.entity.Room;
-import com.capstone.capstone.entity.RoomPricing;
-import com.capstone.capstone.entity.Slot;
-import com.capstone.capstone.entity.User;
-import com.capstone.capstone.repository.RoomPricingRepository;
-import com.capstone.capstone.repository.RoomRepository;
+import com.capstone.capstone.dto.response.booking.UserMatching;
+import com.capstone.capstone.dto.response.room.*;
+import com.capstone.capstone.entity.*;
+import com.capstone.capstone.repository.*;
+import com.capstone.capstone.util.AuthenUtil;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class RoomService {
     private final RoomRepository roomRepository;
     private final RoomPricingRepository roomPricingRepository;
+    private final ModelMapper modelMapper;
+    private final RoomPricingService roomPricingService;
+    private final UserRepository userRepository;
+    private final SurveyQuestionRepository surveyQuestionRepository;
+    private final MatchingRepository matchingRepository;
 
+    @Transactional
     public List<RoomMatchingResponse> getRoomMatching(User user) {
-        var rooms = roomRepository.findAvailableForGender(user.getGender());
-        final int totalQuestion = roomRepository.totalQuestion();
-        final Map<UUID, Double> matching = new HashMap<>();
-        rooms.forEach(room -> {
-            var users = roomRepository.findUsers(room);
-            matching.put(room.getId(), users.stream().mapToDouble(u -> roomRepository.computeMatching(user, u, totalQuestion)).average().orElse(0.0));
-        });
-        Comparator<Room> comparator = Comparator.comparingDouble(o -> matching.get(o.getId()));
+        int ROOM_COUNT = 5;
+        final long totalQuestion = surveyQuestionRepository.count();
+        List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
+        final Map<UUID, Double> matching = matchingRepository.computeRoomMatching(user, rooms)
+                .stream()
+                .collect(Collectors.toMap(RoomMatching::getRoomId, m -> (double) m.getSameOptionCount() / m.getUserCount() / totalQuestion * 100));
+        Comparator<Room> comparator = Comparator.comparingDouble(o -> matching.getOrDefault(o.getId(), 0.0));
+        Map<Integer, Long> pricing = roomPricingService.getAll().stream().collect(Collectors.toMap(RoomPricingResponse::getTotalSlot, RoomPricingResponse::getPrice));
         rooms.sort(comparator.reversed());
-        return roomRepository.findDetails(rooms.subList(0, 5)).stream().map(room -> RoomMatchingResponse.builder()
+        return rooms.subList(0, ROOM_COUNT).stream().map(room -> RoomMatchingResponse.builder()
                 .id(room.getId())
                 .roomNumber(room.getRoomNumber())
-                .dormId(room.getDormId())
-                .dormName(room.getDormName())
+                .dormId(room.getDorm().getId())
+                .dormName(room.getDorm().getDormName())
                 .floor(room.getFloor())
-                .matching(matching.get(room.getId()))
+                .matching(matching.getOrDefault(room.getId(), 0.0))
                 .totalSlot(room.getTotalSlot())
-                .price(room.getPrice())
+                .price(pricing.get(room.getTotalSlot()))
                 .build()).toList();
     }
 
+    @Transactional
     public RoomDetailsResponse getRoomById(UUID id) {
-        Room room = roomRepository.fetchDormAndSlots(id);
+        Room room = roomRepository.findById(id).orElseThrow();
         RoomPricing pricing = roomPricingRepository.findByTotalSlot(room.getTotalSlot());
         return RoomDetailsResponse.builder()
                 .roomNumber(room.getRoomNumber())
@@ -62,8 +70,20 @@ public class RoomService {
                 .build();
     }
 
+    @Transactional
+    public List<RoommateResponse> getRoommates(UUID id) {
+        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        Room room = roomRepository.getReferenceById(id);
+        long totalQuestion = surveyQuestionRepository.count();
+        List<User> users = roomRepository.findUsers(room).stream().filter(u -> !u.getId().equals(user.getId())).collect(Collectors.toList());
+        Map<UUID, Double> matching = matchingRepository.computeUserMatching(user, users).stream().collect(Collectors.toMap(UserMatching::getId, m -> m.getSameOptionCount() / totalQuestion * 100));
+        return users
+                .stream()
+                .map(u -> modelMapper.map(u, RoommateResponse.class))
+                .peek(rm -> rm.setMatching(matching.getOrDefault(rm.getId(), 0.0))).toList();
+    }
+
     public boolean isFull(Room room) {
-        room = roomRepository.fetchSlots(room);
         var isFull = true;
         for (Slot slot : room.getSlots()) {
             if (slot.getStatus().equals(StatusSlotEnum.AVAILABLE)) {

@@ -28,8 +28,4 @@ public class Slot extends BaseEntity {
     @JoinColumn(name = "room_id")
     @JsonIgnore
     private Room room;
-    @ManyToOne
-    @JoinColumn(name = "invoice_id")
-    @JsonIgnore
-    private Invoice invoice;
 }

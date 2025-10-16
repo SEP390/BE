@@ -3,6 +3,7 @@ package com.capstone.capstone.controller;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
 import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
+import com.capstone.capstone.dto.response.room.RoommateResponse;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.service.impl.RoomService;
 import lombok.AllArgsConstructor;
@@ -30,5 +31,10 @@ public class RoomController {
     @GetMapping("/api/rooms/{id}")
     public ResponseEntity<BaseResponse<RoomDetailsResponse>> getRoomById(@PathVariable UUID id) {
         return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoomById(id)));
+    }
+
+    @GetMapping("/api/rooms/{id}/roommates")
+    public ResponseEntity<BaseResponse<List<RoommateResponse>>> getRoommates(@PathVariable UUID id) {
+        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoommates(id)));
     }
 }

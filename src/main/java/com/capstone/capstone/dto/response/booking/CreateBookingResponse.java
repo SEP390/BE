@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class SlotBookingResponse {
+public class CreateBookingResponse {
     private String paymentUrl;
 }

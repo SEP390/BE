@@ -1,7 +1,9 @@
 package com.capstone.capstone.repository;
 
+import com.capstone.capstone.dto.response.room.RoomDetails;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.RoomPricing;
+import com.capstone.capstone.entity.Slot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -19,4 +21,10 @@ public interface RoomPricingRepository extends JpaRepository<RoomPricing, UUID> 
         AND r = :room
     """)
     RoomPricing findByRoom(Room room);
+
+    @Query("""
+        FROM RoomPricing rp
+        JOIN Slot s ON s = :slot AND s.room.totalSlot = rp.totalSlot
+    """)
+    RoomPricing findBySlot(Slot slot);
 }

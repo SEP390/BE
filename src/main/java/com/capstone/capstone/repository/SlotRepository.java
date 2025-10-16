@@ -1,22 +1,11 @@
 package com.capstone.capstone.repository;
 
-import com.capstone.capstone.entity.Invoice;
-import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.Slot;
+import com.capstone.capstone.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface SlotRepository extends JpaRepository<Slot, UUID> {
-    @Query("""
-    FROM Slot s
-    JOIN FETCH s.room
-""")
-    Slot getSlotWithRoom(UUID id);
-
-    List<Slot> findByRoom(Room room);
-
-    Slot findByInvoice(Invoice invoice);
+    Slot findByUser(User user);
 }

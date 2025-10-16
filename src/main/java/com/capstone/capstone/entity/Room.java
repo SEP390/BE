@@ -17,15 +17,15 @@ import java.util.List;
 @Setter
 public class Room extends BaseEntity {
     private String roomNumber;
-    private int totalSlot;
-    private int floor;
+    private Integer totalSlot;
+    private Integer floor;
 
     @Enumerated(EnumType.STRING)
     private StatusRoomEnum status;
     @OneToMany(mappedBy = "room")
     private List<Slot> slots;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dorm_id")
     @JsonIgnore
     private Dorm dorm;
