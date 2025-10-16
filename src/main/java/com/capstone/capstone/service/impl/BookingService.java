@@ -1,23 +1,24 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.PaymentStatus;
-import com.capstone.capstone.dto.enums.PaymentType;
 import com.capstone.capstone.dto.request.booking.CreateBookingRequest;
-import com.capstone.capstone.dto.response.booking.CreateBookingResponse;
 import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
+import com.capstone.capstone.dto.response.booking.CreateBookingResponse;
 import com.capstone.capstone.dto.response.booking.CurrentSlotResponse;
-import com.capstone.capstone.entity.*;
+import com.capstone.capstone.entity.Payment;
+import com.capstone.capstone.entity.Slot;
+import com.capstone.capstone.entity.SlotHistory;
+import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
-import com.capstone.capstone.repository.*;
+import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.AuthenUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -62,10 +63,9 @@ public class BookingService {
         return new CreateBookingResponse(paymentUrl);
     }
 
-    public Page<BookingHistoryResponse> history(List<PaymentStatus> status, Pageable pageable) {
-        User user = new User();
-        user.setId(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
-        return paymentService.bookingHistory(user, status, pageable);
+    public PagedModel<BookingHistoryResponse> history(List<PaymentStatus> status, Pageable pageable) {
+        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        return paymentService.getBookingHistory(user, status, pageable);
     }
 
     @Transactional
@@ -73,7 +73,7 @@ public class BookingService {
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         Slot currentSlot = slotService.getByUser(user);
         if (currentSlot == null) return null;
-        Payment payment = paymentService.latest(user, currentSlot);
+        Payment payment = paymentService.getLatestBooking(user, currentSlot);
         var res = modelMapper.map(currentSlot, CurrentSlotResponse.class);
         if (payment != null) {
             res.setSemester(modelMapper.map(payment.getSlotHistory().getSemester(), CurrentSlotResponse.SemesterDto.class));

@@ -8,18 +8,43 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@Builder
 public class BookingHistoryResponse {
-    private UUID semesterId;
-    private String semesterName;
-    private UUID slotId;
-    private String slotName;
-    private String roomNumber;
-    private UUID roomId;
-    private String dormName;
-    private int floor;
-    private UUID dormId;
-    private long price;
+    private UUID id;
+    private SlotHistoryDto slotHistory;
+    private SemesterDto semester;
+    private Long price;
     private LocalDateTime createDate;
     private PaymentStatus status;
+
+    @Data
+    private static class SlotHistoryDto {
+        private SlotDto slot;
+    }
+
+    @Data
+    public static class SemesterDto {
+        private UUID id;
+        private String name;
+    }
+
+    @Data
+    public static class SlotDto {
+        private UUID id;
+        private String slotName;
+        private RoomDto room;
+    }
+
+    @Data
+    public static class RoomDto {
+        private UUID id;
+        private String roomNumber;
+        private DormDto dorm;
+        private Integer floor;
+    }
+
+    @Data
+    public static class DormDto {
+        private UUID id;
+        private String dormName;
+    }
 }

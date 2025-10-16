@@ -8,17 +8,17 @@ import com.capstone.capstone.dto.response.booking.PaymentVerifyResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
-import com.capstone.capstone.mapper.PaymentMapper;
 import com.capstone.capstone.repository.ElectricWaterBillRepository;
 import com.capstone.capstone.repository.PaymentRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.AuthenUtil;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.*;
-import org.springframework.data.domain.jaxb.SpringDataJaxb;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
@@ -36,14 +36,19 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final VNPayService vNPayService;
     private final SlotService slotService;
-    private final PaymentMapper paymentMapper;
     private final UserRepository userRepository;
     private final ElectricWaterBillRepository electricWaterBillRepository;
+    private final ModelMapper modelMapper;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
     }
 
+    /**
+     * Create payment for slot history
+     * @param slotHistory slot history
+     * @return payment
+     */
     public Payment create(SlotHistory slotHistory) {
         return create(Payment.builder()
                 .type(PaymentType.BOOKING)
@@ -55,6 +60,11 @@ public class PaymentService {
                 .build());
     }
 
+    /**
+     * Create payment for electric water bill
+     * @param bill electric water bill
+     * @return payment
+     */
     public Payment create(ElectricWaterBill bill) {
         return create(Payment.builder()
                 .type(PaymentType.ELECTRIC_WATER)
@@ -68,6 +78,8 @@ public class PaymentService {
 
     /**
      * Create payment url for invoice
+     * @param payment payment
+     * @return payment url
      */
     public String createPaymentUrl(Payment payment) {
         return vNPayService.createPaymentUrl(payment.getId(), payment.getCreateDate(), payment.getPrice());
@@ -77,6 +89,10 @@ public class PaymentService {
         return paymentRepository.findById(id).orElseThrow();
     }
 
+    /**
+     * Handle success status
+     * @param payment payment
+     */
     public void handleSuccess(Payment payment) {
         payment.setStatus(PaymentStatus.SUCCESS);
         payment = paymentRepository.save(payment);
@@ -87,6 +103,8 @@ public class PaymentService {
             Slot slot = slotHistory.getSlot();
             slotService.lockToUnavailable(slot);
         }
+
+        // change bill status to success
         if (payment.getType() == PaymentType.ELECTRIC_WATER) {
             ElectricWaterBill bill = payment.getElectricWaterBill();
             bill.setStatus(PaymentStatus.SUCCESS);
@@ -94,10 +112,15 @@ public class PaymentService {
         }
     }
 
+    /**
+     * Handle cancel status
+     * @param payment payment
+     */
     public void handleFail(Payment payment) {
         payment.setStatus(PaymentStatus.CANCEL);
         payment = paymentRepository.save(payment);
 
+        // unlock slot if fail
         if (payment.getType() == PaymentType.BOOKING) {
             SlotHistory slotHistory = payment.getSlotHistory();
             Slot slot = slotHistory.getSlot();
@@ -135,17 +158,30 @@ public class PaymentService {
                 .build();
     }
 
-    public Page<BookingHistoryResponse> bookingHistory(User user, List<PaymentStatus> status, Pageable pageable) {
+    /**
+     * Get booking history of user
+     * @param user user
+     * @param status status of payment
+     * @param pageable pageable
+     * @return history
+     */
+    public PagedModel<BookingHistoryResponse> getBookingHistory(User user, List<PaymentStatus> status, Pageable pageable) {
         Sort validSort = Sort.by(Optional.ofNullable(pageable.getSort().getOrderFor("createDate"))
                 .orElse(Sort.Order.desc("createDate")));
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), 5, validSort);
-        return paymentRepository.findAll(Specification.allOf(
+        return new PagedModel<>(paymentRepository.findAll(Specification.allOf(
                 (root, query, cb) -> cb.equal(root.get("user"), user),
                 (root, query, cb) -> cb.equal(root.get("type"), PaymentType.BOOKING),
                 status != null ? (root, query, cb) -> root.get("status").in(status) : Specification.unrestricted()
-        ), validPageable).map(paymentMapper::toBookingHistoryResponse);
+        ), validPageable).map(p -> modelMapper.map(p, BookingHistoryResponse.class)));
     }
 
+    /**
+     * Get payment history of current user
+     * @param status payment status
+     * @param pageable pageable
+     * @return payment history of current user
+     */
     public PagedModel<PaymentResponse> history(List<PaymentStatus> status, Pageable pageable) {
         Sort validSort = Sort.by(Optional.ofNullable(pageable.getSort().getOrderFor("createDate"))
                 .orElse(Sort.Order.desc("createDate")));
@@ -154,10 +190,16 @@ public class PaymentService {
         return new PagedModel<>(paymentRepository.findAll(Specification.allOf(
                 (root, query, cb) -> cb.equal(root.get("user"), user),
                 status != null ? (root, query, cb) -> root.get("status").in(status) : Specification.unrestricted()
-        ), validPageable).map(paymentMapper::toPaymentResponse));
+        ), validPageable).map(p -> modelMapper.map(p, PaymentResponse.class)));
     }
 
-    public Payment latest(User user, Slot slot) {
+    /**
+     * Get latest booking of user for slot
+     * @param user user
+     * @param slot slot
+     * @return latest booking of user for slot
+     */
+    public Payment getLatestBooking(User user, Slot slot) {
         Payment example = new Payment();
         example.setUser(user);
         example.setType(PaymentType.BOOKING);
