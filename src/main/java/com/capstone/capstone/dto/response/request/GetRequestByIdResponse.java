@@ -9,12 +9,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class GetRequestByIdResponse {
+    private UUID requestId;
     private String content;
     private LocalDateTime createTime;
     private LocalDateTime executeTime;

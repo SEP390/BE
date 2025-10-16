@@ -61,8 +61,9 @@ public class RequestService implements IRequestService {
         currentRequest.setRequestStatus(request.getRequestStatus());
         requestRepository.save(currentRequest);
         UpdateRequestResponse updateRequestResponse = new UpdateRequestResponse();
-        updateRequestResponse.setRequestStatus(request.getRequestStatus());
-        updateRequestResponse.setResponseMessage(request.getResponseMessage());
+        updateRequestResponse.setRequestId(currentRequest.getId());
+        updateRequestResponse.setRequestStatus(currentRequest.getRequestStatus());
+        updateRequestResponse.setResponseMessage(currentRequest.getResponseMessage());
         return updateRequestResponse;
     }
 
@@ -70,6 +71,7 @@ public class RequestService implements IRequestService {
     public GetRequestByIdResponse getRequestById(UUID id) {
         Request currentRequest = requestRepository.findById(id).orElseThrow(() -> new NotFoundException("Request not found"));
         GetRequestByIdResponse getRequestByIdResponse = new GetRequestByIdResponse();
+        getRequestByIdResponse.setRequestId(currentRequest.getId());
         getRequestByIdResponse.setRequestType(currentRequest.getRequestType());
         getRequestByIdResponse.setResponseMessage(currentRequest.getResponseMessage());
         getRequestByIdResponse.setContent(currentRequest.getContent());
