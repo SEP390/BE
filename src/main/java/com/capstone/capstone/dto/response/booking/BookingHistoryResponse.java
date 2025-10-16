@@ -11,7 +11,6 @@ import java.util.UUID;
 public class BookingHistoryResponse {
     private UUID id;
     private SlotHistoryDto slotHistory;
-    private SemesterDto semester;
     private Long price;
     private LocalDateTime createDate;
     private PaymentStatus status;
@@ -19,6 +18,7 @@ public class BookingHistoryResponse {
     @Data
     private static class SlotHistoryDto {
         private SlotDto slot;
+        private SemesterDto semester;
     }
 
     @Data
