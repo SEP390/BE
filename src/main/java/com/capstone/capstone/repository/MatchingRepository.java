@@ -16,7 +16,7 @@ public interface MatchingRepository extends Repository<Room, UUID> {
         u.id AS id,
         COUNT(sqs2) AS sameOptionCount
     FROM User u
-    JOIN u.surveyQuestionSelected sqs1
+    JOIN u.surveyQuetionSelected sqs1
     JOIN SurveyQuetionSelected sqs2 ON sqs2.user = :user AND sqs1.surveyOption = sqs2.surveyOption
     WHERE u IN :users
     GROUP BY u
@@ -31,7 +31,7 @@ public interface MatchingRepository extends Repository<Room, UUID> {
     FROM Room r
     JOIN r.slots s
     JOIN s.user u
-    JOIN u.surveyQuestionSelected sqs
+    JOIN u.surveyQuetionSelected sqs
     JOIN SurveyQuetionSelected sqs2 ON sqs2.user = :user AND sqs.surveyOption = sqs2.surveyOption
     WHERE r in :rooms
     GROUP BY r
