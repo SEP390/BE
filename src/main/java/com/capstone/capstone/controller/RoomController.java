@@ -43,8 +43,9 @@ public class RoomController {
             @RequestParam(required = false) UUID dormId,
             @RequestParam(required = false) Integer floor,
             @RequestParam(required = false) Integer totalSlot,
+            @RequestParam(required = false) String roomNumber,
             @PageableDefault Pageable pageable) {
-        return new BaseResponse<>(roomService.get(dormId, floor, totalSlot, pageable));
+        return new BaseResponse<>(roomService.get(dormId, floor, totalSlot, roomNumber, pageable));
     }
 
     @GetMapping("/api/rooms/current")
