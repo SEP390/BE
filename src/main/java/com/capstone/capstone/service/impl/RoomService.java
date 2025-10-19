@@ -8,10 +8,12 @@ import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.util.SortUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.lang.Nullable;
@@ -111,8 +113,9 @@ public class RoomService {
     }
 
     public PagedModel<RoomResponse> get(@Nullable UUID dormId, Integer floor, Integer totalSlot, Pageable pageable) {
-        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), 5);
-
+        int validPageSize = Math.min(pageable.getPageSize(), 100);
+        Sort validSort = SortUtil.getSort(pageable, "roomNumber");
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), validPageSize, validSort);
         return new PagedModel<>(roomRepository.findAll(
                 Specification.allOf(
                         dormId != null ? (root, query, cb) -> cb.equal(root.get("dorm").get("id"), dormId) : Specification.unrestricted(),

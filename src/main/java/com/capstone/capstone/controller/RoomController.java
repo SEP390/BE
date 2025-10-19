@@ -10,6 +10,7 @@ import com.capstone.capstone.service.impl.RoomService;
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -42,17 +43,17 @@ public class RoomController {
             @RequestParam(required = false) UUID dormId,
             @RequestParam(required = false) Integer floor,
             @RequestParam(required = false) Integer totalSlot,
-            Pageable pageable) {
+            @PageableDefault Pageable pageable) {
         return new BaseResponse<>(roomService.get(dormId, floor, totalSlot, pageable));
     }
 
     @GetMapping("/api/rooms/current")
     public BaseResponse<CurrentRoomResponse> current() {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.current());
+        return new BaseResponse<>(roomService.current());
     }
 
     @GetMapping("/api/rooms/{id}/roommates")
-    public ResponseEntity<BaseResponse<List<RoommateResponse>>> getRoommates(@PathVariable UUID id) {
-        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoommates(id)));
+    public BaseResponse<List<RoommateResponse>> getRoommates(@PathVariable UUID id) {
+        return new BaseResponse<>(roomService.getRoommates(id));
     }
 }
