@@ -1,4 +1,4 @@
-package com.capstone.capstone.dto.request.user;
+package com.capstone.capstone.dto.response.user;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
 import lombok.AllArgsConstructor;
@@ -8,14 +8,15 @@ import lombok.Setter;
 
 import java.util.Date;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-public class RegisterUserRequest {
+public class GetUserInformationResponse {
     private String username;
-    private String password;
     private String email;
     private Date dob;
+    private String StudentId;
     private GenderEnum gender;
+    private String slotName;
 }

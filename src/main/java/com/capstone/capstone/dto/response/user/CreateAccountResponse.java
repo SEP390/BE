@@ -11,7 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Getter
 @Setter
-public class RegisterUserResponse {
+public class CreateAccountResponse {
     private String email;
     private String username;
     private Date dob;
