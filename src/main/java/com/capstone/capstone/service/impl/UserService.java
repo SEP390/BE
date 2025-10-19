@@ -1,6 +1,5 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.user.CreateUserRequest;
 import com.capstone.capstone.dto.response.user.CreateAccountResponse;
 import com.capstone.capstone.dto.response.user.GetUserInformationResponse;
@@ -12,7 +11,6 @@ import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IUserService;
 import com.capstone.capstone.util.AuthenUtil;
 import lombok.RequiredArgsConstructor;
-import org.mapstruct.control.MappingControl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
