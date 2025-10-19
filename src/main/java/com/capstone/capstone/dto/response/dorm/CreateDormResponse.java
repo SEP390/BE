@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class DormResponse {
+public class CreateDormResponse {
     private UUID id;
     private String dormName;
     private Integer totalFloor;

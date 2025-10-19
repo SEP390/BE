@@ -3,8 +3,10 @@ package com.capstone.capstone.service.impl;
 import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.dorm.CreateDormRequest;
+import com.capstone.capstone.dto.response.dorm.GetDormResponse;
+import com.capstone.capstone.dto.response.dorm.ListDormResponse;
 import com.capstone.capstone.dto.response.dorm.BookableDormResponse;
-import com.capstone.capstone.dto.response.dorm.DormResponse;
+import com.capstone.capstone.dto.response.dorm.CreateDormResponse;
 import com.capstone.capstone.dto.response.room.RoomResponse;
 import com.capstone.capstone.entity.Dorm;
 import com.capstone.capstone.entity.Room;
@@ -42,7 +44,7 @@ public class DormService {
         return rooms.stream().map(r -> modelMapper.map(r, RoomResponse.class)).toList();
     }
 
-    public DormResponse create(CreateDormRequest request) {
+    public CreateDormResponse create(CreateDormRequest request) {
         Dorm dorm = dormRepository.save(modelMapper.map(request,Dorm.class));
         for (Room room : dorm.getRooms()) {
             List<Slot> slots = new ArrayList<>();
@@ -56,6 +58,14 @@ public class DormService {
             slots = slotRepository.saveAll(slots);
             room.setSlots(slots);
         }
-        return modelMapper.map(dorm, DormResponse.class);
+        return modelMapper.map(dorm, CreateDormResponse.class);
+    }
+
+    public List<ListDormResponse> getList() {
+        return dormRepository.findAll().stream().map(dorm -> modelMapper.map(dorm, ListDormResponse.class)).toList();
+    }
+
+    public GetDormResponse getResponse(UUID id) {
+        return modelMapper.map(dormRepository.findById(id), GetDormResponse.class);
     }
 }

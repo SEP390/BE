@@ -33,6 +33,16 @@ public class DormController {
         return new BaseResponse<>(HttpStatus.OK.value(), "success", dormService.getRooms(id));
     }
 
+    @GetMapping("/api/dorms")
+    public BaseResponse<?> getList() {
+        return new BaseResponse<>(dormService.getList());
+    }
+
+    @GetMapping("/api/dorms/{id}")
+    public BaseResponse<?> get(@PathVariable UUID id) {
+        return new BaseResponse<>(dormService.getResponse(id));
+    }
+
     @PostMapping("/api/dorms")
     public BaseResponse<?> create(CreateDormRequest request) {
         return new BaseResponse<>(dormService.create(request));
