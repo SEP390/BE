@@ -1,8 +1,10 @@
 package com.capstone.capstone.service.interfaces;
 
-import com.capstone.capstone.dto.request.user.RegisterUserRequest;
-import com.capstone.capstone.dto.response.user.RegisterUserResponse;
+import com.capstone.capstone.dto.request.user.CreateUserRequest;
+import com.capstone.capstone.dto.response.user.CreateAccountResponse;
+import com.capstone.capstone.dto.response.user.GetUserInformationResponse;
 
 public interface IUserService {
-    RegisterUserResponse register(RegisterUserRequest registerUserRequest);
+    CreateAccountResponse createAccount(CreateUserRequest createUserRequest);
+    GetUserInformationResponse getCurrentUserInformation();
 }

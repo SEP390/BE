@@ -1,6 +1,7 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.response.BaseResponse;
+import com.capstone.capstone.dto.response.room.CurrentRoomResponse;
 import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
 import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
 import com.capstone.capstone.dto.response.room.RoommateResponse;
@@ -43,6 +44,9 @@ public class RoomController {
             @RequestParam(required = false) Integer totalSlot,
             Pageable pageable) {
         return new BaseResponse<>(roomService.get(dormId, floor, totalSlot, pageable));
+    @GetMapping("/api/rooms/current")
+    public BaseResponse<CurrentRoomResponse> current() {
+        return new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.current());
     }
 
     @GetMapping("/api/rooms/{id}/roommates")

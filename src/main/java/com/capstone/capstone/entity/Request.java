@@ -21,6 +21,7 @@ public class Request extends BaseEntity {
     private String responseMessage;
     private LocalDateTime executeTime;
     private LocalDateTime createTime;
+    private String roomNumber;
     @Enumerated(EnumType.STRING)
     private RequestTypeEnum requestType;
     @Enumerated(EnumType.STRING)

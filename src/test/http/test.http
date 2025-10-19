@@ -8,7 +8,6 @@ Content-Type: application/json
 
 > {%
  client.global.set("token", response.body.data.token)
- client.log(token)
  %}
 
 ###
@@ -37,4 +36,5 @@ Content-Type: application/json
 
 ###
 GET http://localhost:8080/api/rooms?totalSlot=4
+GET http://localhost:8080/api/rooms/current
 Authorization: Bearer {{token}}

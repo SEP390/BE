@@ -5,6 +5,7 @@ import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
 import com.capstone.capstone.entity.*;
+import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.AuthenUtil;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ public class RoomService {
     private final SurveyQuestionRepository surveyQuestionRepository;
     private final MatchingRepository matchingRepository;
     private final DormRepository dormRepository;
+    private final SlotRepository slotRepository;
 
     @Transactional
     public List<RoomMatchingResponse> getRoomMatching(User user) {
@@ -119,5 +121,12 @@ public class RoomService {
                 ),
                 validPageable
         ).map(room -> modelMapper.map(room, RoomResponse.class)));
+    @Transactional
+    public CurrentRoomResponse current() {
+        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        Slot slot = slotRepository.findOne((r, q, cb) -> cb.equal(r.get("user"), user)).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
+        CurrentRoomResponse response = modelMapper.map(slot.getRoom(), CurrentRoomResponse.class);
+        response.setPrice(roomPricingService.getPriceOfRoom(slot.getRoom()));
+        return response;
     }
 }

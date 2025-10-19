@@ -4,7 +4,7 @@ public class ApiConstant {
     public static final String API = "/api";
     public static class USER {
         public static final String USER = API + "/users";
-        public static final String REGISTER = "/register";
+        public static final String PROFILE = "/profile";
     }
     public static class AUTH {
         public static final String AUTH = API + "/auth";
@@ -27,7 +27,7 @@ public class ApiConstant {
     public static class REQUEST {
         public static final String REQUEST = API + "/requests";
         public static final String CREATE = "/create-request";
-        public static final String UPDATE = "requests/{id}";
-        public static final String GET_BY_ID = "requests/{id}";
+        public static final String UPDATE = "/{id}";
+        public static final String GET_BY_ID = "/{id}";
     }
 }
