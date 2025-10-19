@@ -1,6 +1,7 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.response.BaseResponse;
+import com.capstone.capstone.dto.response.room.CurrentRoomResponse;
 import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
 import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
 import com.capstone.capstone.dto.response.room.RoommateResponse;
@@ -31,6 +32,11 @@ public class RoomController {
     @GetMapping("/api/rooms/{id}")
     public ResponseEntity<BaseResponse<RoomDetailsResponse>> getRoomById(@PathVariable UUID id) {
         return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoomById(id)));
+    }
+
+    @GetMapping("/api/rooms/current")
+    public BaseResponse<CurrentRoomResponse> current() {
+        return new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.current());
     }
 
     @GetMapping("/api/rooms/{id}/roommates")
