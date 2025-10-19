@@ -1,8 +1,10 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterBillRequest;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterBillResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterRoomBillResponse;
+import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.ElectricWaterBillRepository;
@@ -27,7 +29,6 @@ public class ElectricWaterBillService {
     private final ElectricWaterBillRepository electricWaterBillRepository;
     private final ModelMapper modelMapper;
     private final SemesterService semesterService;
-    private final PaymentService paymentService;
     private final UserRepository userRepository;
 
     public ElectricWaterRoomBillResponse create(CreateElectricWaterBillRequest request) {
@@ -53,7 +54,6 @@ public class ElectricWaterBillService {
         for (User user : users) {
             ElectricWaterBill bill = ElectricWaterBill.builder()
                     .user(user)
-                    .price(userPrice)
                     .roomBill(roomBill)
                     .build();
             electricWaterBillRepository.save(bill);
@@ -81,9 +81,16 @@ public class ElectricWaterBillService {
         return bills.stream().map(bill -> modelMapper.map(bill, ElectricWaterBillResponse.class)).toList();
     }
 
-    public String getBillPayment(UUID id) {
-        ElectricWaterBill bill =  electricWaterBillRepository.findById(id).orElseThrow();
-        Payment payment = paymentService.create(bill);
-        return paymentService.createPaymentUrl(payment);
+    public void onPayment(ElectricWaterBill bill, VNPayStatus status) {
+        if (status == VNPayStatus.SUCCESS) {
+            bill.setStatus(PaymentStatus.SUCCESS);
+        } else {
+            bill.setStatus(PaymentStatus.CANCEL);
+        }
+        electricWaterBillRepository.save(bill);
+    }
+
+    public ElectricWaterBill getById(UUID id) {
+        return electricWaterBillRepository.findById(id).orElse(null);
     }
 }

@@ -1,0 +1,17 @@
+GET http://localhost:8080/api/semesters
+Authorization: Bearer {{token}}
+
+###
+GET http://localhost:8080/api/semesters/current
+Authorization: Bearer {{token}}
+
+###
+POST http://localhost:8080/api/semesters
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "SU26",
+  "startDate": "2026-01-01",
+  "endDate": "2026-04-01"
+}

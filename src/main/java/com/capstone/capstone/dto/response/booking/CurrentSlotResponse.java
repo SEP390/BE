@@ -10,7 +10,6 @@ public class CurrentSlotResponse {
     private String slotName;
     private StatusSlotEnum status;
     private RoomDto room;
-    private SemesterDto semester;
     private Long price;
 
     @Data
@@ -25,11 +24,5 @@ public class CurrentSlotResponse {
     public static class DormDto {
         private UUID id;
         private String dormName;
-    }
-
-    @Data
-    public static class SemesterDto {
-        private UUID id;
-        private String semesterName;
     }
 }

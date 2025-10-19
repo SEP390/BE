@@ -22,8 +22,8 @@ public class SemesterController {
     }
 
     @GetMapping("/api/semesters/current")
-    public BaseResponse<?> getCurrent() {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getCurrent());
+    public BaseResponse<SemesterResponse> getCurrent() {
+        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getCurrentDto());
     }
 
     @GetMapping("/api/semesters/{id}")
@@ -32,12 +32,12 @@ public class SemesterController {
     }
 
     @PostMapping("/api/semesters")
-    public BaseResponse<?> create(@RequestBody CreateSemesterRequest request) {
+    public BaseResponse<SemesterResponse> create(@RequestBody CreateSemesterRequest request) {
         return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.create(request));
     }
 
     @PutMapping("/api/semesters")
-    public BaseResponse<?> update(@RequestBody UpdateSemesterRequest request) {
+    public BaseResponse<SemesterResponse> update(@RequestBody UpdateSemesterRequest request) {
         return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.update(request));
     }
 }

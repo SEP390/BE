@@ -14,7 +14,6 @@ import java.util.List;
 @Setter
 @Builder
 public class ElectricWaterBill extends BaseEntity {
-    private Long price;
     private LocalDateTime createDate;
 
     @ManyToOne
@@ -25,9 +24,13 @@ public class ElectricWaterBill extends BaseEntity {
     @JoinColumn(name = "room_bill_id")
     private ElectricWaterRoomBill roomBill;
 
+    @ManyToOne
+    @JoinColumn(name = "semester_id")
+    private Semester semester;
+
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
     @OneToMany
-    private List<Payment> payment;
+    private List<Payment> payments;
 }

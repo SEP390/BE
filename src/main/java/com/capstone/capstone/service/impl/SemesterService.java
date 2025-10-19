@@ -27,6 +27,10 @@ public class SemesterService {
         return semesterRepository.findCurrent();
     }
 
+    public SemesterResponse getCurrentDto() {
+        return modelMapper.map(semesterRepository.findCurrent(), SemesterResponse.class);
+    }
+
     public List<SemesterResponse> getAll() {
         return semesterRepository.findAll().stream().map(semester -> modelMapper.map(semester, SemesterResponse.class)).toList();
     }

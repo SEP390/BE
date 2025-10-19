@@ -2,15 +2,23 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
+import com.capstone.capstone.dto.request.room.CreateRoomRequest;
+import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.util.SortUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedModel;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +35,7 @@ public class RoomService {
     private final UserRepository userRepository;
     private final SurveyQuestionRepository surveyQuestionRepository;
     private final MatchingRepository matchingRepository;
+    private final DormRepository dormRepository;
     private final SlotRepository slotRepository;
 
     @Transactional
@@ -55,21 +64,10 @@ public class RoomService {
     @Transactional
     public RoomDetailsResponse getRoomById(UUID id) {
         Room room = roomRepository.findById(id).orElseThrow();
-        RoomPricing pricing = roomPricingRepository.findByTotalSlot(room.getTotalSlot());
-        return RoomDetailsResponse.builder()
-                .roomNumber(room.getRoomNumber())
-                .id(room.getId())
-                .pricing(pricing.getPrice())
-                .dorm(RoomDetailsResponse.DormResponse.builder()
-                        .id(room.getDorm().getId())
-                        .dormName(room.getDorm().getDormName())
-                        .build())
-                .slots(room.getSlots().stream().map(slot -> RoomDetailsResponse.SlotResponse.builder()
-                        .id(slot.getId())
-                        .slotName(slot.getSlotName())
-                        .status(slot.getStatus())
-                        .build()).toList())
-                .build();
+        RoomPricing pricing = roomPricingRepository.findByRoom(room);
+        RoomDetailsResponse response = modelMapper.map(room, RoomDetailsResponse.class);
+        response.setPricing(pricing.getPrice());
+        return response;
     }
 
     @Transactional
@@ -105,6 +103,21 @@ public class RoomService {
         roomRepository.save(room);
     }
 
+    public PagedModel<RoomResponse> get(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
+        int validPageSize = Math.min(pageable.getPageSize(), 100);
+        Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), validPageSize, validSort);
+        return new PagedModel<>(roomRepository.findAll(
+                Specification.allOf(
+                        dormId != null ? (root, query, cb) -> cb.equal(root.get("dorm").get("id"), dormId) : Specification.unrestricted(),
+                        floor != null ? (root, query, cb) -> cb.equal(root.get("floor"), floor) : Specification.unrestricted(),
+                        totalSlot != null ? (root, query, cb) -> cb.equal(root.get("totalSlot"), totalSlot) : Specification.unrestricted(),
+                        roomNumber != null ? (root, query, cb) -> cb.like(root.get("roomNumber"), "%" + roomNumber + "%") : Specification.unrestricted()
+                ),
+                validPageable
+        ).map(room -> modelMapper.map(room, RoomResponse.class)));
+    }
+
     @Transactional
     public CurrentRoomResponse current() {
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
@@ -112,5 +125,37 @@ public class RoomService {
         CurrentRoomResponse response = modelMapper.map(slot.getRoom(), CurrentRoomResponse.class);
         response.setPrice(roomPricingService.getPriceOfRoom(slot.getRoom()));
         return response;
+    }
+
+    @Transactional
+    public RoomResponse create(CreateRoomRequest request) {
+        Dorm dorm = dormRepository.findById(request.getDormId()).orElseThrow(() -> new AppException("DORM_NOT_FOUND"));
+        Room room = new Room();
+        room.setDorm(dorm);
+        room.setFloor(request.getFloor());
+        room.setTotalSlot(request.getTotalSlot());
+        room.setRoomNumber(request.getRoomNumber());
+        room.setStatus(StatusRoomEnum.AVAILABLE);
+        room = roomRepository.save(room);
+        List<Slot> slots = new ArrayList<>();
+        for (int i = 1; i <= request.getTotalSlot(); i++) {
+            Slot slot = new Slot();
+            slot.setRoom(room);
+            slot.setSlotName("Slot %s".formatted(i));
+            slot.setStatus(StatusSlotEnum.AVAILABLE);
+            slots.add(slot);
+        }
+        slotRepository.saveAll(slots);
+        return modelMapper.map(room, RoomResponse.class);
+    }
+
+    @Transactional
+    public RoomResponse update(UpdateRoomRequest request) {
+        Room room = roomRepository.findById(request.getRoomId()).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
+        room.setFloor(request.getFloor());
+        room.setRoomNumber(request.getRoomNumber());
+        room.setStatus(request.getStatus());
+        room = roomRepository.save(room);
+        return modelMapper.map(room, RoomResponse.class);
     }
 }

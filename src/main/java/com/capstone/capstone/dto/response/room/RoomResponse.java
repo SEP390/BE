@@ -9,4 +9,11 @@ public class RoomResponse {
     private UUID id;
     private String roomNumber;
     private Integer floor;
+    private DormDto dorm;
+
+    @Data
+    public static class DormDto {
+        private UUID id;
+        private String dormName;
+    }
 }
