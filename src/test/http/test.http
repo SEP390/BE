@@ -8,7 +8,6 @@ Content-Type: application/json
 
 > {%
  client.global.set("token", response.body.data.token)
- client.log(token)
  %}
 
 ###
@@ -34,3 +33,7 @@ Content-Type: application/json
   "startDate": "2026-01-01",
   "endDate": "2026-04-01"
 }
+
+###
+GET http://localhost:8080/api/rooms/current
+Authorization: Bearer {{token}}
