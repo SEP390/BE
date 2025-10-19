@@ -4,8 +4,10 @@ import com.capstone.capstone.dto.enums.RequestStatusEnum;
 import com.capstone.capstone.dto.request.request.CreateRequestRequest;
 import com.capstone.capstone.dto.request.request.UpdateRequestRequest;
 import com.capstone.capstone.dto.response.request.CreateRequestResponse;
+import com.capstone.capstone.dto.response.request.GetAllRequestResponse;
 import com.capstone.capstone.dto.response.request.GetRequestByIdResponse;
 import com.capstone.capstone.dto.response.request.UpdateRequestResponse;
+import com.capstone.capstone.dto.response.surveyQuestion.GetAllQuestionResponse;
 import com.capstone.capstone.entity.Request;
 import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.entity.User;
@@ -20,7 +22,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -80,5 +85,20 @@ public class RequestService implements IRequestService {
         getRequestByIdResponse.setResponseMessage(currentRequest.getResponseMessage());
         getRequestByIdResponse.setSemester(currentRequest.getSemester());
         return getRequestByIdResponse;
+    }
+
+    @Override
+    public List<GetAllRequestResponse> getAllRequest() {
+        List<Request>  requests = requestRepository.findAll();
+        List<GetAllRequestResponse> getAllRequestResponse = requests.stream().map(request -> {
+            GetAllRequestResponse requestResponse = new GetAllRequestResponse();
+            requestResponse.setRequestId(request.getId());
+            requestResponse.setRequestType(request.getRequestType());
+            requestResponse.setCreateTime(request.getCreateTime());
+            requestResponse.setResponseStatus(request.getRequestStatus());
+            requestResponse.setSemester(request.getSemester());
+            return  requestResponse;
+        }).collect(Collectors.toList());
+        return getAllRequestResponse;
     }
 }
