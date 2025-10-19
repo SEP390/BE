@@ -34,9 +34,8 @@ public class PaymentService {
     private final VNPayService vNPayService;
     private final SlotService slotService;
     private final UserRepository userRepository;
-    private final ElectricWaterBillRepository electricWaterBillRepository;
     private final ModelMapper modelMapper;
-    private final SemesterService semesterService;
+    private final ElectricWaterBillService electricWaterBillService;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
@@ -68,7 +67,6 @@ public class PaymentService {
                 .type(PaymentType.ELECTRIC_WATER)
                 .status(PaymentStatus.PENDING)
                 .createDate(LocalDateTime.now())
-                .price(bill.getPrice())
                 .electricWaterBill(bill)
                 .user(bill.getUser())
                 .build());
@@ -87,58 +85,20 @@ public class PaymentService {
         return paymentRepository.findById(id).orElseThrow();
     }
 
-    /**
-     * Handle success status
-     * @param payment payment
-     */
-    public void handleSuccess(Payment payment) {
-        payment.setStatus(PaymentStatus.SUCCESS);
-        payment = paymentRepository.save(payment);
-
-        // success, change slot status to unavailable
-        if (payment.getType() == PaymentType.BOOKING) {
-            SlotHistory slotHistory = payment.getSlotHistory();
-            Slot slot = slotHistory.getSlot();
-            slotService.lockToUnavailable(slot);
-        }
-
-        // change bill status to success
-        if (payment.getType() == PaymentType.ELECTRIC_WATER) {
-            ElectricWaterBill bill = payment.getElectricWaterBill();
-            bill.setStatus(PaymentStatus.SUCCESS);
-            electricWaterBillRepository.save(bill);
-        }
-    }
-
-    /**
-     * Handle cancel status
-     * @param payment payment
-     */
-    public void handleFail(Payment payment) {
-        payment.setStatus(PaymentStatus.CANCEL);
-        payment = paymentRepository.save(payment);
-
-        // unlock slot if fail
-        if (payment.getType() == PaymentType.BOOKING) {
-            SlotHistory slotHistory = payment.getSlotHistory();
-            Slot slot = slotHistory.getSlot();
-            slotService.unlock(slot);
-        }
-    }
-
     public Payment handle(UUID paymentId, VNPayStatus status) {
         Payment payment = getById(paymentId);
         // invalid payment
         if (payment == null) {
             throw new AppException("PAYMENT_NOT_FOUND", paymentId);
         }
-        // payment success
-        if (payment.getStatus() == PaymentStatus.PENDING && status == VNPayStatus.SUCCESS) {
-            handleSuccess(payment);
-        }
-        // payment fail
-        if (payment.getStatus() == PaymentStatus.PENDING && status != VNPayStatus.SUCCESS) {
-            handleFail(payment);
+        if (payment.getStatus() == PaymentStatus.PENDING) {
+            if (status == VNPayStatus.SUCCESS) payment.setStatus(PaymentStatus.SUCCESS);
+            else payment.setStatus(PaymentStatus.CANCEL);
+            payment = paymentRepository.save(payment);
+            if (payment.getType() == PaymentType.BOOKING)
+                slotService.onPayment(payment.getSlotHistory().getSlot(), status);
+            if (payment.getType() == PaymentType.ELECTRIC_WATER)
+                electricWaterBillService.onPayment(payment.getElectricWaterBill(), status);
         }
         return payment;
     }
@@ -189,5 +149,11 @@ public class PaymentService {
                 (root, query, cb) -> cb.equal(root.get("user"), user),
                 status != null ? (root, query, cb) -> root.get("status").in(status) : Specification.unrestricted()
         ), validPageable).map(p -> modelMapper.map(p, PaymentResponse.class)));
+    }
+
+    public String createElectricWaterBillPaymentUrl(UUID id) {
+        ElectricWaterBill bill = electricWaterBillService.getById(id);
+        Payment payment = create(bill);
+        return createPaymentUrl(payment);
     }
 }

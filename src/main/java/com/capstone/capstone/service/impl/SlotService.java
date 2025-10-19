@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
+import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
@@ -29,10 +30,15 @@ public class SlotService {
         roomService.checkFullAndUpdate(slot.getRoom());
     }
 
-    @Transactional
     public void unlock(Slot slot) {
         slot.setUser(null);
         slot.setStatus(StatusSlotEnum.AVAILABLE);
+        slotRepository.save(slot);
+        roomService.checkFullAndUpdate(slot.getRoom());
+    }
+
+    public void unavailable(Slot slot) {
+        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
         slotRepository.save(slot);
         roomService.checkFullAndUpdate(slot.getRoom());
     }
@@ -49,5 +55,13 @@ public class SlotService {
 
     public Slot getByUser(User user) {
         return slotRepository.findByUser(user);
+    }
+
+    public void onPayment(Slot slot, VNPayStatus status) {
+        if (status == VNPayStatus.SUCCESS) {
+            unavailable(slot);
+        } else {
+            unlock(slot);
+        }
     }
 }
