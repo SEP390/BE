@@ -121,6 +121,8 @@ public class RoomService {
                 ),
                 validPageable
         ).map(room -> modelMapper.map(room, RoomResponse.class)));
+    }
+
     @Transactional
     public CurrentRoomResponse current() {
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
