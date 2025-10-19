@@ -40,7 +40,7 @@ public class RoomService {
         Comparator<Room> comparator = Comparator.comparingDouble(o -> matching.getOrDefault(o.getId(), 0.0));
         Map<Integer, Long> pricing = roomPricingService.getAll().stream().collect(Collectors.toMap(RoomPricingResponse::getTotalSlot, RoomPricingResponse::getPrice));
         rooms.sort(comparator.reversed());
-        return rooms.subList(0, ROOM_COUNT).stream().map(room -> RoomMatchingResponse.builder()
+        return rooms.subList(0, Math.min(5, rooms.size())).stream().map(room -> RoomMatchingResponse.builder()
                 .id(room.getId())
                 .roomNumber(room.getRoomNumber())
                 .dormId(room.getDorm().getId())
