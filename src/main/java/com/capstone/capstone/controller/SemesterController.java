@@ -23,7 +23,7 @@ public class SemesterController {
 
     @GetMapping("/api/semesters/current")
     public BaseResponse<?> getCurrent() {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getCurrent());
+        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getCurrentDto());
     }
 
     @GetMapping("/api/semesters/{id}")
