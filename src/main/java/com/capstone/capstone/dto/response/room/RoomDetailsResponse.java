@@ -1,18 +1,12 @@
 package com.capstone.capstone.dto.response.room;
 
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
-@Builder
-@ToString
+@Data
 public class RoomDetailsResponse {
     private UUID id;
     private String roomNumber;
@@ -20,19 +14,13 @@ public class RoomDetailsResponse {
     private long pricing;
     private List<SlotResponse> slots;
 
-    @Getter
-    @Setter
-    @Builder
-    @ToString
+    @Data
     public static class DormResponse {
         private UUID id;
         private String dormName;
     }
 
-    @Getter
-    @Setter
-    @Builder
-    @ToString
+    @Data
     public static class SlotResponse {
         private UUID id;
         private String slotName;

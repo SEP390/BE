@@ -2,6 +2,7 @@ package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.request.dorm.BookableDormRequest;
+import com.capstone.capstone.dto.request.dorm.CreateDormRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.dorm.BookableDormResponse;
 import com.capstone.capstone.dto.response.room.RoomResponse;
@@ -30,5 +31,10 @@ public class DormController {
     @GetMapping("/api/dorms/{id}/rooms")
     public BaseResponse<List<RoomResponse>> getRooms(@PathVariable UUID id) {
         return new BaseResponse<>(HttpStatus.OK.value(), "success", dormService.getRooms(id));
+    }
+
+    @PostMapping("/api/dorms")
+    public BaseResponse<?> create(CreateDormRequest request) {
+        return new BaseResponse<>(dormService.create(request));
     }
 }

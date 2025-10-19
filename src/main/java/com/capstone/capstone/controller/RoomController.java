@@ -1,5 +1,6 @@
 package com.capstone.capstone.controller;
 
+import com.capstone.capstone.dto.request.room.CreateRoomRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.room.CurrentRoomResponse;
 import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
@@ -14,10 +15,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -56,5 +54,10 @@ public class RoomController {
     @GetMapping("/api/rooms/{id}/roommates")
     public BaseResponse<List<RoommateResponse>> getRoommates(@PathVariable UUID id) {
         return new BaseResponse<>(roomService.getRoommates(id));
+    }
+
+    @PostMapping("/api/rooms")
+    public BaseResponse<?> create(CreateRoomRequest request) {
+        return new BaseResponse<>(roomService.create(request));
     }
 }
