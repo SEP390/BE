@@ -4,3 +4,4 @@ feat: crud semester
 feat: crud semester
 feat: crud booking
 feat: crud room
+fix: crud semester validation
