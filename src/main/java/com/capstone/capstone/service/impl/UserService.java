@@ -59,7 +59,7 @@ public class UserService implements IUserService {
         getUserInformationResponse.setEmail(user.getEmail());
         getUserInformationResponse.setDob(user.getDob());
         getUserInformationResponse.setGender(user.getGender());
-        getUserInformationResponse.setStudentId(user.getStudentId());
+        getUserInformationResponse.setStudentId(user.getUserCode());
         getUserInformationResponse.setSlotName(slot == null ? null : slot.getSlotName());
         return getUserInformationResponse;
     }

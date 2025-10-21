@@ -15,6 +15,7 @@ import com.capstone.capstone.util.AuthenUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -34,7 +35,7 @@ public class NewsService implements INewsService {
 
     @Override
     public List<NewsResponse> getAllNews() {
-        return newsRepository.findAll().stream()
+        return newsRepository.findAll(Sort.by(Sort.Order.desc("date"),Sort.Order.desc("time"))).stream()
                 .map(news -> {
                             NewsResponse newsReponse = modelMapper.map(news, NewsResponse.class);
                             newsReponse.setUserNames(news.getUser().getUsername());
@@ -85,7 +86,11 @@ public class NewsService implements INewsService {
     @Override
     public List<NewsResponse> searchNewAndFilter(String title) {
         return newsRepository.findNewsByTitle(title).stream()
-                .map(p->modelMapper.map(p, NewsResponse.class))
+                .map(news -> {
+                    NewsResponse newsReponse = modelMapper.map(news, NewsResponse.class);
+                    newsReponse.setUserNames(news.getUser().getUsername());
+                    return newsReponse;
+                } )
                 .toList();
     }
 
