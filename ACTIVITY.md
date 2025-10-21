@@ -8,3 +8,4 @@ fix: crud semester validation
 fix: crud semester validation
 fix: crud semester validation
 fix: crud booking validation
+fix: crud semester validation
