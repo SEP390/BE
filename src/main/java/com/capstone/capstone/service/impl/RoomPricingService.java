@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Service
@@ -32,8 +33,8 @@ public class RoomPricingService {
         return roomPricingRepository.findByRoom(room).getPrice();
     }
 
-    public long getPriceOfSlot(Slot slot) {
-        return roomPricingRepository.findBySlot(slot).getPrice();
+    public Long getPriceOfSlot(Slot slot) {
+        return Optional.ofNullable(roomPricingRepository.findBySlot(slot)).map(RoomPricing::getPrice).orElse(null);
     }
 
     public RoomPricingResponse create(RoomPricingRequest request) {

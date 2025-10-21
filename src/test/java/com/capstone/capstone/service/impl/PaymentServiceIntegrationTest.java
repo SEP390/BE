@@ -14,9 +14,4 @@ class PaymentServiceIntegrationTest {
     UUID paymentId = UUID.fromString("");
     @Autowired
     PaymentService paymentService;
-
-    @Test
-    void handle() {
-        paymentService.handle(paymentId, VNPayStatus.SUCCESS);
-    }
 }

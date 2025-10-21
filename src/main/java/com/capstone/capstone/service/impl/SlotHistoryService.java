@@ -4,6 +4,7 @@ import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.SlotHistory;
 import com.capstone.capstone.entity.User;
+import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.SlotHistoryRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,8 @@ public class SlotHistoryService {
         LocalDateTime createDate = LocalDateTime.now();
 
         // get current price of slot (can be updated in future)
-        long price = roomPricingService.getPriceOfSlot(slot);
+        Long price = roomPricingService.getPriceOfSlot(slot);
+        if (price == null) throw new AppException("INVALID_ROOM_TYPE");
 
         // create slot history
         SlotHistory slotHistory = new SlotHistory();

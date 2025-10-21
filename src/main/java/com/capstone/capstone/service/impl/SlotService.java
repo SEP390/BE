@@ -28,7 +28,7 @@ public class SlotService {
         if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new AppException("SLOT_UNAVAILABLE", slot.getId());
         slot.setStatus(StatusSlotEnum.LOCK);
         slot.setUser(user);
-        slotRepository.save(slot);
+        slot = slotRepository.save(slot);
         roomService.checkFullAndUpdate(slot.getRoom());
     }
 
@@ -36,14 +36,14 @@ public class SlotService {
     public void unlock(Slot slot) {
         slot.setUser(null);
         slot.setStatus(StatusSlotEnum.AVAILABLE);
-        slotRepository.save(slot);
+        slot = slotRepository.save(slot);
         roomService.checkFullAndUpdate(slot.getRoom());
     }
 
     @Transactional
     public void unavailable(Slot slot) {
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
-        slotRepository.save(slot);
+        slot = slotRepository.save(slot);
         roomService.checkFullAndUpdate(slot.getRoom());
     }
 

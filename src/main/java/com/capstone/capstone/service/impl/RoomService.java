@@ -77,14 +77,8 @@ public class RoomService {
     }
 
     public boolean isFull(Room room) {
-        var isFull = true;
-        for (Slot slot : room.getSlots()) {
-            if (slot.getStatus().equals(StatusSlotEnum.AVAILABLE)) {
-                isFull = false;
-                break;
-            }
-        }
-        return isFull;
+        List<Slot> slots = slotRepository.findAll((r, q, c) -> c.equal(r.get("room"), room));
+        return slots.stream().allMatch(slot -> slot.getStatus() == StatusSlotEnum.UNAVAILABLE);
     }
 
     public void checkFullAndUpdate(Room room) {
