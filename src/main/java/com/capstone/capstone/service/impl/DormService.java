@@ -1,13 +1,10 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.dorm.CreateDormRequest;
-import com.capstone.capstone.dto.response.dorm.GetDormResponse;
-import com.capstone.capstone.dto.response.dorm.ListDormResponse;
-import com.capstone.capstone.dto.response.dorm.BookableDormResponse;
-import com.capstone.capstone.dto.response.dorm.CreateDormResponse;
+import com.capstone.capstone.dto.response.dorm.DormResponse;
+import com.capstone.capstone.dto.response.dorm.DormRoomSlotResponse;
 import com.capstone.capstone.dto.response.room.RoomResponse;
 import com.capstone.capstone.entity.Dorm;
 import com.capstone.capstone.entity.Room;
@@ -33,10 +30,6 @@ public class DormService {
     private final ModelMapper modelMapper;
     private final SlotRepository slotRepository;
 
-    public List<BookableDormResponse> getBookableDorm(int totalSlot, GenderEnum gender) {
-        return dormRepository.getBookableDorm(totalSlot, gender);
-    }
-
     public List<RoomResponse> getRooms(UUID dormId) {
         Room example = new Room();
         Dorm dormExample = new Dorm();
@@ -47,7 +40,7 @@ public class DormService {
     }
 
     @Transactional
-    public CreateDormResponse create(CreateDormRequest request) {
+    public DormRoomSlotResponse create(CreateDormRequest request) {
         Dorm dorm = modelMapper.map(request,Dorm.class);
         dorm = dormRepository.save(dorm);
         for (Room room : dorm.getRooms()) {
@@ -67,14 +60,14 @@ public class DormService {
             slots = slotRepository.saveAll(slots);
             room.setSlots(slots);
         }
-        return modelMapper.map(dorm, CreateDormResponse.class);
+        return modelMapper.map(dorm, DormRoomSlotResponse.class);
     }
 
-    public List<ListDormResponse> getList() {
-        return dormRepository.findAll().stream().map(dorm -> modelMapper.map(dorm, ListDormResponse.class)).toList();
+    public List<DormResponse> getAll() {
+        return dormRepository.findAll().stream().map(dorm -> modelMapper.map(dorm, DormResponse.class)).toList();
     }
 
-    public GetDormResponse getResponse(UUID id) {
-        return modelMapper.map(dormRepository.findById(id), GetDormResponse.class);
+    public DormRoomSlotResponse getResponse(UUID id) {
+        return modelMapper.map(dormRepository.findById(id), DormRoomSlotResponse.class);
     }
 }

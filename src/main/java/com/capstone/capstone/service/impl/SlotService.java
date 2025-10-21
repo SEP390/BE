@@ -2,6 +2,7 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
+import com.capstone.capstone.entity.Payment;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
@@ -55,7 +56,8 @@ public class SlotService {
     }
 
     @Transactional
-    public void onPayment(Slot slot, VNPayStatus status) {
+    public void onPayment(Payment payment, VNPayStatus status) {
+        Slot slot = payment.getSlotHistory().getSlot();
         if (status == VNPayStatus.SUCCESS) {
             unavailable(slot);
         } else {

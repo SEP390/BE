@@ -1,0 +1,35 @@
+POST http://localhost:8080/api/auth
+Content-Type: application/json
+
+{
+  "username": "resident",
+  "password": "resident"
+}
+
+> {%
+    client.global.set("token", response.body.data.token)
+    console.log("Token:", client.global.get("token"));
+%}
+###
+POST http://localhost:8080/api/electric-water-pricing
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "waterPrice": 3000,
+  "electricPrice": 3500
+}
+###
+GET http://localhost:8080/api/electric-water-pricing
+Authorization: Bearer {{token}}
+
+###
+POST http://localhost:8080/api/electric-water-index
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "electricIndex": 123,
+  "waterIndex": 123,
+  "roomId": "01510355-d3fd-41d3-be58-78551e713790"
+}

@@ -1,0 +1,17 @@
+### Login
+POST http://localhost:8080/api/auth
+Content-Type: application/json
+
+{
+  "username": "resident",
+  "password": "resident"
+}
+
+> {%
+    client.global.set("token", response.body.data.token)
+    console.log("Token:", client.global.get("token"));
+%}
+
+### Get all rooms
+GET http://localhost:8080/api/rooms
+Authorization: Bearer {{token}}

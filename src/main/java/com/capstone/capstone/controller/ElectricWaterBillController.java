@@ -1,15 +1,11 @@
 package com.capstone.capstone.controller;
 
-import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterBillRequest;
-import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterIndexRequest;
-import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterPricingRequest;
-import com.capstone.capstone.dto.request.electricwater.UpdateElectricWaterPricingRequest;
+import com.capstone.capstone.dto.request.electricwater.*;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterBillResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterIndexResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterPricingResponse;
 import com.capstone.capstone.service.impl.ElectricWaterService;
-import com.capstone.capstone.service.impl.PaymentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -21,16 +17,20 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ElectricWaterBillController {
     private final ElectricWaterService electricWaterService;
-    private final PaymentService paymentService;
 
     @PostMapping("/api/electric-water-index")
-    public BaseResponse<ElectricWaterIndexResponse> createIndex(@RequestBody CreateElectricWaterIndexRequest request) {
+    public BaseResponse<ElectricWaterIndexResponse> createIndex(@RequestBody @Valid CreateElectricWaterIndexRequest request) {
         return new BaseResponse<>(electricWaterService.createIndexResponse(request));
     }
 
     @GetMapping("/api/electric-water-index")
     public BaseResponse<ElectricWaterIndexResponse> getIndex(@RequestParam UUID roomId) {
         return new BaseResponse<>(electricWaterService.getIndexResponseOfRoom(roomId));
+    }
+
+    @PutMapping("/api/electric-water-index")
+    public BaseResponse<ElectricWaterIndexResponse> updateIndex(@RequestBody @Valid UpdateElectricWaterIndexRequest request) {
+        return new BaseResponse<>(electricWaterService.updateIndexResponse(request));
     }
 
     @PostMapping("/api/electric-water-bill")
@@ -45,7 +45,7 @@ public class ElectricWaterBillController {
 
     @GetMapping("/api/electric-water-bill/{id}/payment-url")
     public BaseResponse<String> getBillPayment(@PathVariable UUID id) {
-        return new BaseResponse<>(paymentService.createElectricWaterBillPaymentUrl(id));
+        return new BaseResponse<>(electricWaterService.createPaymentUrl(id));
     }
 
     @GetMapping("/api/electric-water-pricing")

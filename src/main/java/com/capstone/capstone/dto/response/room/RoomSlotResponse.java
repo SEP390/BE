@@ -1,0 +1,16 @@
+package com.capstone.capstone.dto.response.room;
+
+import com.capstone.capstone.dto.response.booking.SlotResponse;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.util.List;
+
+/**
+ * Room join fetch Slot response
+ */
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class RoomSlotResponse extends RoomResponse {
+    private List<SlotResponse> slots;
+}

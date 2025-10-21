@@ -37,10 +37,8 @@ import java.util.UUID;
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final VNPayService vNPayService;
-    private final SlotService slotService;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-    private final ElectricWaterService electricWaterService;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
@@ -48,6 +46,7 @@ public class PaymentService {
 
     /**
      * Create payment for slot history
+     *
      * @param slotHistory slot history
      * @return payment
      */
@@ -64,6 +63,7 @@ public class PaymentService {
 
     /**
      * Tạo thanh toán cho hóa đơn điện nước
+     *
      * @param bill hóa đơn
      * @return payment
      */
@@ -80,6 +80,7 @@ public class PaymentService {
 
     /**
      * Create payment url for invoice
+     *
      * @param payment payment
      * @return payment url
      */
@@ -87,40 +88,24 @@ public class PaymentService {
         return vNPayService.createPaymentUrl(payment.getId(), payment.getCreateDate(), payment.getPrice());
     }
 
+    public String createPaymentUrl(User user, ElectricWaterBill bill) {
+        Payment payment = create(user, bill);
+        return vNPayService.createPaymentUrl(payment.getId(), payment.getCreateDate(), payment.getPrice());
+    }
+
     public Payment getById(UUID id) {
         return paymentRepository.findById(id).orElse(null);
     }
 
-    public void handleElectricWaterBillPaymentSuccess(Payment payment) {
-        ElectricWaterBill bill = payment.getElectricWaterBill();
-        List<Payment> payments = paymentRepository.findAll((r,q,c) ->
-                c.equal(r.get("electricWaterBill"), bill));
-        long paidUserCount = payments.stream().filter(p -> p.getStatus() == PaymentStatus.SUCCESS).count();
-        if (paidUserCount == bill.getUserCount()) {
-            electricWaterService.successBill(bill);
-        }
-    }
-
-    public Payment handle(UUID paymentId, VNPayStatus status) {
-        Payment payment = getById(paymentId);
-        // invalid payment
-        if (payment == null) {
-            throw new AppException("PAYMENT_NOT_FOUND", paymentId);
-        }
-        if (payment.getStatus() == PaymentStatus.PENDING) {
-            if (status == VNPayStatus.SUCCESS) payment.setStatus(PaymentStatus.SUCCESS);
-            else payment.setStatus(PaymentStatus.CANCEL);
-            payment = paymentRepository.save(payment);
-            if (payment.getType() == PaymentType.BOOKING)
-                slotService.onPayment(payment.getSlotHistory().getSlot(), status);
-            if (payment.getType() == PaymentType.ELECTRIC_WATER)
-                handleElectricWaterBillPaymentSuccess(payment);
-        }
-        return payment;
+    public Payment updateStatus(Payment payment, VNPayStatus status) {
+        if (status == VNPayStatus.SUCCESS) payment.setStatus(PaymentStatus.SUCCESS);
+        else payment.setStatus(PaymentStatus.CANCEL);
+        return paymentRepository.save(payment);
     }
 
     /**
      * Xác minh thanh toán
+     *
      * @param request http request
      * @return kết quả xác minh
      */
@@ -128,19 +113,28 @@ public class PaymentService {
     public PaymentVerifyResponse verify(HttpServletRequest request) {
         // vnpay verify hash
         var result = vNPayService.verify(request);
-
-        Payment payment = handle(result.getId(), result.getStatus());
-
+        Payment payment = getById(result.getId());
+        // invalid payment
+        if (payment == null) {
+            throw new AppException("PAYMENT_NOT_FOUND", result.getId());
+        }
+        boolean update = false;
+        if (payment.getStatus() == PaymentStatus.PENDING) {
+            payment = updateStatus(payment, result.getStatus());
+            update = true;
+        }
         return PaymentVerifyResponse.builder()
+                .update(update)
                 .status(result.getStatus())
-                .price(payment.getPrice())
+                .payment(payment)
                 .build();
     }
 
     /**
      * Get booking history of user
-     * @param user user
-     * @param status status of payment
+     *
+     * @param user     user
+     * @param status   status of payment
      * @param pageable pageable
      * @return history
      */
@@ -157,7 +151,8 @@ public class PaymentService {
 
     /**
      * Lịch sử thanh toán của user hiện tại
-     * @param status trạng thái thanh toán
+     *
+     * @param status   trạng thái thanh toán
      * @param pageable page, size, sort by createDate
      * @return lịch sủ thanh toán
      */
@@ -172,14 +167,20 @@ public class PaymentService {
     }
 
     /**
-     * Tạo đường dẫn thanh toán cho hóa đơn điện nước
-     * @param billId id hóa đơn
-     * @return đường dẫn thanh toán
+     * Lấy tất cả thanh toán của hóa đơn điện nước
+     *
+     * @param bill hóa đơn điện nước
+     * @param status lọc theo status
+     * @return tất cả thanh toán
      */
-    public String createElectricWaterBillPaymentUrl(UUID billId) {
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
-        ElectricWaterBill bill = electricWaterService.getBillById(billId);
-        Payment payment = create(user, bill);
-        return createPaymentUrl(payment);
+    public List<Payment> getAllByElectricWaterBill(ElectricWaterBill bill, List<PaymentStatus> status) {
+        return paymentRepository.findAll(Specification.allOf(
+                (r, q, c) -> c.equal(r.get("electricWaterBill"), bill),
+                (status != null && !status.isEmpty()) ? (r,q,c) -> r.get("status").in(status) : Specification.unrestricted()
+        ));
+    }
+
+    public PaymentResponse toResponse(Payment payment) {
+        return null;
     }
 }

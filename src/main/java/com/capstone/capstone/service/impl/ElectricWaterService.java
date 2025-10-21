@@ -1,17 +1,16 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.PaymentStatus;
-import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterBillRequest;
-import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterIndexRequest;
-import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterPricingRequest;
-import com.capstone.capstone.dto.request.electricwater.UpdateElectricWaterPricingRequest;
+import com.capstone.capstone.dto.request.electricwater.*;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterBillResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterIndexResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterPricingResponse;
+import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.AuthenUtil;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Example;
@@ -27,12 +26,14 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ElectricWaterService {
     private final RoomRepository roomRepository;
+    private final SemesterService semesterService;
     private final ElectricWaterIndexRepository electricWaterIndexRepository;
     private final ElectricWaterBillRepository electricWaterBillRepository;
-    private final ModelMapper modelMapper;
-    private final SemesterService semesterService;
-    private final UserRepository userRepository;
     private final ElectricWaterPricingRepository electricWaterPricingRepository;
+    private final UserRepository userRepository;
+
+    private final PaymentService paymentService;
+    private final ModelMapper modelMapper;
 
     @Transactional
     public ElectricWaterIndexResponse createIndexResponse(CreateElectricWaterIndexRequest request) {
@@ -64,6 +65,20 @@ public class ElectricWaterService {
                 .waterIndex(waterIndex)
                 .createDate(LocalDateTime.now())
                 .build();
+        return electricWaterIndexRepository.save(index);
+    }
+
+    @Transactional
+    public ElectricWaterIndexResponse updateIndexResponse(UpdateElectricWaterIndexRequest request) {
+        ElectricWaterIndex index = electricWaterIndexRepository.findById(request.getId()).orElseThrow(() -> new AppException("INDEX_NOT_FOUND"));
+        index.setElectricIndex(request.getElectricIndex());
+        index.setWaterIndex(request.getWaterIndex());
+        index.setCreateDate(LocalDateTime.now());
+        index = updateIndex(index);
+        return modelMapper.map(index, ElectricWaterIndexResponse.class);
+    }
+
+    public ElectricWaterIndex updateIndex(ElectricWaterIndex index) {
         return electricWaterIndexRepository.save(index);
     }
 
@@ -173,5 +188,29 @@ public class ElectricWaterService {
         pricing.setStartDate(LocalDateTime.now());
         pricing = electricWaterPricingRepository.save(pricing);
         return modelMapper.map(pricing, ElectricWaterPricingResponse.class);
+    }
+
+    /**
+     * Tạo đường dẫn thanh toán cho hóa đơn điện nước
+     * @param billId id hóa đơn
+     * @return đường dẫn thanh toán
+     */
+    public String createPaymentUrl(UUID billId) {
+        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        ElectricWaterBill bill = getBillById(billId);
+        return paymentService.createPaymentUrl(user, bill);
+    }
+
+    public void onPayment(Payment payment, VNPayStatus status) {
+        ElectricWaterBill bill = payment.getElectricWaterBill();
+        if (status == VNPayStatus.SUCCESS) {
+            List<Payment> payments = paymentService.getAllByElectricWaterBill(bill, List.of(PaymentStatus.SUCCESS));
+            long paid = payments.size();
+            // tất cả user đã trả tiền
+            if (paid == bill.getUserCount()) {
+                bill = successBill(bill);
+            }
+        }
+        payment.setElectricWaterBill(bill);
     }
 }
