@@ -1,5 +1,6 @@
 package com.capstone.capstone.controller;
 
+import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterBillRequest;
 import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterIndexRequest;
 import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterPricingRequest;
 import com.capstone.capstone.dto.request.electricwater.UpdateElectricWaterPricingRequest;
@@ -24,12 +25,17 @@ public class ElectricWaterBillController {
 
     @PostMapping("/api/electric-water-index")
     public BaseResponse<ElectricWaterIndexResponse> createIndex(@RequestBody CreateElectricWaterIndexRequest request) {
-        return new BaseResponse<>(electricWaterService.createIndex(request));
+        return new BaseResponse<>(electricWaterService.createIndexResponse(request));
     }
 
-    @GetMapping("/api/electric-water-index/{roomId}")
-    public BaseResponse<ElectricWaterIndexResponse> getIndex(@PathVariable UUID roomId) {
+    @GetMapping("/api/electric-water-index")
+    public BaseResponse<ElectricWaterIndexResponse> getIndex(@RequestParam UUID roomId) {
         return new BaseResponse<>(electricWaterService.getIndexResponseOfRoom(roomId));
+    }
+
+    @PostMapping("/api/electric-water-bill")
+    public BaseResponse<ElectricWaterBillResponse> createBill(@RequestBody CreateElectricWaterBillRequest request) {
+        return new BaseResponse<>(electricWaterService.createBillResponse(request));
     }
 
     @GetMapping("/api/electric-water-bill")
@@ -37,7 +43,7 @@ public class ElectricWaterBillController {
         return new BaseResponse<>(electricWaterService.getCurrentBillResponse());
     }
 
-    @GetMapping("/api/electric-water-bill/{id}")
+    @GetMapping("/api/electric-water-bill/{id}/payment-url")
     public BaseResponse<String> getBillPayment(@PathVariable UUID id) {
         return new BaseResponse<>(paymentService.createElectricWaterBillPaymentUrl(id));
     }

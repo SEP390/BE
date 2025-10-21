@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.PaymentStatus;
+import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterBillRequest;
 import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterIndexRequest;
 import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterPricingRequest;
 import com.capstone.capstone.dto.request.electricwater.UpdateElectricWaterPricingRequest;
@@ -34,15 +35,28 @@ public class ElectricWaterService {
     private final ElectricWaterPricingRepository electricWaterPricingRepository;
 
     @Transactional
-    public ElectricWaterIndexResponse createIndex(CreateElectricWaterIndexRequest request) {
+    public ElectricWaterIndexResponse createIndexResponse(CreateElectricWaterIndexRequest request) {
         Room room = roomRepository.findById(request.getRoomId()).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
         Semester semester = semesterService.getCurrent();
-        List<User> users = room.getSlots().stream().map(Slot::getUser).toList();
-        if (users.isEmpty()) throw new AppException("NO_USER_IN_ROOM");
+
+        // TODO: kiểm tra thời gian đang trong kỳ hay ngoài kỳ
+
+        // Đã tồn tại chỉ số điện nước
+        if (getIndexOfRoom(room, semester) != null) {
+            throw new AppException("INDEX_EXISTED");
+        }
+
+        // Đã validate trong request
         int electricIndex = request.getElectricIndex();
         int waterIndex = request.getWaterIndex();
 
-        // Tạo chỉ sổ
+        // Tạo index
+        ElectricWaterIndex index = createIndex(room, semester, electricIndex, waterIndex);
+
+        return modelMapper.map(index, ElectricWaterIndexResponse.class);
+    }
+
+    public ElectricWaterIndex createIndex(Room room, Semester semester, int electricIndex, int waterIndex) {
         ElectricWaterIndex index = ElectricWaterIndex.builder()
                 .room(room)
                 .semester(semester)
@@ -50,26 +64,44 @@ public class ElectricWaterService {
                 .waterIndex(waterIndex)
                 .createDate(LocalDateTime.now())
                 .build();
-        index = electricWaterIndexRepository.save(index);
+        return electricWaterIndexRepository.save(index);
+    }
+
+    @Transactional
+    public ElectricWaterBillResponse createBillResponse(CreateElectricWaterBillRequest request) {
+        ElectricWaterIndex index = electricWaterIndexRepository.findById(request.getIndexId()).orElseThrow(() -> new AppException("INDEX_NOT_FOUND"));
+        ElectricWaterBill bill = createBill(index);
+        return modelMapper.map(bill, ElectricWaterBillResponse.class);
+    }
+
+    public ElectricWaterBill createBill(ElectricWaterIndex index) {
+        // Đếm số user trong phòng
+        List<User> users = index.getRoom().getSlots().stream().map(Slot::getUser).filter(Objects::nonNull).toList();
+
+        // Không có user trong phòng
+        if (users.isEmpty()) throw new AppException("NO_USER_IN_ROOM");
 
         // Lấy thông tin giá điện, nước
         ElectricWaterPricing pricing = electricWaterPricingRepository.latestPricing();
+        // Chưa có thông tin giá điện nước -> quản lý cần tạo thông tin giá điện nước trước
         if (pricing == null) throw new AppException("PRICING_NOT_FOUND");
 
-        long electricPrice = electricIndex * pricing.getElectricPrice();
-        long waterPrice = waterIndex * pricing.getWaterPrice();
-        long price = electricPrice + waterPrice;
+        long electricPrice = index.getElectricIndex() * pricing.getElectricPrice();
+        long waterPrice = index.getWaterIndex() * pricing.getWaterPrice();
+        long totalPrice = electricPrice + waterPrice;
+        // Làm tròn đến hàng ngìn
+        long price = Math.round(Math.ceil((double) totalPrice / users.size() / 1000)) * 1000;
 
         // Tạo hóa đơn
         ElectricWaterBill bill = ElectricWaterBill.builder()
                 .price(price)
+                .totalPrice(totalPrice)
                 .index(index)
                 .status(PaymentStatus.PENDING)
                 .userCount(users.size())
                 .createDate(LocalDateTime.now())
                 .build();
-        electricWaterBillRepository.save(bill);
-        return modelMapper.map(index, ElectricWaterIndexResponse.class);
+        return electricWaterBillRepository.save(bill);
     }
 
     /**
@@ -95,6 +127,10 @@ public class ElectricWaterService {
 
     public ElectricWaterBill getBillOfRoom(Room room, Semester semester) {
         return electricWaterBillRepository.findOne((r,q,c) -> c.and(c.equal(r.get("index").get("room"), room), c.equal(r.get("index").get("semester"), semester))).orElse(null);
+    }
+
+    public ElectricWaterBill getBillOfIndex(ElectricWaterIndex index) {
+        return electricWaterBillRepository.findOne((r,q,c) -> c.equal(r.get("index"), index)).orElse(null);
     }
 
     /**
