@@ -5,9 +5,8 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class CreateElectricWaterBillRequest {
+public class CreateElectricWaterIndexRequest {
     private UUID roomId;
-    private long price;
-    private int kw;
-    private int m3;
+    private Integer electricIndex;
+    private Integer waterIndex;
 }

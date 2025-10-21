@@ -6,16 +6,21 @@ import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
 import com.capstone.capstone.dto.response.booking.PaymentResponse;
 import com.capstone.capstone.dto.response.booking.PaymentVerifyResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
-import com.capstone.capstone.entity.*;
+import com.capstone.capstone.entity.ElectricWaterBill;
+import com.capstone.capstone.entity.Payment;
+import com.capstone.capstone.entity.SlotHistory;
+import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
-import com.capstone.capstone.repository.ElectricWaterBillRepository;
 import com.capstone.capstone.repository.PaymentRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.util.SortUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
@@ -35,7 +40,7 @@ public class PaymentService {
     private final SlotService slotService;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-    private final ElectricWaterBillService electricWaterBillService;
+    private final ElectricWaterService electricWaterService;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
@@ -58,18 +63,18 @@ public class PaymentService {
     }
 
     /**
-     * Create payment for electric water bill
-     * @param bill electric water bill
+     * Tạo thanh toán cho hóa đơn điện nước
+     * @param bill hóa đơn
      * @return payment
      */
-    public Payment create(ElectricWaterBill bill) {
+    public Payment create(User user, ElectricWaterBill bill) {
         return create(Payment.builder()
                 .type(PaymentType.ELECTRIC_WATER)
                 .status(PaymentStatus.PENDING)
                 .createDate(LocalDateTime.now())
                 .electricWaterBill(bill)
                 .price(bill.getPrice())
-                .user(bill.getUser())
+                .user(user)
                 .build());
     }
 
@@ -83,7 +88,17 @@ public class PaymentService {
     }
 
     public Payment getById(UUID id) {
-        return paymentRepository.findById(id).orElseThrow();
+        return paymentRepository.findById(id).orElse(null);
+    }
+
+    public void handleElectricWaterBillPaymentSuccess(Payment payment) {
+        ElectricWaterBill bill = payment.getElectricWaterBill();
+        List<Payment> payments = paymentRepository.findAll((r,q,c) ->
+                c.equal(r.get("electricWaterBill"), bill));
+        long paidUserCount = payments.stream().filter(p -> p.getStatus() == PaymentStatus.SUCCESS).count();
+        if (paidUserCount == bill.getUserCount()) {
+            electricWaterService.successBill(bill);
+        }
     }
 
     public Payment handle(UUID paymentId, VNPayStatus status) {
@@ -99,11 +114,16 @@ public class PaymentService {
             if (payment.getType() == PaymentType.BOOKING)
                 slotService.onPayment(payment.getSlotHistory().getSlot(), status);
             if (payment.getType() == PaymentType.ELECTRIC_WATER)
-                electricWaterBillService.onPayment(payment.getElectricWaterBill(), status);
+                handleElectricWaterBillPaymentSuccess(payment);
         }
         return payment;
     }
 
+    /**
+     * Xác minh thanh toán
+     * @param request http request
+     * @return kết quả xác minh
+     */
     @Transactional
     public PaymentVerifyResponse verify(HttpServletRequest request) {
         // vnpay verify hash
@@ -136,15 +156,14 @@ public class PaymentService {
     }
 
     /**
-     * Get payment history of current user
-     * @param status payment status
-     * @param pageable pageable
-     * @return payment history of current user
+     * Lịch sử thanh toán của user hiện tại
+     * @param status trạng thái thanh toán
+     * @param pageable page, size, sort by createDate
+     * @return lịch sủ thanh toán
      */
     public PagedModel<PaymentResponse> history(List<PaymentStatus> status, Pageable pageable) {
-        Sort validSort = Sort.by(Optional.ofNullable(pageable.getSort().getOrderFor("createDate"))
-                .orElse(Sort.Order.desc("createDate")));
-        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), 5, validSort);
+        Sort validSort = SortUtil.getSort(pageable, "createDate");
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), Math.min(pageable.getPageSize(), 99), validSort);
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         return new PagedModel<>(paymentRepository.findAll(Specification.allOf(
                 (root, query, cb) -> cb.equal(root.get("user"), user),
@@ -152,9 +171,15 @@ public class PaymentService {
         ), validPageable).map(p -> modelMapper.map(p, PaymentResponse.class)));
     }
 
-    public String createElectricWaterBillPaymentUrl(UUID id) {
-        ElectricWaterBill bill = electricWaterBillService.getById(id);
-        Payment payment = create(bill);
+    /**
+     * Tạo đường dẫn thanh toán cho hóa đơn điện nước
+     * @param billId id hóa đơn
+     * @return đường dẫn thanh toán
+     */
+    public String createElectricWaterBillPaymentUrl(UUID billId) {
+        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        ElectricWaterBill bill = electricWaterService.getBillById(billId);
+        Payment payment = create(user, bill);
         return createPaymentUrl(payment);
     }
 }
