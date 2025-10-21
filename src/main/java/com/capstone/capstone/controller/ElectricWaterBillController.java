@@ -9,6 +9,7 @@ import com.capstone.capstone.dto.response.electricwater.ElectricWaterIndexRespon
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterPricingResponse;
 import com.capstone.capstone.service.impl.ElectricWaterService;
 import com.capstone.capstone.service.impl.PaymentService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,12 +53,12 @@ public class ElectricWaterBillController {
     }
 
     @PostMapping("/api/electric-water-pricing")
-    public BaseResponse<ElectricWaterPricingResponse> getPricing(@RequestBody CreateElectricWaterPricingRequest request) {
+    public BaseResponse<ElectricWaterPricingResponse> getPricing(@RequestBody @Valid CreateElectricWaterPricingRequest request) {
         return new BaseResponse<>(electricWaterService.createPricing(request));
     }
 
     @PutMapping("/api/electric-water-pricing")
-    public BaseResponse<ElectricWaterPricingResponse> getPricing(@RequestBody UpdateElectricWaterPricingRequest request) {
+    public BaseResponse<ElectricWaterPricingResponse> getPricing(@RequestBody @Valid UpdateElectricWaterPricingRequest request) {
         return new BaseResponse<>(electricWaterService.updatePricing(request));
     }
 }

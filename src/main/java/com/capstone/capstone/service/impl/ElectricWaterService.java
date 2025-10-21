@@ -48,6 +48,7 @@ public class ElectricWaterService {
                 .semester(semester)
                 .electricIndex(electricIndex)
                 .waterIndex(waterIndex)
+                .createDate(LocalDateTime.now())
                 .build();
         index = electricWaterIndexRepository.save(index);
 
