@@ -12,8 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@Builder
-public class Guard extends BaseEntity {
+public class Employee extends BaseEntity{
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
