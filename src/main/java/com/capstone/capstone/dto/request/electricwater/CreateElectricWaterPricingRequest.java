@@ -6,10 +6,10 @@ import lombok.Data;
 
 @Data
 public class CreateElectricWaterPricingRequest {
-    @NotNull
-    @Min(0)
-    private Integer electricIndex;
-    @NotNull
-    @Min(0)
-    private Integer waterIndex;
+    @NotNull(message = "ELECTRIC_PRICING_NULL")
+    @Min(value = 0, message = "ELECTRIC_PRICING_MIN")
+    private Long electricPrice;
+    @NotNull(message = "WATER_PRICING_NULL")
+    @Min(value = 0, message = "WATER_PRICING_MIN")
+    private Long waterPrice;
 }

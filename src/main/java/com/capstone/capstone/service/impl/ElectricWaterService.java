@@ -54,6 +54,7 @@ public class ElectricWaterService {
 
         // Lấy thông tin giá điện, nước
         ElectricWaterPricing pricing = electricWaterPricingRepository.latestPricing();
+        if (pricing == null) throw new AppException("PRICING_NOT_FOUND");
 
         long electricPrice = electricIndex * pricing.getElectricPrice();
         long waterPrice = waterIndex * pricing.getWaterPrice();

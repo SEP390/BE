@@ -52,12 +52,12 @@ public class ElectricWaterBillController {
     }
 
     @PostMapping("/api/electric-water-pricing")
-    public BaseResponse<ElectricWaterPricingResponse> getPricing(CreateElectricWaterPricingRequest request) {
+    public BaseResponse<ElectricWaterPricingResponse> getPricing(@RequestBody CreateElectricWaterPricingRequest request) {
         return new BaseResponse<>(electricWaterService.createPricing(request));
     }
 
     @PutMapping("/api/electric-water-pricing")
-    public BaseResponse<ElectricWaterPricingResponse> getPricing(UpdateElectricWaterPricingRequest request) {
+    public BaseResponse<ElectricWaterPricingResponse> getPricing(@RequestBody UpdateElectricWaterPricingRequest request) {
         return new BaseResponse<>(electricWaterService.updatePricing(request));
     }
 }
