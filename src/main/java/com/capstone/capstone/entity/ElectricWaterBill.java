@@ -31,7 +31,4 @@ public class ElectricWaterBill extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
-
-    @OneToMany
-    private List<Payment> payments;
 }
