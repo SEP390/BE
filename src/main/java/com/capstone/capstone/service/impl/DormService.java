@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
+import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.dorm.CreateDormRequest;
 import com.capstone.capstone.dto.response.dorm.GetDormResponse;
@@ -18,6 +19,7 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +46,15 @@ public class DormService {
         return rooms.stream().map(r -> modelMapper.map(r, RoomResponse.class)).toList();
     }
 
+    @Transactional
     public CreateDormResponse create(CreateDormRequest request) {
-        Dorm dorm = dormRepository.save(modelMapper.map(request,Dorm.class));
+        Dorm dorm = modelMapper.map(request,Dorm.class);
+        dorm = dormRepository.save(dorm);
+        for (Room room : dorm.getRooms()) {
+            room.setStatus(StatusRoomEnum.AVAILABLE);
+            room.setDorm(dorm);
+        }
+        roomRepository.saveAll(dorm.getRooms());
         for (Room room : dorm.getRooms()) {
             List<Slot> slots = new ArrayList<>();
             for (int i = 1; i <= room.getTotalSlot(); i++) {
