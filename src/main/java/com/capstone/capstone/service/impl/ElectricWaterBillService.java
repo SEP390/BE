@@ -16,7 +16,9 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -31,6 +33,7 @@ public class ElectricWaterBillService {
     private final SemesterService semesterService;
     private final UserRepository userRepository;
 
+    @Transactional
     public ElectricWaterRoomBillResponse create(CreateElectricWaterBillRequest request) {
         Room room = roomRepository.getReferenceById(request.getRoomId());
         Semester semester = semesterService.getCurrent();
@@ -54,7 +57,11 @@ public class ElectricWaterBillService {
         for (User user : users) {
             ElectricWaterBill bill = ElectricWaterBill.builder()
                     .user(user)
+                    .price(userPrice)
                     .roomBill(roomBill)
+                    .semester(semester)
+                    .status(PaymentStatus.PENDING)
+                    .createDate(LocalDateTime.now())
                     .build();
             electricWaterBillRepository.save(bill);
         }

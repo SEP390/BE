@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 public class ElectricWaterBill extends BaseEntity {
     private LocalDateTime createDate;
+    private Long price;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

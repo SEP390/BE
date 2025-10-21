@@ -68,6 +68,7 @@ public class PaymentService {
                 .status(PaymentStatus.PENDING)
                 .createDate(LocalDateTime.now())
                 .electricWaterBill(bill)
+                .price(bill.getPrice())
                 .user(bill.getUser())
                 .build());
     }
