@@ -4,7 +4,7 @@ import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -12,5 +12,5 @@ import java.time.LocalDate;
 public class ElectricWaterPricing extends BaseEntity {
     private Long electricPrice;
     private Long waterPrice;
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 }

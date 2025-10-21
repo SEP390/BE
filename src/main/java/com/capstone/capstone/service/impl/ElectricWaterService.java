@@ -17,7 +17,6 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -127,14 +126,14 @@ public class ElectricWaterService {
 
     public ElectricWaterPricingResponse createPricing(CreateElectricWaterPricingRequest request) {
         ElectricWaterPricing pricing = modelMapper.map(request, ElectricWaterPricing.class);
-        pricing.setStartDate(LocalDate.now());
+        pricing.setStartDate(LocalDateTime.now());
         pricing = electricWaterPricingRepository.save(pricing);
         return modelMapper.map(pricing, ElectricWaterPricingResponse.class);
     }
 
     public ElectricWaterPricingResponse updatePricing(UpdateElectricWaterPricingRequest request) {
         ElectricWaterPricing pricing = modelMapper.map(request, ElectricWaterPricing.class);
-        pricing.setStartDate(LocalDate.now());
+        pricing.setStartDate(LocalDateTime.now());
         pricing = electricWaterPricingRepository.save(pricing);
         return modelMapper.map(pricing, ElectricWaterPricingResponse.class);
     }
