@@ -22,6 +22,7 @@ public class SlotService {
         return slotRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void lock(Slot slot, User user) {
         if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new AppException("SLOT_UNAVAILABLE", slot.getId());
         slot.setStatus(StatusSlotEnum.LOCK);
@@ -30,6 +31,7 @@ public class SlotService {
         roomService.checkFullAndUpdate(slot.getRoom());
     }
 
+    @Transactional
     public void unlock(Slot slot) {
         slot.setUser(null);
         slot.setStatus(StatusSlotEnum.AVAILABLE);
@@ -37,6 +39,7 @@ public class SlotService {
         roomService.checkFullAndUpdate(slot.getRoom());
     }
 
+    @Transactional
     public void unavailable(Slot slot) {
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
         slotRepository.save(slot);
@@ -47,16 +50,11 @@ public class SlotService {
         return slotRepository.save(slot);
     }
 
-    public void lockToUnavailable(Slot slot) {
-        if (slot.getStatus() != StatusSlotEnum.LOCK) throw new AppException("SLOT_NOT_LOCK", slot.getId());
-        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
-        slotRepository.save(slot);
-    }
-
     public Slot getByUser(User user) {
         return slotRepository.findByUser(user);
     }
 
+    @Transactional
     public void onPayment(Slot slot, VNPayStatus status) {
         if (status == VNPayStatus.SUCCESS) {
             unavailable(slot);
