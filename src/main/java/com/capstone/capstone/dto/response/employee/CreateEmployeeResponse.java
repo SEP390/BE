@@ -1,17 +1,15 @@
-package com.capstone.capstone.dto.response.guard;
+package com.capstone.capstone.dto.response.employee;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class CreateGuardResponse {
+public class CreateEmployeeResponse {
     private String email;
     private String username;
 }
