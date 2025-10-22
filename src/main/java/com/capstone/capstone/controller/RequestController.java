@@ -5,6 +5,7 @@ import com.capstone.capstone.dto.request.request.CreateRequestRequest;
 import com.capstone.capstone.dto.request.request.UpdateRequestRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.request.CreateRequestResponse;
+import com.capstone.capstone.dto.response.request.GetAllRequestResponse;
 import com.capstone.capstone.dto.response.request.GetRequestByIdResponse;
 import com.capstone.capstone.dto.response.request.UpdateRequestResponse;
 import com.capstone.capstone.service.interfaces.IRequestService;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,7 +23,7 @@ import java.util.UUID;
 public class RequestController {
     private final IRequestService requestService;
 
-    @PostMapping(ApiConstant.REQUEST.CREATE)
+    @PostMapping()
     public ResponseEntity<BaseResponse<CreateRequestResponse>> createRequest(@RequestBody CreateRequestRequest createRequestRequest){
         CreateRequestResponse createRequestResponse = requestService.createRequest(createRequestRequest);
         BaseResponse<CreateRequestResponse> baseResponse = new BaseResponse<>();
@@ -52,4 +54,13 @@ public class RequestController {
         return ResponseEntity.status(HttpStatus.OK).body(baseResponse);
     }
 
+    @GetMapping()
+    public ResponseEntity<BaseResponse<List<GetAllRequestResponse>>> getAllRequests(){
+        List<GetAllRequestResponse> response = requestService.getAllRequest();
+        BaseResponse<List<GetAllRequestResponse>> baseResponse = new BaseResponse<>();
+        baseResponse.setStatus(HttpStatus.OK.value());
+        baseResponse.setMessage("Get requests successfully");
+        baseResponse.setData(response);
+        return ResponseEntity.status(HttpStatus.OK).body(baseResponse);
+    }
 }
