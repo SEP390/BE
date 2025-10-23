@@ -8,12 +8,12 @@ import java.util.UUID;
 
 @Data
 public class UpdateElectricWaterIndexRequest {
-    @NotNull
+    @NotNull(message = "ID_NULL")
     private UUID id;
-    @NotNull
-    @Min(0)
+    @NotNull(message = "ELECTRIC_INDEX_NULL")
+    @Min(value = 0, message = "NEGATIVE_ELECTRIC_INDEX")
     private Integer electricIndex;
-    @Min(0)
-    @NotNull
+    @NotNull(message = "WATER_INDEX_NULL")
+    @Min(value = 0, message = "NEGATIVE_WATER_INDEX")
     private Integer waterIndex;
 }

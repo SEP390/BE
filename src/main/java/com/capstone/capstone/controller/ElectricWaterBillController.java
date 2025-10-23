@@ -5,9 +5,13 @@ import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterBillResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterIndexResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterPricingResponse;
+import com.capstone.capstone.dto.response.electricwater.UserElectricWaterResponse;
 import com.capstone.capstone.service.impl.ElectricWaterService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,8 +28,15 @@ public class ElectricWaterBillController {
     }
 
     @GetMapping("/api/electric-water-index")
-    public BaseResponse<ElectricWaterIndexResponse> getIndex(@RequestParam UUID roomId) {
-        return new BaseResponse<>(electricWaterService.getIndexResponseOfRoom(roomId));
+    public BaseResponse<ElectricWaterIndexResponse> getIndex(
+            @RequestParam UUID roomId,
+            @RequestParam UUID semesterId) {
+        return new BaseResponse<>(electricWaterService.getIndexResponse(roomId, semesterId));
+    }
+
+    @GetMapping("/api/electric-water-index/{id}/bill")
+    public BaseResponse<ElectricWaterBillResponse> getIndexBill(@PathVariable UUID id) {
+        return new BaseResponse<>(electricWaterService.getIndexBillResponse(id));
     }
 
     @PutMapping("/api/electric-water-index")
@@ -38,9 +49,9 @@ public class ElectricWaterBillController {
         return new BaseResponse<>(electricWaterService.createBillResponse(request));
     }
 
-    @GetMapping("/api/electric-water-bill")
-    public BaseResponse<ElectricWaterBillResponse> getBill() {
-        return new BaseResponse<>(electricWaterService.getCurrentBillResponse());
+    @GetMapping("/api/electric-water-bill/user")
+    public BaseResponse<PagedModel<UserElectricWaterResponse>> getUserBill(@PageableDefault Pageable pageable) {
+        return new BaseResponse<>(electricWaterService.getUserElectricWaterBills(pageable));
     }
 
     @GetMapping("/api/electric-water-bill/{id}/payment-url")
@@ -56,6 +67,11 @@ public class ElectricWaterBillController {
     @GetMapping("/api/electric-water-pricing/{id}")
     public BaseResponse<ElectricWaterPricingResponse> getPricing(@PathVariable UUID id) {
         return new BaseResponse<>(electricWaterService.getPricing(id));
+    }
+
+    @GetMapping("/api/electric-water-pricing/current")
+    public BaseResponse<ElectricWaterPricingResponse> getCurrentPricing() {
+        return new BaseResponse<>(electricWaterService.getCurrentPricing());
     }
 
     @PostMapping("/api/electric-water-pricing")

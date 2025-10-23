@@ -1,6 +1,6 @@
 package com.capstone.capstone.dto.response.booking;
 
-import com.capstone.capstone.dto.response.room.RoomResponse;
+import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import lombok.Data;
 
 import java.util.UUID;
@@ -9,5 +9,5 @@ import java.util.UUID;
 public class SlotResponse {
     private UUID id;
     private String slotName;
-    private RoomResponse room;
+    private StatusSlotEnum status;
 }

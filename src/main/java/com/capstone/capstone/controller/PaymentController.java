@@ -3,7 +3,7 @@ package com.capstone.capstone.controller;
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.PaymentType;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.booking.PaymentVerifyResponse;
+import com.capstone.capstone.dto.response.payment.PaymentVerifyResponse;
 import com.capstone.capstone.service.impl.ElectricWaterService;
 import com.capstone.capstone.service.impl.PaymentService;
 import com.capstone.capstone.service.impl.SlotService;
@@ -40,7 +40,7 @@ public class PaymentController {
 
     @GetMapping("/api/payment/history")
     public BaseResponse<?> history(
-            @RequestParam(required = false) List<PaymentStatus> status,
+            @RequestParam(required = false) PaymentStatus status,
             @PageableDefault Pageable pageable) {
         return new BaseResponse<>(paymentService.history(status, pageable));
     }

@@ -26,7 +26,7 @@ public class SlotHistoryService {
      */
     public SlotHistory create(User user, Slot slot) {
         // get next semester
-        Semester semester = semesterService.getNextSemester();
+        Semester semester = semesterService.getNext();
 
         LocalDateTime createDate = LocalDateTime.now();
 

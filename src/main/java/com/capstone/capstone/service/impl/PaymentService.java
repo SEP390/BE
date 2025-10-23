@@ -3,8 +3,8 @@ package com.capstone.capstone.service.impl;
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.PaymentType;
 import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
-import com.capstone.capstone.dto.response.booking.PaymentResponse;
-import com.capstone.capstone.dto.response.booking.PaymentVerifyResponse;
+import com.capstone.capstone.dto.response.payment.PaymentResponse;
+import com.capstone.capstone.dto.response.payment.PaymentVerifyResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.ElectricWaterBill;
 import com.capstone.capstone.entity.Payment;
@@ -156,13 +156,13 @@ public class PaymentService {
      * @param pageable page, size, sort by createDate
      * @return lịch sủ thanh toán
      */
-    public PagedModel<PaymentResponse> history(List<PaymentStatus> status, Pageable pageable) {
-        Sort validSort = SortUtil.getSort(pageable, "createDate");
+    public PagedModel<PaymentResponse> history(PaymentStatus status, Pageable pageable) {
+        Sort validSort = SortUtil.getSort(pageable, "createDate", "price");
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), Math.min(pageable.getPageSize(), 99), validSort);
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         return new PagedModel<>(paymentRepository.findAll(Specification.allOf(
                 (root, query, cb) -> cb.equal(root.get("user"), user),
-                status != null ? (root, query, cb) -> root.get("status").in(status) : Specification.unrestricted()
+                status != null ? (root, query, cb) -> cb.equal(root.get("status"), status) : Specification.unrestricted()
         ), validPageable).map(p -> modelMapper.map(p, PaymentResponse.class)));
     }
 
@@ -173,14 +173,15 @@ public class PaymentService {
      * @param status lọc theo status
      * @return tất cả thanh toán
      */
-    public List<Payment> getAllByElectricWaterBill(ElectricWaterBill bill, List<PaymentStatus> status) {
+    public List<Payment> getAllByElectricWaterBill(ElectricWaterBill bill, User user, PaymentStatus status) {
         return paymentRepository.findAll(Specification.allOf(
                 (r, q, c) -> c.equal(r.get("electricWaterBill"), bill),
-                (status != null && !status.isEmpty()) ? (r,q,c) -> r.get("status").in(status) : Specification.unrestricted()
+                (user != null) ? (r, q, c) -> c.equal(r.get("user"), user) : Specification.unrestricted(),
+                (status != null) ? (r,q,c) -> c.equal(r.get("status"), status) : Specification.unrestricted()
         ));
     }
 
     public PaymentResponse toResponse(Payment payment) {
-        return null;
+        return modelMapper.map(payment, PaymentResponse.class);
     }
 }

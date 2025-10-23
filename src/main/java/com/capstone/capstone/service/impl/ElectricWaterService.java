@@ -5,15 +5,19 @@ import com.capstone.capstone.dto.request.electricwater.*;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterBillResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterIndexResponse;
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterPricingResponse;
+import com.capstone.capstone.dto.response.electricwater.UserElectricWaterResponse;
+import com.capstone.capstone.dto.response.payment.PaymentCoreResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.AuthenUtil;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +42,7 @@ public class ElectricWaterService {
     @Transactional
     public ElectricWaterIndexResponse createIndexResponse(CreateElectricWaterIndexRequest request) {
         Room room = roomRepository.findById(request.getRoomId()).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        Semester semester = semesterService.getCurrent();
+        Semester semester = semesterService.getById(request.getSemesterId());
 
         // TODO: kiểm tra thời gian đang trong kỳ hay ngoài kỳ
 
@@ -79,6 +83,9 @@ public class ElectricWaterService {
     }
 
     public ElectricWaterIndex updateIndex(ElectricWaterIndex index) {
+        if (electricWaterBillRepository.exists((r, q, c) -> c.equal(r.get("index"), index))) {
+            throw new AppException("UPDATE_INDEX_EXISTED_BILL");
+        }
         return electricWaterIndexRepository.save(index);
     }
 
@@ -90,6 +97,9 @@ public class ElectricWaterService {
     }
 
     public ElectricWaterBill createBill(ElectricWaterIndex index) {
+        if (electricWaterBillRepository.exists((r, q, c) -> c.equal(r.get("index"), index))) {
+            throw new AppException("BILL_EXISTED");
+        }
         // Đếm số user trong phòng
         List<User> users = index.getRoom().getSlots().stream().map(Slot::getUser).filter(Objects::nonNull).toList();
 
@@ -119,20 +129,6 @@ public class ElectricWaterService {
         return electricWaterBillRepository.save(bill);
     }
 
-    /**
-     * Thông tin chỉ số điện nước của phòng với id
-     * @param id id phòng
-     * @return thông tin chỉ số điện nước
-     */
-    @Transactional
-    public ElectricWaterIndexResponse getIndexResponseOfRoom(UUID id) {
-        Room room = roomRepository.findById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        Semester semester = semesterService.getCurrent();
-        ElectricWaterIndex index = getIndexOfRoom(room, semester);
-        if (index == null) return null;
-        return modelMapper.map(index, ElectricWaterIndexResponse.class);
-    }
-
     public ElectricWaterIndex getIndexOfRoom(Room room, Semester semester) {
         ElectricWaterIndex example = new ElectricWaterIndex();
         example.setRoom(room);
@@ -140,8 +136,16 @@ public class ElectricWaterService {
         return electricWaterIndexRepository.findOne(Example.of(example)).orElse(null);
     }
 
+    public ElectricWaterIndex getIndexById(UUID id) {
+        return electricWaterIndexRepository.findById(id).orElse(null);
+    }
+
     public ElectricWaterBill getBillOfRoom(Room room, Semester semester) {
         return electricWaterBillRepository.findOne((r,q,c) -> c.and(c.equal(r.get("index").get("room"), room), c.equal(r.get("index").get("semester"), semester))).orElse(null);
+    }
+
+    public Page<ElectricWaterBill> getBillsOfRoom(Room room, Pageable pageable) {
+        return electricWaterBillRepository.findAll((r,q,c) -> c.equal(r.get("index").get("room"), room), pageable);
     }
 
     public ElectricWaterBill getBillOfIndex(ElectricWaterIndex index) {
@@ -152,15 +156,38 @@ public class ElectricWaterService {
      * Lấy thông tin hóa đơn điện nước của phòng
      * @return thông tin hóa đơn điện nước
      */
-    public ElectricWaterBillResponse getCurrentBillResponse() {
+    public PagedModel<UserElectricWaterResponse> getUserElectricWaterBills(Pageable pageable) {
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         Room room = roomRepository.findByUser(user);
-        ElectricWaterBill bill = getBillOfRoom(room, semesterService.getCurrent());
-        return modelMapper.map(bill, ElectricWaterBillResponse.class);
+        Page<ElectricWaterBill> bills = getBillsOfRoom(room, pageable);
+        return new PagedModel<>(bills.map(bill -> {
+            UserElectricWaterResponse response = new UserElectricWaterResponse();
+            response.setBill(modelMapper.map(bill, ElectricWaterBillResponse.class));
+            List<Payment> payments = paymentService.getAllByElectricWaterBill(bill, user, PaymentStatus.SUCCESS);
+            response.setPaid(false);
+            if (!payments.isEmpty()) {
+                response.setPaid(true);
+                response.setPayment(modelMapper.map(payments.getFirst(), PaymentCoreResponse.class));
+            }
+            return response;
+        }));
     }
 
     public ElectricWaterBill getBillById(UUID billId) {
         return electricWaterBillRepository.findById(billId).orElse(null);
+    }
+
+    @Transactional
+    public ElectricWaterBillResponse getIndexBillResponse(UUID id) {
+        ElectricWaterIndex index = getIndexById(id);
+        if (index == null) throw new AppException("INDEX_NOT_FOUND");
+        ElectricWaterBill bill = getBillOfIndex(index);
+        if (bill == null) throw new AppException("BILL_NOT_FOUND");
+        return modelMapper.map(bill, ElectricWaterBillResponse.class);
+    }
+
+    public ElectricWaterBill getBillByIndex(ElectricWaterIndex index) {
+        return electricWaterBillRepository.findOne((r, q, c) -> c.equal(r.get("index"), index)).orElse(null);
     }
 
     public ElectricWaterBill successBill(ElectricWaterBill bill) {
@@ -204,7 +231,7 @@ public class ElectricWaterService {
     public void onPayment(Payment payment, VNPayStatus status) {
         ElectricWaterBill bill = payment.getElectricWaterBill();
         if (status == VNPayStatus.SUCCESS) {
-            List<Payment> payments = paymentService.getAllByElectricWaterBill(bill, List.of(PaymentStatus.SUCCESS));
+            List<Payment> payments = paymentService.getAllByElectricWaterBill(bill, null, PaymentStatus.SUCCESS);
             long paid = payments.size();
             // tất cả user đã trả tiền
             if (paid == bill.getUserCount()) {
@@ -212,5 +239,17 @@ public class ElectricWaterService {
             }
         }
         payment.setElectricWaterBill(bill);
+    }
+
+    public ElectricWaterPricingResponse getCurrentPricing() {
+        return modelMapper.map(electricWaterPricingRepository.latestPricing(), ElectricWaterPricingResponse.class);
+    }
+
+    public ElectricWaterIndexResponse getIndexResponse(UUID roomId, UUID semesterId) {
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
+        Semester semester = semesterService.getById(semesterId);
+        ElectricWaterIndex index = getIndexOfRoom(room, semester);
+        if (index == null) return null;
+        return modelMapper.map(index, ElectricWaterIndexResponse.class);
     }
 }

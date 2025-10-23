@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class SlotHistoryResponse {
-    private SlotResponse slot;
+    private SlotRoomDormResponse slot;
     private SemesterResponse semester;
 }

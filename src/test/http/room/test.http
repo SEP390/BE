@@ -15,3 +15,7 @@ Content-Type: application/json
 ### Get all rooms
 GET http://localhost:8080/api/rooms
 Authorization: Bearer {{token}}
+
+### Get rooms-matching
+GET http://localhost:8080/api/rooms-matching
+Authorization: Bearer {{token}}
