@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.RequestStatusEnum;
+import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.request.CreateRequestRequest;
 import com.capstone.capstone.dto.request.request.UpdateRequestRequest;
 import com.capstone.capstone.dto.response.request.CreateRequestResponse;
@@ -89,14 +90,22 @@ public class RequestService implements IRequestService {
 
     @Override
     public List<GetAllRequestResponse> getAllRequest() {
-        List<Request>  requests = requestRepository.findAll();
+        UUID userid = AuthenUtil.getCurrentUserId();
+        User user = userRepository.findById(userid).orElseThrow(() -> new NotFoundException("User not found"));
+        List<Request> requests = new ArrayList<>();
+        if (user.getRole() == RoleEnum.MANAGER) {
+            requests = requestRepository.findAll();
+        } else if  (user.getRole() == RoleEnum.RESIDENT) {
+            requests = requestRepository.findRequestByUser(user);
+        }
         List<GetAllRequestResponse> getAllRequestResponse = requests.stream().map(request -> {
             GetAllRequestResponse requestResponse = new GetAllRequestResponse();
             requestResponse.setRequestId(request.getId());
+            requestResponse.setUserName(request.getUser().getUsername());
             requestResponse.setRequestType(request.getRequestType());
             requestResponse.setCreateTime(request.getCreateTime());
             requestResponse.setResponseStatus(request.getRequestStatus());
-            requestResponse.setSemester(request.getSemester());
+            requestResponse.setSemesterName(request.getSemester().getName());
             return  requestResponse;
         }).collect(Collectors.toList());
         return getAllRequestResponse;
