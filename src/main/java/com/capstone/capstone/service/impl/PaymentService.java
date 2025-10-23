@@ -3,19 +3,24 @@ package com.capstone.capstone.service.impl;
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.PaymentType;
 import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
-import com.capstone.capstone.dto.response.booking.PaymentResponse;
-import com.capstone.capstone.dto.response.booking.PaymentVerifyResponse;
+import com.capstone.capstone.dto.response.payment.PaymentResponse;
+import com.capstone.capstone.dto.response.payment.PaymentVerifyResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
-import com.capstone.capstone.entity.*;
+import com.capstone.capstone.entity.ElectricWaterBill;
+import com.capstone.capstone.entity.Payment;
+import com.capstone.capstone.entity.SlotHistory;
+import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
-import com.capstone.capstone.repository.ElectricWaterBillRepository;
 import com.capstone.capstone.repository.PaymentRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.util.SortUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
@@ -32,10 +37,8 @@ import java.util.UUID;
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final VNPayService vNPayService;
-    private final SlotService slotService;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-    private final ElectricWaterBillService electricWaterBillService;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
@@ -43,6 +46,7 @@ public class PaymentService {
 
     /**
      * Create payment for slot history
+     *
      * @param slotHistory slot history
      * @return payment
      */
@@ -58,22 +62,25 @@ public class PaymentService {
     }
 
     /**
-     * Create payment for electric water bill
-     * @param bill electric water bill
+     * Tạo thanh toán cho hóa đơn điện nước
+     *
+     * @param bill hóa đơn
      * @return payment
      */
-    public Payment create(ElectricWaterBill bill) {
+    public Payment create(User user, ElectricWaterBill bill) {
         return create(Payment.builder()
                 .type(PaymentType.ELECTRIC_WATER)
                 .status(PaymentStatus.PENDING)
                 .createDate(LocalDateTime.now())
                 .electricWaterBill(bill)
-                .user(bill.getUser())
+                .price(bill.getPrice())
+                .user(user)
                 .build());
     }
 
     /**
      * Create payment url for invoice
+     *
      * @param payment payment
      * @return payment url
      */
@@ -81,45 +88,53 @@ public class PaymentService {
         return vNPayService.createPaymentUrl(payment.getId(), payment.getCreateDate(), payment.getPrice());
     }
 
+    public String createPaymentUrl(User user, ElectricWaterBill bill) {
+        Payment payment = create(user, bill);
+        return vNPayService.createPaymentUrl(payment.getId(), payment.getCreateDate(), payment.getPrice());
+    }
+
     public Payment getById(UUID id) {
-        return paymentRepository.findById(id).orElseThrow();
+        return paymentRepository.findById(id).orElse(null);
     }
 
-    public Payment handle(UUID paymentId, VNPayStatus status) {
-        Payment payment = getById(paymentId);
-        // invalid payment
-        if (payment == null) {
-            throw new AppException("PAYMENT_NOT_FOUND", paymentId);
-        }
-        if (payment.getStatus() == PaymentStatus.PENDING) {
-            if (status == VNPayStatus.SUCCESS) payment.setStatus(PaymentStatus.SUCCESS);
-            else payment.setStatus(PaymentStatus.CANCEL);
-            payment = paymentRepository.save(payment);
-            if (payment.getType() == PaymentType.BOOKING)
-                slotService.onPayment(payment.getSlotHistory().getSlot(), status);
-            if (payment.getType() == PaymentType.ELECTRIC_WATER)
-                electricWaterBillService.onPayment(payment.getElectricWaterBill(), status);
-        }
-        return payment;
+    public Payment updateStatus(Payment payment, VNPayStatus status) {
+        if (status == VNPayStatus.SUCCESS) payment.setStatus(PaymentStatus.SUCCESS);
+        else payment.setStatus(PaymentStatus.CANCEL);
+        return paymentRepository.save(payment);
     }
 
+    /**
+     * Xác minh thanh toán
+     *
+     * @param request http request
+     * @return kết quả xác minh
+     */
     @Transactional
     public PaymentVerifyResponse verify(HttpServletRequest request) {
         // vnpay verify hash
         var result = vNPayService.verify(request);
-
-        Payment payment = handle(result.getId(), result.getStatus());
-
+        Payment payment = getById(result.getId());
+        // invalid payment
+        if (payment == null) {
+            throw new AppException("PAYMENT_NOT_FOUND", result.getId());
+        }
+        boolean update = false;
+        if (payment.getStatus() == PaymentStatus.PENDING) {
+            payment = updateStatus(payment, result.getStatus());
+            update = true;
+        }
         return PaymentVerifyResponse.builder()
+                .update(update)
                 .status(result.getStatus())
-                .price(payment.getPrice())
+                .payment(payment)
                 .build();
     }
 
     /**
      * Get booking history of user
-     * @param user user
-     * @param status status of payment
+     *
+     * @param user     user
+     * @param status   status of payment
      * @param pageable pageable
      * @return history
      */
@@ -135,25 +150,38 @@ public class PaymentService {
     }
 
     /**
-     * Get payment history of current user
-     * @param status payment status
-     * @param pageable pageable
-     * @return payment history of current user
+     * Lịch sử thanh toán của user hiện tại
+     *
+     * @param status   trạng thái thanh toán
+     * @param pageable page, size, sort by createDate
+     * @return lịch sủ thanh toán
      */
-    public PagedModel<PaymentResponse> history(List<PaymentStatus> status, Pageable pageable) {
-        Sort validSort = Sort.by(Optional.ofNullable(pageable.getSort().getOrderFor("createDate"))
-                .orElse(Sort.Order.desc("createDate")));
-        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), 5, validSort);
+    public PagedModel<PaymentResponse> history(PaymentStatus status, Pageable pageable) {
+        Sort validSort = SortUtil.getSort(pageable, "createDate", "price");
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), Math.min(pageable.getPageSize(), 99), validSort);
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         return new PagedModel<>(paymentRepository.findAll(Specification.allOf(
                 (root, query, cb) -> cb.equal(root.get("user"), user),
-                status != null ? (root, query, cb) -> root.get("status").in(status) : Specification.unrestricted()
+                status != null ? (root, query, cb) -> cb.equal(root.get("status"), status) : Specification.unrestricted()
         ), validPageable).map(p -> modelMapper.map(p, PaymentResponse.class)));
     }
 
-    public String createElectricWaterBillPaymentUrl(UUID id) {
-        ElectricWaterBill bill = electricWaterBillService.getById(id);
-        Payment payment = create(bill);
-        return createPaymentUrl(payment);
+    /**
+     * Lấy tất cả thanh toán của hóa đơn điện nước
+     *
+     * @param bill hóa đơn điện nước
+     * @param status lọc theo status
+     * @return tất cả thanh toán
+     */
+    public List<Payment> getAllByElectricWaterBill(ElectricWaterBill bill, User user, PaymentStatus status) {
+        return paymentRepository.findAll(Specification.allOf(
+                (r, q, c) -> c.equal(r.get("electricWaterBill"), bill),
+                (user != null) ? (r, q, c) -> c.equal(r.get("user"), user) : Specification.unrestricted(),
+                (status != null) ? (r,q,c) -> c.equal(r.get("status"), status) : Specification.unrestricted()
+        ));
+    }
+
+    public PaymentResponse toResponse(Payment payment) {
+        return modelMapper.map(payment, PaymentResponse.class);
     }
 }

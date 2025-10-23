@@ -6,8 +6,12 @@ import com.capstone.capstone.dto.response.semester.SemesterResponse;
 import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.SemesterRepository;
+import com.capstone.capstone.util.SortUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +23,7 @@ public class SemesterService {
     private final SemesterRepository semesterRepository;
     private final ModelMapper modelMapper;
 
-    public Semester getNextSemester() {
+    public Semester getNext() {
         return semesterRepository.findNextSemester();
     }
 
@@ -27,16 +31,24 @@ public class SemesterService {
         return semesterRepository.findCurrent();
     }
 
-    public SemesterResponse getCurrentDto() {
+    public SemesterResponse getCurrentResponse() {
         return modelMapper.map(semesterRepository.findCurrent(), SemesterResponse.class);
     }
 
-    public List<SemesterResponse> getAll() {
-        return semesterRepository.findAll().stream().map(semester -> modelMapper.map(semester, SemesterResponse.class)).toList();
+    public List<SemesterResponse> getAll(String name, Pageable pageable) {
+        Sort sort = SortUtil.getSort(pageable, "startDate");
+        return semesterRepository.findAll(
+                (name != null && !name.isBlank()) ? (r,q,c) -> c.equal(r.get("name"), name) : Specification.unrestricted(),
+                sort
+        ).stream().map(semester -> modelMapper.map(semester, SemesterResponse.class)).toList();
     }
 
-    public SemesterResponse getById(UUID id) {
-        return modelMapper.map(semesterRepository.findById(id).orElseThrow(), SemesterResponse.class);
+    public SemesterResponse getResponseById(UUID id) {
+        return modelMapper.map(semesterRepository.findById(id).orElseThrow(() -> new AppException("SEMESTER_NOT_FOUND")), SemesterResponse.class);
+    }
+
+    public Semester getById(UUID id) {
+        return semesterRepository.findById(id).orElse(null);
     }
 
     public SemesterResponse create(CreateSemesterRequest request) {

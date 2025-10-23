@@ -2,18 +2,13 @@ package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.request.room.CreateRoomRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.room.CurrentRoomResponse;
-import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
-import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
-import com.capstone.capstone.dto.response.room.RoommateResponse;
+import com.capstone.capstone.dto.response.room.*;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.service.impl.RoomService;
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.web.PagedModel;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,18 +21,18 @@ public class RoomController {
     private final RoomService roomService;
 
     @GetMapping("/api/rooms-matching")
-    public ResponseEntity<BaseResponse<List<RoomMatchingResponse>>> getRoomMatching(Authentication authentication) {
+    public BaseResponse<List<RoomMatchingResponse>> getRoomMatching(Authentication authentication) {
         User user = ((User) authentication.getPrincipal());
-        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoomMatching(user)));
+        return new BaseResponse<>(roomService.getRoomMatching(user));
     }
 
     @GetMapping("/api/rooms/{id}")
-    public ResponseEntity<BaseResponse<RoomDetailsResponse>> getRoomById(@PathVariable UUID id) {
-        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoomById(id)));
+    public BaseResponse<RoomPriceDormSlotResponse> getRoomById(@PathVariable UUID id) {
+        return new BaseResponse<>(roomService.getRoomById(id));
     }
 
     @GetMapping("/api/rooms")
-    public BaseResponse<?> get(
+    public BaseResponse<PagedModel<RoomResponse>> get(
             @RequestParam(required = false) UUID dormId,
             @RequestParam(required = false) Integer floor,
             @RequestParam(required = false) Integer totalSlot,
@@ -47,7 +42,7 @@ public class RoomController {
     }
 
     @GetMapping("/api/rooms/current")
-    public BaseResponse<CurrentRoomResponse> current() {
+    public BaseResponse<RoomDormResponse> current() {
         return new BaseResponse<>(roomService.current());
     }
 
@@ -57,7 +52,7 @@ public class RoomController {
     }
 
     @PostMapping("/api/rooms")
-    public BaseResponse<?> create(CreateRoomRequest request) {
+    public BaseResponse<RoomResponse> create(CreateRoomRequest request) {
         return new BaseResponse<>(roomService.create(request));
     }
 }

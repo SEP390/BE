@@ -1,37 +1,86 @@
 package com.capstone.capstone.controller;
 
-import com.capstone.capstone.dto.request.electricwater.CreateElectricWaterBillRequest;
+import com.capstone.capstone.dto.request.electricwater.*;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.service.impl.ElectricWaterBillService;
-import com.capstone.capstone.service.impl.PaymentService;
+import com.capstone.capstone.dto.response.electricwater.ElectricWaterBillResponse;
+import com.capstone.capstone.dto.response.electricwater.ElectricWaterIndexResponse;
+import com.capstone.capstone.dto.response.electricwater.ElectricWaterPricingResponse;
+import com.capstone.capstone.dto.response.electricwater.UserElectricWaterResponse;
+import com.capstone.capstone.service.impl.ElectricWaterService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
 public class ElectricWaterBillController {
-    private final ElectricWaterBillService electricWaterBillService;
-    private final PaymentService paymentService;
+    private final ElectricWaterService electricWaterService;
 
-    @PostMapping("/api/electric-water-room")
-    public BaseResponse<?> createRoomBill(@RequestBody CreateElectricWaterBillRequest request) {
-        return new BaseResponse<>(200, "success", electricWaterBillService.create(request));
+    @PostMapping("/api/electric-water-index")
+    public BaseResponse<ElectricWaterIndexResponse> createIndex(@RequestBody @Valid CreateElectricWaterIndexRequest request) {
+        return new BaseResponse<>(electricWaterService.createIndexResponse(request));
     }
 
-    @GetMapping("/api/electric-water-room/{id}")
-    public BaseResponse<?> getRoomBill(@PathVariable UUID id) {
-        return new BaseResponse<>(200, "success", electricWaterBillService.getByRoomId(id));
+    @GetMapping("/api/electric-water-index")
+    public BaseResponse<ElectricWaterIndexResponse> getIndex(
+            @RequestParam UUID roomId,
+            @RequestParam UUID semesterId) {
+        return new BaseResponse<>(electricWaterService.getIndexResponse(roomId, semesterId));
     }
 
-    @GetMapping("/api/electric-water")
-    public BaseResponse<?> getBill() {
-        return new BaseResponse<>(200, "success", electricWaterBillService.getCurrent());
+    @GetMapping("/api/electric-water-index/{id}/bill")
+    public BaseResponse<ElectricWaterBillResponse> getIndexBill(@PathVariable UUID id) {
+        return new BaseResponse<>(electricWaterService.getIndexBillResponse(id));
     }
 
-    @GetMapping("/api/electric-water/{id}")
-    public BaseResponse<?> getBillPayment(@PathVariable UUID id) {
-        return new BaseResponse<>(200, "success", paymentService.createElectricWaterBillPaymentUrl(id));
+    @PutMapping("/api/electric-water-index")
+    public BaseResponse<ElectricWaterIndexResponse> updateIndex(@RequestBody @Valid UpdateElectricWaterIndexRequest request) {
+        return new BaseResponse<>(electricWaterService.updateIndexResponse(request));
+    }
+
+    @PostMapping("/api/electric-water-bill")
+    public BaseResponse<ElectricWaterBillResponse> createBill(@RequestBody CreateElectricWaterBillRequest request) {
+        return new BaseResponse<>(electricWaterService.createBillResponse(request));
+    }
+
+    @GetMapping("/api/electric-water-bill/user")
+    public BaseResponse<PagedModel<UserElectricWaterResponse>> getUserBill(@PageableDefault Pageable pageable) {
+        return new BaseResponse<>(electricWaterService.getUserElectricWaterBills(pageable));
+    }
+
+    @GetMapping("/api/electric-water-bill/{id}/payment-url")
+    public BaseResponse<String> getBillPayment(@PathVariable UUID id) {
+        return new BaseResponse<>(electricWaterService.createPaymentUrl(id));
+    }
+
+    @GetMapping("/api/electric-water-pricing")
+    public BaseResponse<List<ElectricWaterPricingResponse>> getAllPricing() {
+        return new BaseResponse<>(electricWaterService.getAllPricing());
+    }
+
+    @GetMapping("/api/electric-water-pricing/{id}")
+    public BaseResponse<ElectricWaterPricingResponse> getPricing(@PathVariable UUID id) {
+        return new BaseResponse<>(electricWaterService.getPricing(id));
+    }
+
+    @GetMapping("/api/electric-water-pricing/current")
+    public BaseResponse<ElectricWaterPricingResponse> getCurrentPricing() {
+        return new BaseResponse<>(electricWaterService.getCurrentPricing());
+    }
+
+    @PostMapping("/api/electric-water-pricing")
+    public BaseResponse<ElectricWaterPricingResponse> getPricing(@RequestBody @Valid CreateElectricWaterPricingRequest request) {
+        return new BaseResponse<>(electricWaterService.createPricing(request));
+    }
+
+    @PutMapping("/api/electric-water-pricing")
+    public BaseResponse<ElectricWaterPricingResponse> getPricing(@RequestBody @Valid UpdateElectricWaterPricingRequest request) {
+        return new BaseResponse<>(electricWaterService.updatePricing(request));
     }
 }

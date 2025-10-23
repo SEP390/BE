@@ -10,41 +10,8 @@ import java.util.UUID;
 @Data
 public class BookingHistoryResponse {
     private UUID id;
-    private SlotHistoryDto slotHistory;
+    private SlotHistoryResponse slotHistory;
     private Long price;
     private LocalDateTime createDate;
     private PaymentStatus status;
-
-    @Data
-    private static class SlotHistoryDto {
-        private SlotDto slot;
-        private SemesterDto semester;
-    }
-
-    @Data
-    public static class SemesterDto {
-        private UUID id;
-        private String name;
-    }
-
-    @Data
-    public static class SlotDto {
-        private UUID id;
-        private String slotName;
-        private RoomDto room;
-    }
-
-    @Data
-    public static class RoomDto {
-        private UUID id;
-        private String roomNumber;
-        private DormDto dorm;
-        private Integer floor;
-    }
-
-    @Data
-    public static class DormDto {
-        private UUID id;
-        private String dormName;
-    }
 }

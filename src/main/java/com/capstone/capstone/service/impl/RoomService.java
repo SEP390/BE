@@ -40,33 +40,26 @@ public class RoomService {
 
     @Transactional
     public List<RoomMatchingResponse> getRoomMatching(User user) {
-        int ROOM_COUNT = 5;
         final long totalQuestion = surveyQuestionRepository.count();
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
         final Map<UUID, Double> matching = matchingRepository.computeRoomMatching(user, rooms)
                 .stream()
                 .collect(Collectors.toMap(RoomMatching::getRoomId, m -> (double) m.getSameOptionCount() / m.getUserCount() / totalQuestion * 100));
         Comparator<Room> comparator = Comparator.comparingDouble(o -> matching.getOrDefault(o.getId(), 0.0));
-        Map<Integer, Long> pricing = roomPricingService.getAll().stream().collect(Collectors.toMap(RoomPricingResponse::getTotalSlot, RoomPricingResponse::getPrice));
+        Map<Integer, RoomPricingResponse> pricing = roomPricingService.getAll().stream().collect(Collectors.toMap(RoomPricingResponse::getTotalSlot, r -> r));
         rooms.sort(comparator.reversed());
-        return rooms.subList(0, Math.min(5, rooms.size())).stream().map(room -> RoomMatchingResponse.builder()
-                .id(room.getId())
-                .roomNumber(room.getRoomNumber())
-                .dormId(room.getDorm().getId())
-                .dormName(room.getDorm().getDormName())
-                .floor(room.getFloor())
-                .matching(matching.getOrDefault(room.getId(), 0.0))
-                .totalSlot(room.getTotalSlot())
-                .price(pricing.get(room.getTotalSlot()))
-                .build()).toList();
+        return rooms.subList(0, Math.min(5, rooms.size())).stream().map(room -> modelMapper.map(room, RoomMatchingResponse.class)).peek(room -> {
+            room.setMatching(matching.getOrDefault(room.getId(), 0.0));
+            room.setPricing(pricing.get(room.getTotalSlot()));
+        }).toList();
     }
 
     @Transactional
-    public RoomDetailsResponse getRoomById(UUID id) {
+    public RoomPriceDormSlotResponse getRoomById(UUID id) {
         Room room = roomRepository.findById(id).orElseThrow();
         RoomPricing pricing = roomPricingRepository.findByRoom(room);
-        RoomDetailsResponse response = modelMapper.map(room, RoomDetailsResponse.class);
-        response.setPricing(pricing.getPrice());
+        RoomPriceDormSlotResponse response = modelMapper.map(room, RoomPriceDormSlotResponse.class);
+        response.setPricing(modelMapper.map(pricing, RoomPricingResponse.class));
         return response;
     }
 
@@ -84,14 +77,8 @@ public class RoomService {
     }
 
     public boolean isFull(Room room) {
-        var isFull = true;
-        for (Slot slot : room.getSlots()) {
-            if (slot.getStatus().equals(StatusSlotEnum.AVAILABLE)) {
-                isFull = false;
-                break;
-            }
-        }
-        return isFull;
+        List<Slot> slots = slotRepository.findAll((r, q, c) -> c.equal(r.get("room"), room));
+        return slots.stream().allMatch(slot -> slot.getStatus() == StatusSlotEnum.UNAVAILABLE);
     }
 
     public void checkFullAndUpdate(Room room) {
@@ -119,12 +106,10 @@ public class RoomService {
     }
 
     @Transactional
-    public CurrentRoomResponse current() {
+    public RoomDormResponse current() {
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         Slot slot = slotRepository.findOne((r, q, cb) -> cb.equal(r.get("user"), user)).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        CurrentRoomResponse response = modelMapper.map(slot.getRoom(), CurrentRoomResponse.class);
-        response.setPrice(roomPricingService.getPriceOfRoom(slot.getRoom()));
-        return response;
+        return modelMapper.map(slot.getRoom(), RoomDormResponse.class);
     }
 
     @Transactional

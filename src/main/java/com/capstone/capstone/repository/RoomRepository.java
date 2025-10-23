@@ -35,4 +35,11 @@ public interface RoomRepository extends JpaRepository<Room, UUID>, JpaSpecificat
     WHERE r = :room
     """)
     List<User> findUsers(Room room);
+
+    @Query("""
+    FROM Room r
+    JOIN r.slots s
+    WHERE s.user = :user
+""")
+    Room findByUser(User user);
 }

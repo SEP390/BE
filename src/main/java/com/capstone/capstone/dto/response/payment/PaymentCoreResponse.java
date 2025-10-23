@@ -1,4 +1,4 @@
-package com.capstone.capstone.dto.response.booking;
+package com.capstone.capstone.dto.response.payment;
 
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import lombok.Data;
@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class PaymentResponse {
+public class PaymentCoreResponse {
     private UUID id;
-    private long price;
+    private Long price;
     private PaymentStatus status;
     private String note;
     private LocalDateTime createDate;

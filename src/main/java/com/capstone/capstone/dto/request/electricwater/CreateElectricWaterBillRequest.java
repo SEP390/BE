@@ -1,13 +1,12 @@
 package com.capstone.capstone.dto.request.electricwater;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.UUID;
 
 @Data
 public class CreateElectricWaterBillRequest {
-    private UUID roomId;
-    private long price;
-    private int kw;
-    private int m3;
+    @NotNull(message = "INDEX_ID_NULL")
+    private UUID indexId;
 }
