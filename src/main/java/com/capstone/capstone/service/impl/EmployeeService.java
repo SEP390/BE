@@ -3,6 +3,7 @@ package com.capstone.capstone.service.impl;
 import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.employee.CreateEmployeeRequest;
 import com.capstone.capstone.dto.response.employee.CreateEmployeeResponse;
+import com.capstone.capstone.dto.response.employee.GetAllEmployeeResponse;
 import com.capstone.capstone.entity.Employee;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.BadHttpRequestException;
@@ -11,6 +12,7 @@ import com.capstone.capstone.repository.EmployeeRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IEmployeeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +24,7 @@ public class EmployeeService implements IEmployeeService {
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final DormRepository dormRepository;
-
+    private final PasswordEncoder passwordEncoder;
     @Override
     public CreateEmployeeResponse createEmployee(CreateEmployeeRequest request) {
         List<User> users = userRepository.findAll();
@@ -32,14 +34,14 @@ public class EmployeeService implements IEmployeeService {
         if (users.stream().anyMatch(user -> user.getEmail().equals(request.getEmail()))) {
             throw new BadHttpRequestException("Email is already taken");
         }
-
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setDob(request.getDob());
+        user.setUserCode(request.getUserCode());
         user.setGender(request.getGender());
-        user.setRole(RoleEnum.GUARD);
+        user.setRole(request.getRole());
         userRepository.save(user);
         Employee employee = new Employee();
         employee.setUser(user);
@@ -47,6 +49,12 @@ public class EmployeeService implements IEmployeeService {
         CreateEmployeeResponse response = new CreateEmployeeResponse();
         response.setEmail(request.getEmail());
         response.setUsername(request.getUsername());
+        response.setRole(request.getRole());
         return  response;
+    }
+
+    @Override
+    public List<GetAllEmployeeResponse> getAllEmployee() {
+        return null;
     }
 }

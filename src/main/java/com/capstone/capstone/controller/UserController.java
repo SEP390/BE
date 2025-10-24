@@ -26,7 +26,6 @@ public class UserController {
         baseResponse.setMessage("Register Successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(baseResponse);
     }
-
     @GetMapping(ApiConstant.USER.PROFILE)
     public ResponseEntity<BaseResponse<GetUserInformationResponse>> getUserCurrentInformation() {
         GetUserInformationResponse getUserInformationResponse = userService.getCurrentUserInformation();
