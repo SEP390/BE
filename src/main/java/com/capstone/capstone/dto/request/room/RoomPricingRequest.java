@@ -1,4 +1,4 @@
-package com.capstone.capstone.dto.response.room;
+package com.capstone.capstone.dto.request.room;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

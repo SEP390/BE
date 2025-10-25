@@ -32,6 +32,7 @@ public class BookingService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final RoomPricingService roomPricingService;
+    private final RoomSlotService roomSlotService;
 
     @Transactional
     public CreateBookingResponse create(CreateBookingRequest request) {
@@ -57,7 +58,7 @@ public class BookingService {
         String paymentUrl = paymentService.createPaymentUrl(payment);
 
         // lock slot (so other user cannot book this slot)
-        slotService.lock(slot, user);
+        roomSlotService.lockSlot(slot, user);
 
         // return url for frontend to redirect
         return new CreateBookingResponse(paymentUrl);
