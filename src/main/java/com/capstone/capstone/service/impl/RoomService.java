@@ -158,6 +158,11 @@ public class RoomService {
     }
 
     public List<Room> create(List<Room> rooms) {
+        rooms.forEach(room -> {
+            RoomPricing pricing = roomPricingService.getByTotalSlot(room.getTotalSlot());
+            if (pricing == null) throw new AppException("ROOM_TYPE_NOT_EXIST");
+            room.setPricing(pricing);
+        });
         List<Room> saved = roomRepository.saveAll(rooms);
         saved.forEach(slotService::create);
         return saved;
