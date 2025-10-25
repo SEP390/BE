@@ -6,7 +6,7 @@ import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.payment.PaymentVerifyResponse;
 import com.capstone.capstone.service.impl.ElectricWaterService;
 import com.capstone.capstone.service.impl.PaymentService;
-import com.capstone.capstone.service.impl.SlotService;
+import com.capstone.capstone.service.impl.RoomSlotService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -15,14 +15,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @AllArgsConstructor
 public class PaymentController {
     private final PaymentService paymentService;
     private final ElectricWaterService electricWaterService;
-    private final SlotService slotService;
+    private final RoomSlotService roomSlotService;
 
     @GetMapping("/api/payment/verify")
     public BaseResponse<?> verify(HttpServletRequest request) {
@@ -32,7 +30,7 @@ public class PaymentController {
                 electricWaterService.onPayment(verifyResponse.getPayment(), verifyResponse.getStatus());
             }
             if (verifyResponse.getPayment().getType() == PaymentType.BOOKING) {
-                slotService.onPayment(verifyResponse.getPayment(), verifyResponse.getStatus());
+                roomSlotService.onPayment(verifyResponse.getPayment(), verifyResponse.getStatus());
             }
         }
         return new BaseResponse<>(paymentService.toResponse(verifyResponse.getPayment()));

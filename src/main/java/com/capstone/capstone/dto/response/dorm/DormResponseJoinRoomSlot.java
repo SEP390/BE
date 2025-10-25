@@ -1,6 +1,6 @@
 package com.capstone.capstone.dto.response.dorm;
 
-import com.capstone.capstone.dto.response.room.RoomSlotResponse;
+import com.capstone.capstone.dto.response.room.RoomResponseJoinSlot;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -11,6 +11,6 @@ import java.util.List;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class DormRoomSlotResponse extends DormResponse {
-    private List<RoomSlotResponse> rooms;
+public class DormResponseJoinRoomSlot extends DormResponse {
+    private List<RoomResponseJoinSlot> rooms;
 }

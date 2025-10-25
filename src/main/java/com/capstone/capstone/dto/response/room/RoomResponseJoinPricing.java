@@ -4,10 +4,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Room join fetch RoomPricing, Dorm
+ * Room join RoomPricing
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class RoomPriceDormResponse extends RoomDormResponse {
+public class RoomResponseJoinPricing extends RoomResponse {
     private RoomPricingResponse pricing;
 }

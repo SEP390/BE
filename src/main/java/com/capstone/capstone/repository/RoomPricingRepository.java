@@ -1,6 +1,5 @@
 package com.capstone.capstone.repository;
 
-import com.capstone.capstone.dto.response.room.RoomDetails;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.RoomPricing;
 import com.capstone.capstone.entity.Slot;

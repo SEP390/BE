@@ -1,7 +1,7 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.room.RoomPricingRequest;
+import com.capstone.capstone.dto.request.room.RoomPricingRequest;
 import com.capstone.capstone.dto.response.room.RoomPricingResponse;
 import com.capstone.capstone.service.impl.RoomPricingService;
 import jakarta.validation.Valid;

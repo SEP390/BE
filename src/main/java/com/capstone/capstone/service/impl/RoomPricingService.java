@@ -1,12 +1,11 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.response.room.RoomPricingRequest;
+import com.capstone.capstone.dto.request.room.RoomPricingRequest;
 import com.capstone.capstone.dto.response.room.RoomPricingResponse;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.RoomPricing;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.repository.RoomPricingRepository;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Sort;
@@ -53,5 +52,9 @@ public class RoomPricingService {
         } else {
             throw new RuntimeException("Not existed!");
         }
+    }
+
+    public RoomPricing getByTotalSlot(Integer totalSlot) {
+        return roomPricingRepository.findByTotalSlot(totalSlot);
     }
 }
