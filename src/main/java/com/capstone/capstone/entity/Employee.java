@@ -1,11 +1,10 @@
 package com.capstone.capstone.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -20,4 +19,7 @@ public class Employee extends BaseEntity{
     @JoinColumn(name = "dorm_id")
     @JsonIgnore
     private Dorm dorm;
+
+    @OneToMany(mappedBy = "employee")
+    private List<Report> reports;
 }

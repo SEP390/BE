@@ -42,5 +42,7 @@ public class ApiConstant {
         public static final String SEARCH = "/search";
     }
 
-
+    public static class REPORTS {
+        public static final String REPORT = API + "/reports";
+    }
 }

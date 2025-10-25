@@ -6,6 +6,7 @@ import com.capstone.capstone.dto.response.user.GetUserInformationResponse;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.BadHttpRequestException;
+import com.capstone.capstone.repository.EmployeeRepository;
 import com.capstone.capstone.repository.SlotRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IUserService;
@@ -20,10 +21,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserService implements IUserService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final SlotRepository  slotRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public CreateAccountResponse createAccount(CreateUserRequest createUserRequest) {

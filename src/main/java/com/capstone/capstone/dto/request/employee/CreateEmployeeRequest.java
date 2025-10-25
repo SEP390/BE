@@ -1,6 +1,7 @@
 package com.capstone.capstone.dto.request.employee;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
+import com.capstone.capstone.dto.enums.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,4 +20,5 @@ public class CreateEmployeeRequest {
     private String email;
     private Date dob;
     private GenderEnum gender;
+    private RoleEnum role;
 }
