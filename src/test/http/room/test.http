@@ -9,7 +9,7 @@ Content-Type: application/json
 
 > {%
     client.global.set("token", response.body.data.token)
-    console.log("Token:", client.global.get("token"));
+    console.log("Token =", client.global.get("token"));
 %}
 
 ### Get all rooms
@@ -20,6 +20,11 @@ Authorization: Bearer {{token}}
 GET http://localhost:8080/api/rooms-matching
 Authorization: Bearer {{token}}
 
+> {%
+ client.global.set("roomId", response.body.data[0].id)
+ client.log("roomId =", client.global.get("roomId"))
+ %}
+
 ### Get room detail
-GET http://localhost:8080/api/rooms/28cad9b3-aae6-4b5c-8b31-45c370839f16
+GET http://localhost:8080/api/rooms/{{roomId}}
 Authorization: Bearer {{token}}
