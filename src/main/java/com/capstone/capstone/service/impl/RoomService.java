@@ -178,7 +178,8 @@ public class RoomService {
         return modelMapper.map(room, RoomResponse.class);
     }
 
+    @Transactional
     public List<RoomUserResponse> getUsersResponse(UUID id) {
-        return getById(id).getSlots().stream().map(Slot::getUser).map(user -> modelMapper.map(user, RoomUserResponse.class)).toList();
+        return getById(id).getSlots().stream().map(Slot::getUser).filter(Objects::nonNull).map(user -> modelMapper.map(user, RoomUserResponse.class)).toList();
     }
 }

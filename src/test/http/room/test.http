@@ -28,3 +28,7 @@ Authorization: Bearer {{token}}
 ### Get room detail
 GET http://localhost:8080/api/rooms/{{roomId}}
 Authorization: Bearer {{token}}
+
+### Get room users
+GET http://localhost:8080/api/rooms/{{roomId}}/users
+Authorization: Bearer {{token}}
