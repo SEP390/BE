@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -20,15 +21,16 @@ import java.util.List;
 public class User extends BaseEntity implements UserDetails {
 
     private String username;
+    private String fullName;
     private String password;
     private String email;
-    private Date dob;
-    private String UserCode;
+    private LocalDate dob;
+    private String userCode;
+    private String phoneNumber;
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
-
     @OneToMany(mappedBy = "user")
     private List<SurveyQuetionSelected> surveyQuetionSelected;
 

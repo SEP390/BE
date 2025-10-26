@@ -15,6 +15,6 @@ import java.util.UUID;
 public interface IRequestService {
     CreateRequestResponse createRequest(CreateRequestRequest request);
     UpdateRequestResponse updateRequest(UpdateRequestRequest request, UUID id);
-    GetRequestByIdResponse getRequestById(UUID id);
+    GetRequestByIdResponse getRequestById(UUID requestId);
     List<GetAllRequestResponse> getAllRequest();
 }

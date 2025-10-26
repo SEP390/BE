@@ -1,4 +1,4 @@
-package com.capstone.capstone.dto.request.user;
+package com.capstone.capstone.dto.response.employee;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.RoleEnum;
@@ -8,17 +8,20 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.Date;
+import java.util.UUID;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-public class CreateUserRequest {
-    private String username;
-    private String password;
-    private String email;
+@AllArgsConstructor
+@NoArgsConstructor
+public class GetEmployeeById {
+    private UUID userId;
+    private UUID employeeId;
+    private String userCode;
     private LocalDate dob;
+    private String email;
     private GenderEnum gender;
     private RoleEnum role;
+    private String phoneNumber;
+    private String fullName;
 }
