@@ -7,10 +7,7 @@ import com.capstone.capstone.service.impl.RoomPricingService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,12 +22,12 @@ public class RoomPricingController {
     }
 
     @PostMapping("/api/pricing")
-    public BaseResponse<RoomPricingResponse> create(@Valid RoomPricingRequest request) {
+    public BaseResponse<RoomPricingResponse> create(@Valid @RequestBody RoomPricingRequest request) {
         return new BaseResponse<>(HttpStatus.OK.value(), "success", roomPricingService.create(request));
     }
 
     @PatchMapping("/api/pricing")
-    public BaseResponse<RoomPricingResponse> update(@Valid RoomPricingRequest request) {
+    public BaseResponse<RoomPricingResponse> update(@Valid @RequestBody RoomPricingRequest request) {
         return new BaseResponse<>(HttpStatus.OK.value(), "success", roomPricingService.update(request));
     }
 }

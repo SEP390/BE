@@ -29,7 +29,7 @@ public class RoomController {
     }
 
     @GetMapping("/api/rooms")
-    public BaseResponse<PagedModel<RoomResponse>> get(
+    public BaseResponse<PagedModel<RoomResponseJoinPricingAndDormAndSlot>> get(
             @RequestParam(required = false) UUID dormId,
             @RequestParam(required = false) Integer floor,
             @RequestParam(required = false) Integer totalSlot,

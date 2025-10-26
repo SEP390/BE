@@ -93,7 +93,7 @@ public class RoomService {
         roomRepository.save(room);
     }
 
-    public PagedModel<RoomResponse> get(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
+    public PagedModel<RoomResponseJoinPricingAndDormAndSlot> get(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
         int validPageSize = Math.min(pageable.getPageSize(), 100);
         Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), validPageSize, validSort);
@@ -105,7 +105,7 @@ public class RoomService {
                         roomNumber != null ? (root, query, cb) -> cb.like(root.get("roomNumber"), "%" + roomNumber + "%") : Specification.unrestricted()
                 ),
                 validPageable
-        ).map(room -> modelMapper.map(room, RoomResponse.class)));
+        ).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
     }
 
     @Transactional
