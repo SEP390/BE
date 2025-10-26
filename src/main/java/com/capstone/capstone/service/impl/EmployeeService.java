@@ -101,6 +101,6 @@ public class EmployeeService implements IEmployeeService {
         Employee employee = employeeRepository.findById(request.getEmployeeId()).orElseThrow(() -> new BadHttpRequestException("Employee not found"));
         User user = employee.getUser();
         user.setDob(request.getBirthDate());
-
+        return null;
     }
 }
