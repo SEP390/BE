@@ -11,6 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateEmployeeResponse {
+    private String employeeId;
     private String email;
     private String username;
     private RoleEnum role;

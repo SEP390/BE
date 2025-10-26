@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @NoArgsConstructor
@@ -15,7 +16,7 @@ import java.util.Date;
 public class GetUserInformationResponse {
     private String username;
     private String email;
-    private Date dob;
+    private LocalDate dob;
     private String StudentId;
     private GenderEnum gender;
     private String slotName;

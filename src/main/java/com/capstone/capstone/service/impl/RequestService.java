@@ -11,11 +11,10 @@ import com.capstone.capstone.dto.response.request.UpdateRequestResponse;
 import com.capstone.capstone.dto.response.surveyQuestion.GetAllQuestionResponse;
 import com.capstone.capstone.entity.Request;
 import com.capstone.capstone.entity.Semester;
+import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.NotFoundException;
-import com.capstone.capstone.repository.RequestRepository;
-import com.capstone.capstone.repository.SemesterRepository;
-import com.capstone.capstone.repository.UserRepository;
+import com.capstone.capstone.repository.*;
 import com.capstone.capstone.service.interfaces.IRequestService;
 import com.capstone.capstone.util.AuthenUtil;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +33,7 @@ public class RequestService implements IRequestService {
     private final SemesterRepository semesterRepository;
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
+    private final SlotRepository slotRepository;
 
     @Override
     public CreateRequestResponse createRequest(CreateRequestRequest request) {
@@ -47,7 +47,9 @@ public class RequestService implements IRequestService {
         newRequest.setRequestType(request.getRequestType());
         newRequest.setRequestStatus(RequestStatusEnum.PENDING);
         newRequest.setContent(request.getContent());
+        newRequest.setExecuteTime(null);
         newRequest.setCreateTime(LocalDateTime.now());
+        newRequest.setRoomNumber(slotRepository.findByUser(user).getRoom().getRoomNumber());
         requestRepository.save(newRequest);
         CreateRequestResponse createRequestResponse = new CreateRequestResponse();
         createRequestResponse.setRequestType(newRequest.getRequestType());
@@ -57,6 +59,8 @@ public class RequestService implements IRequestService {
         createRequestResponse.setResponseMessage(newRequest.getResponseMessage());
         createRequestResponse.setCreateTime(newRequest.getCreateTime());
         createRequestResponse.setExecuteTime(newRequest.getExecuteTime());
+        createRequestResponse.setRequestId(newRequest.getId());
+        createRequestResponse.setUseId(userid);
         return createRequestResponse;
     }
 
@@ -65,6 +69,9 @@ public class RequestService implements IRequestService {
         Request currentRequest = requestRepository.findById(id).orElseThrow(() -> new NotFoundException("Request not found"));
         currentRequest.setResponseMessage(request.getResponseMessage());
         currentRequest.setRequestStatus(request.getRequestStatus());
+        if(request.getRequestStatus().equals(RequestStatusEnum.ACCEPTED) ||request.getRequestStatus().equals(RequestStatusEnum.REJECTED)) {
+            currentRequest.setExecuteTime(LocalDateTime.now());
+        }
         requestRepository.save(currentRequest);
         UpdateRequestResponse updateRequestResponse = new UpdateRequestResponse();
         updateRequestResponse.setRequestId(currentRequest.getId());
@@ -76,6 +83,7 @@ public class RequestService implements IRequestService {
     @Override
     public GetRequestByIdResponse getRequestById(UUID id) {
         Request currentRequest = requestRepository.findById(id).orElseThrow(() -> new NotFoundException("Request not found"));
+        User user = currentRequest.getUser();
         GetRequestByIdResponse getRequestByIdResponse = new GetRequestByIdResponse();
         getRequestByIdResponse.setRequestId(currentRequest.getId());
         getRequestByIdResponse.setRequestType(currentRequest.getRequestType());
@@ -84,7 +92,10 @@ public class RequestService implements IRequestService {
         getRequestByIdResponse.setCreateTime(currentRequest.getCreateTime());
         getRequestByIdResponse.setExecuteTime(currentRequest.getExecuteTime());
         getRequestByIdResponse.setResponseMessage(currentRequest.getResponseMessage());
-        getRequestByIdResponse.setSemester(currentRequest.getSemester());
+        getRequestByIdResponse.setSemesterName(semesterRepository.findCurrent().getName());
+        getRequestByIdResponse.setUserId(user.getId());
+        Slot slot = slotRepository.findByUser(user);
+        getRequestByIdResponse.setRoomName(slot.getRoom().getRoomNumber());
         return getRequestByIdResponse;
     }
 
@@ -101,11 +112,13 @@ public class RequestService implements IRequestService {
         List<GetAllRequestResponse> getAllRequestResponse = requests.stream().map(request -> {
             GetAllRequestResponse requestResponse = new GetAllRequestResponse();
             requestResponse.setRequestId(request.getId());
+            requestResponse.setUserId(request.getUser().getId());
             requestResponse.setUserName(request.getUser().getUsername());
             requestResponse.setRequestType(request.getRequestType());
             requestResponse.setCreateTime(request.getCreateTime());
             requestResponse.setResponseStatus(request.getRequestStatus());
             requestResponse.setSemesterName(request.getSemester().getName());
+            requestResponse.setRoomName(request.getRoomNumber());
             return  requestResponse;
         }).collect(Collectors.toList());
         return getAllRequestResponse;

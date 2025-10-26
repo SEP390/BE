@@ -22,4 +22,6 @@ public class CreateRequestResponse {
     private RequestStatusEnum requestStatus;
     private String responseMessage;
     private UUID semesterId;
+    private UUID useId;
+    private UUID requestId;
 }
