@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @AllArgsConstructor
@@ -15,10 +16,12 @@ import java.util.Date;
 @Setter
 public class CreateEmployeeRequest {
     private String username;
+    private String fullName;
     private String password;
     private String userCode;
     private String email;
-    private Date dob;
+    private LocalDate dob;
     private GenderEnum gender;
     private RoleEnum role;
+    private String phoneNumber;
 }

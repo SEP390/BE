@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @AllArgsConstructor
@@ -17,7 +18,7 @@ public class CreateUserRequest {
     private String username;
     private String password;
     private String email;
-    private Date dob;
+    private LocalDate dob;
     private GenderEnum gender;
     private RoleEnum role;
 }

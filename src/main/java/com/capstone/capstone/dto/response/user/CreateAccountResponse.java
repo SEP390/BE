@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @NoArgsConstructor
@@ -14,5 +15,5 @@ import java.util.Date;
 public class CreateAccountResponse {
     private String email;
     private String username;
-    private Date dob;
+    private LocalDate dob;
 }

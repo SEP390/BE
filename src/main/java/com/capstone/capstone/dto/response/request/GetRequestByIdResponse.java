@@ -16,6 +16,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class GetRequestByIdResponse {
+    private UUID userId;
     private UUID requestId;
     private String content;
     private LocalDateTime createTime;
@@ -23,5 +24,6 @@ public class GetRequestByIdResponse {
     private RequestStatusEnum responseStatus;
     private RequestTypeEnum requestType;
     private String ResponseMessage;
-    private Semester semester;
+    private String semesterName;
+    private String roomName;
 }
