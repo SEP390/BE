@@ -2,9 +2,12 @@ package com.capstone.capstone.controller;
 
 import com.capstone.capstone.constant.ApiConstant;
 import com.capstone.capstone.dto.request.employee.CreateEmployeeRequest;
+import com.capstone.capstone.dto.request.employee.UpdateEmployeeRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.employee.CreateEmployeeResponse;
 import com.capstone.capstone.dto.response.employee.GetAllEmployeeResponse;
+import com.capstone.capstone.dto.response.employee.GetEmployeeById;
+import com.capstone.capstone.dto.response.employee.UpdateEmployeeResponse;
 import com.capstone.capstone.service.interfaces.IEmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,4 +44,23 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PutMapping(ApiConstant.REQUEST.GET_BY_ID)
+    public ResponseEntity<BaseResponse<UpdateEmployeeResponse>> updateEmployee(@PathVariable UUID id, @RequestBody UpdateEmployeeRequest request) {
+        UpdateEmployeeResponse updateEmployeeResponse = iEmployeeService.updateEmployee(id, request);
+        BaseResponse<UpdateEmployeeResponse> response = new BaseResponse<>();
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Update Employee Successfully");
+        response.setData(updateEmployeeResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping(ApiConstant.REQUEST.GET_BY_ID)
+    public ResponseEntity<BaseResponse<GetEmployeeById>> getEmployeeById(@PathVariable UUID id) {
+        GetEmployeeById getEmployeeById = iEmployeeService.getEmployeeById(id);
+        BaseResponse<GetEmployeeById> response = new BaseResponse<>();
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Get Employee ById Successfully");
+        response.setData(getEmployeeById);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

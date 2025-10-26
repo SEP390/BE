@@ -16,8 +16,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UpdateEmployeeRequest {
     private UUID EmployeeId;
+    private UUID dormId;
     private String phoneNumber;
     private LocalDate birthDate;
-    private String dormName;
     private RoleEnum role;
 }
