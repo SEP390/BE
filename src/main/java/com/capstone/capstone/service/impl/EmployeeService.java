@@ -10,11 +10,11 @@ import com.capstone.capstone.dto.response.employee.UpdateEmployeeResponse;
 import com.capstone.capstone.entity.Employee;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.BadHttpRequestException;
+import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.DormRepository;
 import com.capstone.capstone.repository.EmployeeRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IEmployeeService;
-import com.capstone.capstone.util.AuthenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,8 +28,8 @@ import java.util.UUID;
 public class EmployeeService implements IEmployeeService {
 
     private final EmployeeRepository employeeRepository;
-    private final UserRepository userRepository;
     private final DormRepository dormRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     @Override
     public CreateEmployeeResponse createEmployee(CreateEmployeeRequest request) {
@@ -80,9 +80,8 @@ public class EmployeeService implements IEmployeeService {
 
     @Override
     public GetEmployeeById getEmployeeById(UUID employeeId) {
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new BadHttpRequestException("Employee not found"));
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new NotFoundException("Employee not found"));
         User user = employee.getUser();
-
         GetEmployeeById response = new GetEmployeeById();
         response.setEmployeeId(employeeId);
         response.setUserId(user.getId());
@@ -97,11 +96,14 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
-    public UpdateEmployeeResponse updateEmployee(UpdateEmployeeRequest request) {
-        Employee employee = employeeRepository.findById(request.getEmployeeId()).orElseThrow(() -> new BadHttpRequestException("Employee not found"));
-        User user = employee.getUser();
+    public UpdateEmployeeResponse updateEmployee(UUID employeeId ,UpdateEmployeeRequest request) {
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new NotFoundException("Employee not found"));
+        User user = userRepository.findById(employee.getUser().getId()).orElseThrow(() -> new NotFoundException("User not found"));
+        user.setPhoneNumber(request.getPhoneNumber());
         user.setDob(request.getBirthDate());
+        user.setRole(request.getRole());
+        employee.setDorm(dormRepository.findById(request.getDormId()).orElseThrow(() -> new NotFoundException("Dorm not found")));
+        userRepository.save(user);
         return null;
-
     }
 }

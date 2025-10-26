@@ -2,7 +2,10 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.ReportStatusEnum;
 import com.capstone.capstone.dto.request.report.CreateReportRequest;
+import com.capstone.capstone.dto.request.report.UpdateReportRequest;
 import com.capstone.capstone.dto.response.report.CreateReportResponse;
+import com.capstone.capstone.dto.response.report.GetAllReportResponse;
+import com.capstone.capstone.dto.response.report.UpdateReportResponse;
 import com.capstone.capstone.entity.Employee;
 import com.capstone.capstone.entity.Report;
 import com.capstone.capstone.entity.User;
@@ -16,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -44,4 +49,41 @@ public class ReportService implements IReportService {
         createReportResponse.setUserCode(report.getUserCode());
         return createReportResponse;
     }
+
+    @Override
+    public List<GetAllReportResponse> getAllReports() {
+        List<Report> reports = reportRepository.findAll();
+        List<GetAllReportResponse> responses = new ArrayList<>();
+        for (Report report : reports) {
+            GetAllReportResponse response = new GetAllReportResponse();
+            response.setReportId(report.getId());
+            response.setEmployeeId(report.getEmployee().getId());
+            response.setContent(report.getContent());
+            response.setResponseMessage(report.getResponseMessage());
+            response.setReportStatus(report.getReportStatus());
+            response.setCreatedDate(report.getCreatedAt());
+            response.setUserCode(report.getUserCode());
+            responses.add(response);
+        }
+        return responses;
+    }
+
+    @Override
+    public UpdateReportResponse updateReport(UUID requestId, UpdateReportRequest request) {
+        Report report =  reportRepository.findById(requestId).orElseThrow(() -> new NotFoundException("Report not found"));
+        report.setResponseMessage(request.getResponseMessage());
+        report.setReportStatus(request.getReportStatus());
+        reportRepository.save(report);
+        UpdateReportResponse response = new UpdateReportResponse();
+        response.setReportId(report.getId());
+        response.setEmployeeId(report.getEmployee().getId());
+        response.setContent(report.getContent());
+        response.setReportStatus(report.getReportStatus());
+        response.setCreatedDate(report.getCreatedAt());
+        response.setUserCode(report.getUserCode());
+        response.setResponseMessage(report.getResponseMessage());
+        return response;
+    }
+
+
 }

@@ -32,6 +32,7 @@ public class ApiConstant {
 
     public static class EMPLOYEE {
         public static final String EMPLOYEE = API + "/employees";
+        public static final String GET_BY_ID = "/{id}";
     }
 
     public static class NEWS {
@@ -44,5 +45,6 @@ public class ApiConstant {
 
     public static class REPORTS {
         public static final String REPORT = API + "/reports";
+        public static final String GET_BY_ID = "/{id}";
     }
 }
