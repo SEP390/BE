@@ -6,6 +6,6 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class SlotRoomResponse extends SlotResponse {
+public class SlotResponseJoinRoom extends SlotResponse {
     private RoomResponse room;
 }

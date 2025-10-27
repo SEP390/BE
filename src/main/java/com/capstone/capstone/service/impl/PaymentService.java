@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -183,5 +184,26 @@ public class PaymentService {
 
     public PaymentResponse toResponse(Payment payment) {
         return modelMapper.map(payment, PaymentResponse.class);
+    }
+
+    public Payment getLatestPendingBookingByUser(User user) {
+        var payments = paymentRepository.findAll(
+                (r, q, c) -> c.and(
+                        c.equal(r.get("user"), user),
+                        c.equal(r.get("type"), PaymentType.BOOKING),
+                        c.equal(r.get("status"), PaymentStatus.PENDING)
+                ),
+                PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createDate"))
+        );
+        return !payments.isEmpty() ? payments.getContent().getFirst() : null;
+    }
+
+    public boolean isExpire(Payment payment) {
+        return ChronoUnit.MINUTES.between(payment.getCreateDate(), LocalDateTime.now()) >= 10;
+    }
+
+    public Payment expire(Payment payment) {
+        payment.setStatus(PaymentStatus.CANCEL);
+        return paymentRepository.save(payment);
     }
 }

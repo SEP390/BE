@@ -1,0 +1,48 @@
+### Login
+POST http://localhost:8080/api/auth
+Content-Type: application/json
+
+{
+  "username": "resident",
+  "password": "resident"
+}
+
+> {%
+    client.global.set("token", response.body.data.token)
+    console.log("Token =", client.global.get("token"));
+%}
+
+### get all pricing by total slot
+GET http://localhost:8080/api/pricing?totalSlot=2
+Authorization: Bearer {{token}}
+
+### get all pricing
+GET http://localhost:8080/api/pricing
+Authorization: Bearer {{token}}
+
+> {%
+    client.global.set("pricingId", response.body.data[0].id)
+    console.log("pricingId =", client.global.get("pricingId"));
+%}
+
+### get by id
+GET http://localhost:8080/api/pricing/20b2ed92-5f7a-422d-8b38-e8c1ece47888
+Authorization: Bearer {{token}}
+
+### update
+POST http://localhost:8080/api/pricing/{{pricingId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "price": 1000000
+}
+
+### create new
+POST http://localhost:8080/api/pricing
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "totalSlot": 1
+}

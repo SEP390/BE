@@ -1,10 +1,11 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.PaymentStatus;
+import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.booking.CreateBookingRequest;
 import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
 import com.capstone.capstone.dto.response.booking.CreateBookingResponse;
-import com.capstone.capstone.dto.response.booking.CurrentSlotResponse;
+import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.entity.Payment;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.SlotHistory;
@@ -12,6 +13,7 @@ import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +39,7 @@ public class BookingService {
     @Transactional
     public CreateBookingResponse create(CreateBookingRequest request) {
         // get current user
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        User user = SecurityUtils.getCurrentUser();
 
         // get slot
         UUID slotId = request.getSlotId();
@@ -70,12 +72,29 @@ public class BookingService {
     }
 
     @Transactional
-    public CurrentSlotResponse current() {
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
-        Slot currentSlot = slotService.getByUser(user);
-        if (currentSlot == null) return null;
-        var res = modelMapper.map(currentSlot, CurrentSlotResponse.class);
-        res.setPrice(roomPricingService.getPriceOfSlot(currentSlot));
-        return res;
+    public SlotResponseJoinRoomAndDormAndPricing current() {
+        User user = SecurityUtils.getCurrentUser();
+        Slot slot = slotService.getByUser(user);
+        if (slot == null) return null;
+        Payment payment = paymentService.getLatestPendingBookingByUser(user);
+        if (payment != null) {
+            // unlock if expire
+            if (paymentService.isExpire(payment) && slot.getStatus() == StatusSlotEnum.LOCK) {
+                payment = paymentService.expire(payment);
+                slot = slotService.unlock(slot);
+            }
+        } else {
+            // bug: no payment but lock slot
+            if (slot.getStatus() == StatusSlotEnum.LOCK) slot = slotService.unlock(slot);
+        }
+        return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricing.class);
+    }
+
+    @Transactional
+    public String getLatestPendingUrl() {
+        User user = SecurityUtils.getCurrentUser();
+        Payment payment = paymentService.getLatestPendingBookingByUser(user);
+        if (payment == null) throw new AppException("PAYMENT_NOT_FOUND");
+        return paymentService.createPaymentUrl(payment);
     }
 }
