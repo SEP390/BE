@@ -1,9 +1,12 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.request.room.CreateRoomRequest;
+import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
+import com.capstone.capstone.dto.request.slot.CreateSlotRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.room.*;
 import com.capstone.capstone.service.impl.RoomService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -63,8 +66,8 @@ public class RoomController {
         return new BaseResponse<>(roomService.getUsersResponse(id));
     }
 
-    @PostMapping("/api/rooms")
-    public BaseResponse<RoomResponse> create(CreateRoomRequest request) {
-        return new BaseResponse<>(roomService.create(request));
+    @PostMapping("/api/rooms/{id}")
+    public BaseResponse<RoomResponseJoinPricingAndDormAndSlot> update(@PathVariable UUID id, @RequestBody @Valid UpdateRoomRequest request) {
+        return new BaseResponse<>(roomService.update(id, request));
     }
 }

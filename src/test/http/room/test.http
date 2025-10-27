@@ -16,6 +16,22 @@ Content-Type: application/json
 GET http://localhost:8080/api/rooms
 Authorization: Bearer {{token}}
 
+> {%
+    client.global.set("roomId", response.body.data.content[0].id)
+    client.log("roomId =", client.global.get("roomId"))
+%}
+
+### update room
+POST http://localhost:8080/api/rooms/{{roomId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "floor": 1,
+  "roomNumber": "A101",
+  "totalSlot": 4
+}
+
 ### Get rooms-matching
 GET http://localhost:8080/api/rooms-matching
 Authorization: Bearer {{token}}

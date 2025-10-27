@@ -54,15 +54,24 @@ public class RoomPricingService {
     }
 
     public RoomPricingResponse create(CreateRoomPricingRequest request) {
-        var existed = roomPricingRepository.findByTotalSlot(request.getTotalSlot()).orElse(null);
-        if (existed == null) {
-            var newPricing = roomPricingRepository.save(modelMapper.map(request, RoomPricing.class));
-            return modelMapper.map(newPricing, RoomPricingResponse.class);
-        } else {
-            existed.setPrice(request.getPrice());
-            existed = roomPricingRepository.save(existed);
-            return modelMapper.map(existed, RoomPricingResponse.class);
+        RoomPricing pricing = modelMapper.map(request, RoomPricing.class);
+        return modelMapper.map(create(pricing), RoomPricingResponse.class);
+    }
+
+    public RoomPricing getOrCreate(Integer totalSlot) {
+        RoomPricing pricing = getByTotalSlot(totalSlot).orElse(null);
+        if (pricing == null) {
+            pricing = create(RoomPricing.builder().totalSlot(totalSlot).price(0L).build());
         }
+        return pricing;
+    }
+
+    public RoomPricing create(RoomPricing pricing) {
+        if (pricing.getId() != null) pricing.setId(null);
+        if (roomPricingRepository.findByTotalSlot(pricing.getTotalSlot()).isPresent()) {
+            throw new AppException("TOTAL_SLOT_EXISTED");
+        }
+        return roomPricingRepository.save(pricing);
     }
 
     public RoomPricingResponse update(UUID id, UpdateRoomPricingRequest request) {

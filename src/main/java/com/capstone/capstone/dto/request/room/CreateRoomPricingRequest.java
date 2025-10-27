@@ -3,9 +3,11 @@ package com.capstone.capstone.dto.request.room;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class CreateRoomPricingRequest {
     @NotNull(message = "TOTAL_SLOT_NULL")
     @Min(value = 1, message = "TOTAL_SLOT_MIN")

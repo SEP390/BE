@@ -1,3 +1,4 @@
+### login
 POST http://localhost:8080/api/auth
 Content-Type: application/json
 
@@ -11,6 +12,47 @@ Content-Type: application/json
     console.log("Token:", client.global.get("token"));
 %}
 
-###
+### create dorm
+POST http://localhost:8080/api/dorms
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dormName": "Dorm A",
+  "totalFloor": 5
+}
+
+### get all dorms
 GET http://localhost:8080/api/dorms
 Authorization: Bearer {{token}}
+
+> {%
+ client.global.set("dormId", response.body.data[0].id)
+ client.log("dormId =", client.global.get("dormId"))
+ %}
+
+### update dorm
+POST http://localhost:8080/api/dorms/{{dormId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dormName": "Dorm A",
+  "totalFloor": 4
+}
+
+### add room
+POST http://localhost:8080/api/dorms/{{dormId}}/room
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "floor": 1,
+  "roomNumber": "A101",
+  "totalSlot": 4
+}
+
+> {%
+ client.global.set("roomId", response.body.data.id)
+ client.log("roomId =", client.global.get("roomId"))
+ %}

@@ -56,10 +56,18 @@ public class SlotService {
         for (int i = 1; i <= room.getTotalSlot(); i++) {
             Slot slot = new Slot();
             slot.setRoom(room);
-            slot.setSlotName("Slot %s".formatted(i));
+            slot.setSlotName("%s_%s".formatted(room.getRoomNumber(), i));
             slot.setStatus(StatusSlotEnum.AVAILABLE);
             slots.add(slot);
         }
         return slotRepository.saveAll(slots);
+    }
+
+    public void deleteByRoom(Room room) {
+        slotRepository.deleteAllByRoom(room);
+    }
+
+    public List<Slot> getByRoom(Room room) {
+        return slotRepository.findByRoom(room);
     }
 }
