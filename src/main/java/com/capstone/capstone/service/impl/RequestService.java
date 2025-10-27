@@ -61,6 +61,7 @@ public class RequestService implements IRequestService {
         createRequestResponse.setExecuteTime(newRequest.getExecuteTime());
         createRequestResponse.setRequestId(newRequest.getId());
         createRequestResponse.setUseId(userid);
+        createRequestResponse.setUserName(user.getUsername());
         return createRequestResponse;
     }
 

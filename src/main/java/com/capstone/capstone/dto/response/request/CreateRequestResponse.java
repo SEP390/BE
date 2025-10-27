@@ -17,6 +17,7 @@ import java.util.UUID;
 public class CreateRequestResponse {
     private RequestTypeEnum requestType;
     private String content;
+    private String userName;
     private LocalDateTime createTime;
     private LocalDateTime executeTime;
     private RequestStatusEnum requestStatus;

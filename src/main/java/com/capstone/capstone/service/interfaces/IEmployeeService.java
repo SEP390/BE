@@ -14,5 +14,5 @@ public interface IEmployeeService {
     CreateEmployeeResponse createEmployee(CreateEmployeeRequest request);
     List<GetAllEmployeeResponse> getAllEmployee();
     GetEmployeeById getEmployeeById(UUID employeeId);
-    UpdateEmployeeResponse updateEmployee(UpdateEmployeeRequest request);
+    UpdateEmployeeResponse updateEmployee(UUID employeeId,UpdateEmployeeRequest request);
 }
