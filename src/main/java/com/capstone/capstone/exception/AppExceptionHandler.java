@@ -14,6 +14,7 @@ public class AppExceptionHandler {
     @ResponseBody
     public ResponseEntity<?> handleException(AppException e) {
         HashMap<String, Object> map = new HashMap<>();
+        map.put("status", 400);
         map.put("message", e.getMessage());
         if (e.getData() != null) {
             map.put("data", e.getData());

@@ -47,11 +47,9 @@ public class RoomService {
                 .stream()
                 .collect(Collectors.toMap(RoomMatching::getRoomId, m -> (double) m.getSameOptionCount() / m.getUserCount() / totalQuestion * 100));
         Comparator<Room> comparator = Comparator.comparingDouble(o -> matching.getOrDefault(o.getId(), 0.0));
-        Map<Integer, RoomPricingResponse> pricing = roomPricingService.getAll().stream().collect(Collectors.toMap(RoomPricingResponse::getTotalSlot, r -> r));
         rooms.sort(comparator.reversed());
         return rooms.subList(0, Math.min(5, rooms.size())).stream().map(room -> modelMapper.map(room, RoomMatchingResponse.class)).peek(room -> {
             room.setMatching(matching.getOrDefault(room.getId(), 0.0));
-            room.setPricing(pricing.get(room.getTotalSlot()));
         }).toList();
     }
 
@@ -140,7 +138,7 @@ public class RoomService {
         Room room = new Room();
         room.setDorm(dorm);
         room.setFloor(request.getFloor());
-        RoomPricing pricing = roomPricingService.getByTotalSlot(request.getTotalSlot());
+        RoomPricing pricing = roomPricingService.getByTotalSlot(request.getTotalSlot()).orElse(null);
         if (pricing == null) throw new AppException("ROOM_TYPE_NOT_EXIST");
         room.setPricing(pricing);
         room.setTotalSlot(request.getTotalSlot());
@@ -159,7 +157,7 @@ public class RoomService {
 
     public List<Room> create(List<Room> rooms) {
         rooms.forEach(room -> {
-            RoomPricing pricing = roomPricingService.getByTotalSlot(room.getTotalSlot());
+            RoomPricing pricing = roomPricingService.getByTotalSlot(room.getTotalSlot()).orElse(null);
             if (pricing == null) throw new AppException("ROOM_TYPE_NOT_EXIST");
             room.setPricing(pricing);
         });

@@ -32,7 +32,7 @@ public class SlotService {
 
     public Slot unlock(Slot slot) {
         // slot không khóa
-        if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_LOCKED");
+        if (slot.getStatus() != StatusSlotEnum.LOCK) throw new AppException("SLOT_NOT_LOCKED");
         slot.setUser(null);
         slot.setStatus(StatusSlotEnum.AVAILABLE);
         return slotRepository.save(slot);

@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.util.UUID;
 
+/**
+ * Slot core response (no relation)
+ */
 @Data
 public class SlotResponse {
     private UUID id;

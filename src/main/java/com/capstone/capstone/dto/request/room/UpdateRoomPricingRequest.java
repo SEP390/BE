@@ -6,13 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class RoomPricingRequest {
-    @NotNull
-    @Min(1)
-    @Max(255)
-    private int totalSlot;
-    @NotNull
-    @Min(0)
-    @Max(1000000000)
-    private long price;
+public class UpdateRoomPricingRequest {
+    @NotNull(message = "PRICING_NULL")
+    @Min(value = 0, message = "PRICING_MIN")
+    @Max(value = 1000000000, message = "PRICING_MAX")
+    private Long price;
 }
