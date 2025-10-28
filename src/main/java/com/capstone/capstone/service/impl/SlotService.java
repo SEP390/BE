@@ -24,6 +24,13 @@ public class SlotService {
         return slotRepository.findById(id);
     }
 
+    /**
+     * Lock slot
+     * @param slot slot
+     * @param user user
+     * @throws AppException SLOT_NOT_AVAILABLE
+     * @return slot
+     */
     public Slot lock(Slot slot, User user) {
         // slot đã có người đặt
         if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE", slot.getId());

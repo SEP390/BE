@@ -38,6 +38,8 @@ public class BookingService {
         UUID slotId = request.getSlotId();
         Slot slot = slotService.getById(slotId).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
 
+        if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
+
         if (paymentService.hasBooking(user, slot)) throw new AppException("ALREADY_BOOKED");
 
         // create payment

@@ -218,6 +218,12 @@ public class RoomService {
         return roomRepository.findAll((r, q, c) -> c.equal(r.get("dorm"), dorm));
     }
 
+    /**
+     * Lock slot
+     * @param slot slot
+     * @param user user
+     * @throws AppException SLOT_NOT_AVAILABLE
+     */
     public void lockSlot(Slot slot, User user) {
         // đổi trạng thái slot
         slot = slotService.lock(slot, user);
