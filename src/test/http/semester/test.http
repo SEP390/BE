@@ -19,6 +19,11 @@ Authorization: Bearer {{token}}
 GET http://localhost:8080/api/semesters/current
 Authorization: Bearer {{token}}
 
+> {%
+ client.global.set("semesterId", response.body.data.id)
+ client.log("semesterId =", client.global.get("semesterId"))
+ %}
+
 ###
 POST http://localhost:8080/api/semesters
 Authorization: Bearer {{token}}

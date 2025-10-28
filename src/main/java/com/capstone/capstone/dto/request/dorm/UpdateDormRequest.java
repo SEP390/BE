@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class CreateDormRequest {
+public class UpdateDormRequest {
     @NotNull(message = "DORM_NAME_NULL")
     private String dormName;
     @NotNull(message = "TOTAL_FLOOR_NULL")
