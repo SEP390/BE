@@ -25,8 +25,6 @@ public class SlotHistoryService {
         // get next semester
         Semester semester = semesterService.getNext();
 
-        LocalDateTime createDate = LocalDateTime.now();
-
         // get current price of slot (can be updated in future)
         var pricing = roomPricingService.getBySlot(slot).orElse(null);
         if (pricing == null) throw new AppException("INVALID_ROOM_TYPE");

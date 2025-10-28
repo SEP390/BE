@@ -24,3 +24,15 @@ Content-Type: application/json
 {
   "slotId": "{{slotId}}"
 }
+
+### latest payment url
+GET http://localhost:8080/api/booking/latest-payment-url
+Authorization: Bearer {{token}}
+
+### current booking
+GET http://localhost:8080/api/booking/current
+Authorization: Bearer {{token}}
+
+### booking history
+GET http://localhost:8080/api/booking/history
+Authorization: Bearer {{token}}

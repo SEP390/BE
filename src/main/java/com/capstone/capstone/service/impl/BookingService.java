@@ -63,12 +63,13 @@ public class BookingService {
         User user = SecurityUtils.getCurrentUser();
         Slot slot = slotService.getByUser(user);
         if (slot == null) return null;
-        Payment payment = paymentService.getLatestPendingBookingByUser(user);
+        Payment payment = paymentService.getLatestPendingBookingByUserAndSlot(user, slot);
         if (payment != null) {
             // unlock if expire
             if (paymentService.isExpire(payment) && slot.getStatus() == StatusSlotEnum.LOCK) {
                 payment = paymentService.expire(payment);
                 slot = slotService.unlock(slot);
+                return null;
             }
         } else {
             // bug: no payment but lock slot

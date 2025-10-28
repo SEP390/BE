@@ -9,6 +9,7 @@ import com.capstone.capstone.repository.SlotRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +26,7 @@ public class SlotService {
 
     public Slot lock(Slot slot, User user) {
         // slot đã có người đặt
-        if (slot.getStatus() == StatusSlotEnum.UNAVAILABLE) throw new AppException("SLOT_UNAVAILABLE", slot.getId());
+        if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE", slot.getId());
         slot.setStatus(StatusSlotEnum.LOCK);
         slot.setUser(user);
         return slotRepository.save(slot);

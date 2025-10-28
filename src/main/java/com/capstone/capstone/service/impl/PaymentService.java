@@ -214,6 +214,19 @@ public class PaymentService {
         return !payments.isEmpty() ? payments.getContent().getFirst() : null;
     }
 
+    public Payment getLatestPendingBookingByUserAndSlot(User user, Slot slot) {
+        var payments = paymentRepository.findAll(
+                (r, q, c) -> c.and(
+                        c.equal(r.get("user"), user),
+                        c.equal(r.get("slotHistory").get("slotId"), slot.getId()),
+                        c.equal(r.get("type"), PaymentType.BOOKING),
+                        c.equal(r.get("status"), PaymentStatus.PENDING)
+                ),
+                PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createDate"))
+        );
+        return !payments.isEmpty() ? payments.getContent().getFirst() : null;
+    }
+
     public boolean isExpire(Payment payment) {
         return ChronoUnit.MINUTES.between(payment.getCreateDate(), LocalDateTime.now()) >= 10;
     }
