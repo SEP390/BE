@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -18,8 +19,8 @@ import java.util.UUID;
 public class SlotService {
     private final SlotRepository slotRepository;
 
-    public Slot getById(UUID id) {
-        return slotRepository.findById(id).orElse(null);
+    public Optional<Slot> getById(UUID id) {
+        return slotRepository.findById(id);
     }
 
     public Slot lock(Slot slot, User user) {

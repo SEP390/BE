@@ -8,11 +8,8 @@ import com.capstone.capstone.dto.response.booking.CreateBookingResponse;
 import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.entity.Payment;
 import com.capstone.capstone.entity.Slot;
-import com.capstone.capstone.entity.SlotHistory;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
-import com.capstone.capstone.repository.UserRepository;
-import com.capstone.capstone.util.AuthenUtil;
 import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -22,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -30,11 +26,8 @@ import java.util.UUID;
 public class BookingService {
     private final SlotService slotService;
     private final PaymentService paymentService;
-    private final SlotHistoryService slotHistoryService;
-    private final UserRepository userRepository;
+    private final RoomService roomService;
     private final ModelMapper modelMapper;
-    private final RoomPricingService roomPricingService;
-    private final RoomSlotService roomSlotService;
 
     @Transactional
     public CreateBookingResponse create(CreateBookingRequest request) {
@@ -43,31 +36,25 @@ public class BookingService {
 
         // get slot
         UUID slotId = request.getSlotId();
-        Slot slot = slotService.getById(slotId);
+        Slot slot = slotService.getById(slotId).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
 
-        // slot not found
-        if (slot == null) {
-            throw new AppException("SLOT_NOT_FOUND");
-        }
-
-        // create slot history
-        SlotHistory history = slotHistoryService.create(user, slot);
+        if (paymentService.hasBooking(user, slot)) throw new AppException("ALREADY_BOOKED");
 
         // create payment
-        Payment payment = paymentService.create(history);
+        Payment payment = paymentService.create(user, slot);
 
         // create payment url for invoice
         String paymentUrl = paymentService.createPaymentUrl(payment);
 
         // lock slot (so other user cannot book this slot)
-        roomSlotService.lockSlot(slot, user);
+        roomService.lockSlot(slot, user);
 
         // return url for frontend to redirect
         return new CreateBookingResponse(paymentUrl);
     }
 
     public PagedModel<BookingHistoryResponse> history(List<PaymentStatus> status, Pageable pageable) {
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        User user = SecurityUtils.getCurrentUser();
         return paymentService.getBookingHistory(user, status, pageable);
     }
 

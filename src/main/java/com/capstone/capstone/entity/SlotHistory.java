@@ -1,20 +1,19 @@
 package com.capstone.capstone.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class SlotHistory extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "semester_id")
@@ -22,10 +21,11 @@ public class SlotHistory extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "slot_id")
-    @JsonIgnore
-    private Slot slot;
 
+    // clone slot information, nullable (for slot delete in room update)
+    private UUID slotId;
+    private String slotName;
+    private String roomNumber;
+    private String dormName;
     private Long price;
 }

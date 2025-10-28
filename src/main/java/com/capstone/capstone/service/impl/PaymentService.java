@@ -6,14 +6,12 @@ import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
 import com.capstone.capstone.dto.response.payment.PaymentResponse;
 import com.capstone.capstone.dto.response.payment.PaymentVerifyResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
-import com.capstone.capstone.entity.ElectricWaterBill;
-import com.capstone.capstone.entity.Payment;
-import com.capstone.capstone.entity.SlotHistory;
-import com.capstone.capstone.entity.User;
+import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.PaymentRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SortUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -38,8 +36,8 @@ import java.util.UUID;
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final VNPayService vNPayService;
-    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final SlotHistoryService slotHistoryService;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
@@ -75,6 +73,24 @@ public class PaymentService {
                 .createDate(LocalDateTime.now())
                 .electricWaterBill(bill)
                 .price(bill.getPrice())
+                .user(user)
+                .build());
+    }
+
+    /**
+     * Tạo thanh toán cho đặt phòng
+     *
+     * @param user user
+     * @param slot slot
+     * @return payment
+     */
+    public Payment create(User user, Slot slot) {
+        return create(Payment.builder()
+                .type(PaymentType.BOOKING)
+                .status(PaymentStatus.PENDING)
+                .createDate(LocalDateTime.now())
+                .slotHistory(slotHistoryService.create(user, slot))
+                .price(slot.getRoom().getPricing().getPrice())
                 .user(user)
                 .build());
     }
@@ -158,9 +174,9 @@ public class PaymentService {
      * @return lịch sủ thanh toán
      */
     public PagedModel<PaymentResponse> history(PaymentStatus status, Pageable pageable) {
+        User user = SecurityUtils.getCurrentUser();
         Sort validSort = SortUtil.getSort(pageable, "createDate", "price");
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), Math.min(pageable.getPageSize(), 99), validSort);
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         return new PagedModel<>(paymentRepository.findAll(Specification.allOf(
                 (root, query, cb) -> cb.equal(root.get("user"), user),
                 status != null ? (root, query, cb) -> cb.equal(root.get("status"), status) : Specification.unrestricted()
@@ -205,5 +221,16 @@ public class PaymentService {
     public Payment expire(Payment payment) {
         payment.setStatus(PaymentStatus.CANCEL);
         return paymentRepository.save(payment);
+    }
+
+    public boolean hasBooking(User user, Slot slot) {
+        return paymentRepository.exists(
+                (r, q, c) -> c.and(
+                        c.equal(r.get("user"), user),
+                        c.equal(r.get("type"), PaymentType.BOOKING),
+                        c.equal(r.get("slotHistory").get("slotId"), slot.getId()),
+                        c.equal(r.get("status"), PaymentStatus.PENDING)
+                )
+        );
     }
 }

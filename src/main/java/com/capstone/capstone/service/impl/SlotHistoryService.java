@@ -31,12 +31,14 @@ public class SlotHistoryService {
         var pricing = roomPricingService.getBySlot(slot).orElse(null);
         if (pricing == null) throw new AppException("INVALID_ROOM_TYPE");
 
-        // create slot history
+        // create slot history, clone slot information
         SlotHistory slotHistory = new SlotHistory();
-        slotHistory.setSlot(slot);
+        slotHistory.setSlotId(slot.getId());
+        slotHistory.setSlotName(slot.getSlotName());
         slotHistory.setUser(user);
         slotHistory.setPrice(pricing.getPrice());
-        slotHistory.setSlot(slot);
+        slotHistory.setRoomNumber(slot.getRoom().getRoomNumber());
+        slotHistory.setDormName(slot.getRoom().getDorm().getDormName());
         slotHistory.setSemester(semester);
         slotHistory = slotHistoryRepository.save(slotHistory);
 

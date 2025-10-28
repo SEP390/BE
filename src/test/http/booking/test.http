@@ -1,0 +1,26 @@
+### login
+POST http://localhost:8080/api/auth
+Content-Type: application/json
+
+{
+  "username": "resident",
+  "password": "resident"
+}
+
+### Get slot
+GET http://localhost:8080/api/rooms
+Authorization: Bearer {{token}}
+
+> {%
+    client.global.set("slotId", response.body.data.content[0].slots[0].id)
+    client.log("slotId =", client.global.get("slotId"))
+%}
+
+### book slot
+POST http://localhost:8080/api/booking/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "slotId": "{{slotId}}"
+}

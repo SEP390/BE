@@ -22,8 +22,6 @@ public class Slot extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @OneToMany(mappedBy = "slot")
-    private List<SlotHistory> slotHistory;
     @ManyToOne
     @JoinColumn(name = "room_id")
     @JsonIgnore
