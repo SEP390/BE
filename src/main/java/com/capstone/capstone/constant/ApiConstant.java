@@ -2,9 +2,12 @@ package com.capstone.capstone.constant;
 
 public class ApiConstant {
     public static final String API = "/api";
+
     public static class USER {
         public static final String USER = API + "/users";
         public static final String PROFILE = "/profile";
+        public static final String GET_ALL_RESIDENT = "/users/residents";
+        public static final String GET_RESIDENT_BY_ID = "/users/residents/{id}";
     }
     public static class AUTH {
         public static final String AUTH = API + "/auth";
