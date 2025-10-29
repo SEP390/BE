@@ -123,25 +123,6 @@ public class PaymentService {
     }
 
     /**
-     * Get booking history of user
-     *
-     * @param user     user
-     * @param status   status of payment
-     * @param pageable pageable
-     * @return history
-     */
-    public PagedModel<BookingHistoryResponse> getBookingHistory(User user, List<PaymentStatus> status, Pageable pageable) {
-        Sort validSort = Sort.by(Optional.ofNullable(pageable.getSort().getOrderFor("createDate"))
-                .orElse(Sort.Order.desc("createDate")));
-        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), 5, validSort);
-        return new PagedModel<>(paymentRepository.findAll(Specification.allOf(
-                (root, query, cb) -> cb.equal(root.get("user"), user),
-                (root, query, cb) -> cb.equal(root.get("type"), PaymentType.BOOKING),
-                status != null ? (root, query, cb) -> root.get("status").in(status) : Specification.unrestricted()
-        ), validPageable).map(p -> modelMapper.map(p, BookingHistoryResponse.class)));
-    }
-
-    /**
      * Lịch sử thanh toán của user hiện tại
      *
      * @param status   trạng thái thanh toán
@@ -158,48 +139,8 @@ public class PaymentService {
         ), validPageable).map(p -> modelMapper.map(p, PaymentResponse.class)));
     }
 
-    /**
-     * Lấy tất cả thanh toán của hóa đơn điện nước
-     *
-     * @param bill hóa đơn điện nước
-     * @param status lọc theo status
-     * @return tất cả thanh toán
-     */
-    public List<Payment> getAllByElectricWaterBill(ElectricWaterBill bill, User user, PaymentStatus status) {
-        return paymentRepository.findAll(Specification.allOf(
-                (r, q, c) -> c.equal(r.get("electricWaterBill"), bill),
-                (user != null) ? (r, q, c) -> c.equal(r.get("user"), user) : Specification.unrestricted(),
-                (status != null) ? (r,q,c) -> c.equal(r.get("status"), status) : Specification.unrestricted()
-        ));
-    }
-
     public PaymentResponse toResponse(Payment payment) {
         return modelMapper.map(payment, PaymentResponse.class);
-    }
-
-    public Payment getLatestPendingBookingByUser(User user) {
-        var payments = paymentRepository.findAll(
-                (r, q, c) -> c.and(
-                        c.equal(r.get("user"), user),
-                        c.equal(r.get("type"), PaymentType.BOOKING),
-                        c.equal(r.get("status"), PaymentStatus.PENDING)
-                ),
-                PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createDate"))
-        );
-        return !payments.isEmpty() ? payments.getContent().getFirst() : null;
-    }
-
-    public Payment getLatestPendingBookingByUserAndSlot(User user, Slot slot) {
-        var payments = paymentRepository.findAll(
-                (r, q, c) -> c.and(
-                        c.equal(r.get("user"), user),
-                        c.equal(r.get("slotHistory").get("slotId"), slot.getId()),
-                        c.equal(r.get("type"), PaymentType.BOOKING),
-                        c.equal(r.get("status"), PaymentStatus.PENDING)
-                ),
-                PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createDate"))
-        );
-        return !payments.isEmpty() ? payments.getContent().getFirst() : null;
     }
 
     public boolean isExpire(Payment payment) {
@@ -209,15 +150,5 @@ public class PaymentService {
     public Payment expire(Payment payment) {
         payment.setStatus(PaymentStatus.CANCEL);
         return paymentRepository.save(payment);
-    }
-
-    public boolean hasBooking(User user) {
-        return paymentRepository.exists(
-                (r, q, c) -> c.and(
-                        c.equal(r.get("user"), user),
-                        c.equal(r.get("type"), PaymentType.BOOKING),
-                        c.equal(r.get("status"), PaymentStatus.PENDING)
-                )
-        );
     }
 }

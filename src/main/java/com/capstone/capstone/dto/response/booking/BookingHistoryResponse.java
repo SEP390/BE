@@ -10,7 +10,6 @@ import java.util.UUID;
 @Data
 public class BookingHistoryResponse {
     private UUID id;
-    private SlotHistoryResponse slotHistory;
     private Long price;
     private LocalDateTime createDate;
     private PaymentStatus status;

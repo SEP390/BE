@@ -241,15 +241,7 @@ public class RoomService {
         checkFullAndUpdate(slot.getRoom());
     }
 
-    @Transactional
-    public void onPayment(Payment payment, VNPayStatus status) {
-        Slot slot = slotService.getById(payment.getSlotHistory().getSlotId()).orElse(null);
-        // slot deleted, ignore this
-        if (slot == null) return;
-        if (status == VNPayStatus.SUCCESS) {
-            successSlot(slot);
-        } else {
-            unlockSlot(slot);
-        }
+    public Optional<Room> getByUser(User user) {
+        return Optional.ofNullable(roomRepository.findByUser(user));
     }
 }

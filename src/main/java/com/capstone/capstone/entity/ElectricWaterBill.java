@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Hóa đơn điện nước của phòng
@@ -34,7 +35,7 @@ public class ElectricWaterBill extends BaseEntity {
      * Chỉ số điện nước của phòng
      */
     @ManyToOne
-    @JoinColumn(name = "room_bill_id")
+    @JoinColumn(name = "index")
     private ElectricWaterIndex index;
     /**
      * Trạng thái thanh toán, thành công nếu tất cả thành viên trong phòng đều dã trả tiền

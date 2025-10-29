@@ -37,6 +37,8 @@ class BookingServiceTest {
     @Mock
     PaymentService paymentService;
     @Mock
+    PaymentSlotService paymentSlotService;
+    @Mock
     RoomService roomService;
     @Mock
     ModelMapper modelMapper;
@@ -57,7 +59,7 @@ class BookingServiceTest {
         String paymentUrl = "paymentUrl";
         when(slotService.getById(slot.getId())).thenReturn(Optional.of(slot));
         when(paymentService.create(user, slot)).thenReturn(payment);
-        when(paymentService.hasBooking(user)).thenReturn(false);
+        when(paymentSlotService.hasPendingPayment(user)).thenReturn(false);
         when(paymentService.createPaymentUrl(payment)).thenReturn(paymentUrl);
         doNothing().when(roomService).lockSlot(slot, user);
         MockedStatic<SecurityUtils> mockedStatic = Mockito.mockStatic(SecurityUtils.class);
@@ -114,7 +116,7 @@ class BookingServiceTest {
         user.setId(UUID.randomUUID());
         Payment payment = new Payment();
         when(slotService.getById(slot.getId())).thenReturn(Optional.of(slot));
-        when(paymentService.hasBooking(user)).thenReturn(true);
+        when(paymentSlotService.hasPendingPayment(user)).thenReturn(true);
 
         MockedStatic<SecurityUtils> mockedStatic = Mockito.mockStatic(SecurityUtils.class);
         mockedStatic.when(SecurityUtils::getCurrentUser).thenReturn(user);

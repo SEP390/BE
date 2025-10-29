@@ -7,6 +7,7 @@ import com.capstone.capstone.dto.response.electricwater.ElectricWaterIndexRespon
 import com.capstone.capstone.dto.response.electricwater.ElectricWaterPricingResponse;
 import com.capstone.capstone.dto.response.electricwater.UserElectricWaterResponse;
 import com.capstone.capstone.service.impl.ElectricWaterService;
+import com.capstone.capstone.service.impl.PaymentElectricWaterService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ElectricWaterBillController {
     private final ElectricWaterService electricWaterService;
+    private final PaymentElectricWaterService paymentElectricWaterService;
 
     @PostMapping("/api/electric-water-index")
     public BaseResponse<ElectricWaterIndexResponse> createIndex(@RequestBody @Valid CreateElectricWaterIndexRequest request) {
@@ -51,7 +53,7 @@ public class ElectricWaterBillController {
 
     @GetMapping("/api/electric-water-bill/user")
     public BaseResponse<PagedModel<UserElectricWaterResponse>> getUserBill(@PageableDefault Pageable pageable) {
-        return new BaseResponse<>(electricWaterService.getUserElectricWaterBills(pageable));
+        return new BaseResponse<>(paymentElectricWaterService.getUserElectricWaterBills(pageable));
     }
 
     @GetMapping("/api/electric-water-bill/{id}/payment-url")

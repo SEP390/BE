@@ -26,6 +26,7 @@ import java.util.UUID;
 public class BookingService {
     private final SlotService slotService;
     private final PaymentService paymentService;
+    private final PaymentSlotService paymentSlotService;
     private final RoomService roomService;
     private final ModelMapper modelMapper;
 
@@ -40,7 +41,7 @@ public class BookingService {
 
         if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
 
-        if (paymentService.hasBooking(user)) throw new AppException("ALREADY_BOOKED");
+        if (paymentSlotService.hasPendingPayment(user)) throw new AppException("ALREADY_BOOKED");
 
         // create payment
         Payment payment = paymentService.create(user, slot);
@@ -57,7 +58,7 @@ public class BookingService {
 
     public PagedModel<BookingHistoryResponse> history(List<PaymentStatus> status, Pageable pageable) {
         User user = SecurityUtils.getCurrentUser();
-        return paymentService.getBookingHistory(user, status, pageable);
+        return paymentSlotService.getBookingHistory(user, status, pageable);
     }
 
     @Transactional
@@ -65,7 +66,7 @@ public class BookingService {
         User user = SecurityUtils.getCurrentUser();
         Slot slot = slotService.getByUser(user);
         if (slot == null) return null;
-        Payment payment = paymentService.getLatestPendingBookingByUserAndSlot(user, slot);
+        Payment payment = paymentSlotService.getPendingPayment(user, slot);
         if (payment != null) {
             // unlock if expire
             if (paymentService.isExpire(payment) && slot.getStatus() == StatusSlotEnum.LOCK) {
@@ -83,7 +84,7 @@ public class BookingService {
     @Transactional
     public String getLatestPendingUrl() {
         User user = SecurityUtils.getCurrentUser();
-        Payment payment = paymentService.getLatestPendingBookingByUser(user);
+        Payment payment = paymentSlotService.getPendingPayment(user);
         if (payment == null) throw new AppException("PAYMENT_NOT_FOUND");
         return paymentService.createPaymentUrl(payment);
     }

@@ -12,6 +12,7 @@ import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Example;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -140,8 +142,14 @@ public class ElectricWaterService {
         return electricWaterIndexRepository.findById(id).orElse(null);
     }
 
-    public ElectricWaterBill getBillOfRoom(Room room, Semester semester) {
-        return electricWaterBillRepository.findOne((r,q,c) -> c.and(c.equal(r.get("index").get("room"), room), c.equal(r.get("index").get("semester"), semester))).orElse(null);
+    /**
+     * 1 phòng, 1 kỳ -> 1/0 bill
+     * @param room phòng
+     * @param semester kỳ
+     * @return bill
+     */
+    public Optional<ElectricWaterBill> getBillOfRoom(Room room, Semester semester) {
+        return electricWaterBillRepository.findOne((r,q,c) -> c.and(c.equal(r.get("index").get("room"), room), c.equal(r.get("index").get("semester"), semester)));
     }
 
     public Page<ElectricWaterBill> getBillsOfRoom(Room room, Pageable pageable) {
@@ -150,27 +158,6 @@ public class ElectricWaterService {
 
     public ElectricWaterBill getBillOfIndex(ElectricWaterIndex index) {
         return electricWaterBillRepository.findOne((r,q,c) -> c.equal(r.get("index"), index)).orElse(null);
-    }
-
-    /**
-     * Lấy thông tin hóa đơn điện nước của phòng
-     * @return thông tin hóa đơn điện nước
-     */
-    public PagedModel<UserElectricWaterResponse> getUserElectricWaterBills(Pageable pageable) {
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
-        Room room = roomRepository.findByUser(user);
-        Page<ElectricWaterBill> bills = getBillsOfRoom(room, pageable);
-        return new PagedModel<>(bills.map(bill -> {
-            UserElectricWaterResponse response = new UserElectricWaterResponse();
-            response.setBill(modelMapper.map(bill, ElectricWaterBillResponse.class));
-            List<Payment> payments = paymentService.getAllByElectricWaterBill(bill, user, PaymentStatus.SUCCESS);
-            response.setPaid(false);
-            if (!payments.isEmpty()) {
-                response.setPaid(true);
-                response.setPayment(modelMapper.map(payments.getFirst(), PaymentCoreResponse.class));
-            }
-            return response;
-        }));
     }
 
     public ElectricWaterBill getBillById(UUID billId) {
@@ -226,19 +213,6 @@ public class ElectricWaterService {
         User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         ElectricWaterBill bill = getBillById(billId);
         return paymentService.createPaymentUrl(user, bill);
-    }
-
-    public void onPayment(Payment payment, VNPayStatus status) {
-        ElectricWaterBill bill = payment.getElectricWaterBill();
-        if (status == VNPayStatus.SUCCESS) {
-            List<Payment> payments = paymentService.getAllByElectricWaterBill(bill, null, PaymentStatus.SUCCESS);
-            long paid = payments.size();
-            // tất cả user đã trả tiền
-            if (paid == bill.getUserCount()) {
-                bill = successBill(bill);
-            }
-        }
-        payment.setElectricWaterBill(bill);
     }
 
     public ElectricWaterPricingResponse getCurrentPricing() {
