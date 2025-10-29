@@ -27,12 +27,4 @@ public class Payment extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "slot_history_id")
-    private SlotHistory slotHistory;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "electric_water_bill_id")
-    private ElectricWaterBill electricWaterBill;
 }

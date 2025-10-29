@@ -34,26 +34,18 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final VNPayService vNPayService;
     private final ModelMapper modelMapper;
-    private final SlotHistoryService slotHistoryService;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
     }
 
-    /**
-     * Create payment for slot history
-     *
-     * @param slotHistory slot history
-     * @return payment
-     */
-    public Payment create(SlotHistory slotHistory) {
+    public Payment create(User user, Long price, PaymentType type) {
         return create(Payment.builder()
-                .type(PaymentType.BOOKING)
+                .type(type)
                 .status(PaymentStatus.PENDING)
                 .createDate(LocalDateTime.now())
-                .price(slotHistory.getPrice())
-                .slotHistory(slotHistory)
-                .user(slotHistory.getUser())
+                .price(price)
+                .user(user)
                 .build());
     }
 
@@ -64,14 +56,7 @@ public class PaymentService {
      * @return payment
      */
     public Payment create(User user, ElectricWaterBill bill) {
-        return create(Payment.builder()
-                .type(PaymentType.ELECTRIC_WATER)
-                .status(PaymentStatus.PENDING)
-                .createDate(LocalDateTime.now())
-                .electricWaterBill(bill)
-                .price(bill.getPrice())
-                .user(user)
-                .build());
+        return create(user, bill.getPrice(), PaymentType.ELECTRIC_WATER);
     }
 
     /**
@@ -82,15 +67,7 @@ public class PaymentService {
      * @return payment
      */
     public Payment create(User user, Slot slot) {
-        return create(Payment.builder()
-                .type(PaymentType.BOOKING)
-                .status(PaymentStatus.PENDING)
-                .createDate(LocalDateTime.now())
-                .slotHistory(slotHistoryService.create(user, slot))
-                .price(slot.getRoom().getPricing().getPrice())
-                .user(user)
-                .note("Thanh toán cho phòng %s".formatted(slot.getRoom().getRoomNumber()))
-                .build());
+        return create(user, slot.getRoom().getPricing().getPrice(), PaymentType.BOOKING);
     }
 
     /**
