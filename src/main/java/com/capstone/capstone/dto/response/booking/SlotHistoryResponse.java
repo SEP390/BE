@@ -10,7 +10,7 @@ public class SlotHistoryResponse {
     private UUID slotId;
     private UUID roomId;
     private UUID dormId;
-    private UUID slotName;
+    private String slotName;
     private String roomNumber;
     private String dormName;
     private SemesterResponse semester;

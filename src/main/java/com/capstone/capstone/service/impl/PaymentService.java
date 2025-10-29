@@ -89,6 +89,7 @@ public class PaymentService {
                 .slotHistory(slotHistoryService.create(user, slot))
                 .price(slot.getRoom().getPricing().getPrice())
                 .user(user)
+                .note("Thanh toán cho phòng %s".formatted(slot.getRoom().getRoomNumber()))
                 .build());
     }
 
@@ -233,12 +234,11 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
-    public boolean hasBooking(User user, Slot slot) {
+    public boolean hasBooking(User user) {
         return paymentRepository.exists(
                 (r, q, c) -> c.and(
                         c.equal(r.get("user"), user),
                         c.equal(r.get("type"), PaymentType.BOOKING),
-                        c.equal(r.get("slotHistory").get("slotId"), slot.getId()),
                         c.equal(r.get("status"), PaymentStatus.PENDING)
                 )
         );

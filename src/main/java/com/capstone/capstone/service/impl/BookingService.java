@@ -40,7 +40,7 @@ public class BookingService {
 
         if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
 
-        if (paymentService.hasBooking(user, slot)) throw new AppException("ALREADY_BOOKED");
+        if (paymentService.hasBooking(user)) throw new AppException("ALREADY_BOOKED");
 
         // create payment
         Payment payment = paymentService.create(user, slot);
