@@ -4,16 +4,19 @@ import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.RoleEnum;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
 public class RoomUserResponse {
     private UUID id;
     private String username;
+    private String fullName;
+    private String password;
     private String email;
-    private Date dob;
+    private LocalDate dob;
     private String userCode;
+    private String phoneNumber;
     private GenderEnum gender;
     private RoleEnum role;
 }
