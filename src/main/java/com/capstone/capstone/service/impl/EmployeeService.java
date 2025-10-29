@@ -7,6 +7,7 @@ import com.capstone.capstone.dto.response.employee.CreateEmployeeResponse;
 import com.capstone.capstone.dto.response.employee.GetAllEmployeeResponse;
 import com.capstone.capstone.dto.response.employee.GetEmployeeById;
 import com.capstone.capstone.dto.response.employee.UpdateEmployeeResponse;
+import com.capstone.capstone.entity.Dorm;
 import com.capstone.capstone.entity.Employee;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.BadHttpRequestException;
@@ -53,6 +54,7 @@ public class EmployeeService implements IEmployeeService {
         userRepository.save(user);
         Employee employee = new Employee();
         employee.setUser(user);
+        employee.setDorm(dormRepository.findById(request.getDormId()).orElseThrow(() -> new NotFoundException("Dorm not found")));
         employeeRepository.save(employee);
         CreateEmployeeResponse response = new CreateEmployeeResponse();
         response.setEmail(request.getEmail());
@@ -73,6 +75,7 @@ public class EmployeeService implements IEmployeeService {
             response1.setRole(employee.getUser().getRole());
             response1.setEmployeeId(employee.getUser().getId());
             response1.setDormName(employee.getDorm().getDormName());
+            response1.setPhone(employee.getUser().getPhoneNumber());
             response.add(response1);
         }
         return response;

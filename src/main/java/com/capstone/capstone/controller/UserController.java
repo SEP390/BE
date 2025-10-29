@@ -53,8 +53,8 @@ public class UserController {
 
 
     @GetMapping(ApiConstant.USER.GET_RESIDENT_BY_ID)
-    public ResponseEntity<BaseResponse<GetUserByIdResponse>> getUserById(@PathVariable UUID userID) {
-        GetUserByIdResponse getUserByIdResponse = userService.getUserById(userID);
+    public ResponseEntity<BaseResponse<GetUserByIdResponse>> getUserById(@PathVariable UUID id) {
+        GetUserByIdResponse getUserByIdResponse = userService.getUserById(id);
         BaseResponse<GetUserByIdResponse> baseResponse = new BaseResponse<>();
         baseResponse.setData(getUserByIdResponse);
         baseResponse.setStatus(HttpStatus.OK.value());

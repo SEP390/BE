@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,4 +25,5 @@ public class CreateEmployeeRequest {
     private GenderEnum gender;
     private RoleEnum role;
     private String phoneNumber;
+    private UUID dormId;
 }
