@@ -6,14 +6,10 @@ import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
 import com.capstone.capstone.dto.response.payment.PaymentResponse;
 import com.capstone.capstone.dto.response.payment.PaymentVerifyResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
-import com.capstone.capstone.entity.ElectricWaterBill;
-import com.capstone.capstone.entity.Payment;
-import com.capstone.capstone.entity.SlotHistory;
-import com.capstone.capstone.entity.User;
+import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.PaymentRepository;
-import com.capstone.capstone.repository.UserRepository;
-import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SortUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -29,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,8 +33,8 @@ import java.util.UUID;
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final VNPayService vNPayService;
-    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final SlotHistoryService slotHistoryService;
 
     public Payment create(Payment payment) {
         return paymentRepository.save(payment);
@@ -76,6 +71,25 @@ public class PaymentService {
                 .electricWaterBill(bill)
                 .price(bill.getPrice())
                 .user(user)
+                .build());
+    }
+
+    /**
+     * Tạo thanh toán cho đặt phòng
+     *
+     * @param user user
+     * @param slot slot
+     * @return payment
+     */
+    public Payment create(User user, Slot slot) {
+        return create(Payment.builder()
+                .type(PaymentType.BOOKING)
+                .status(PaymentStatus.PENDING)
+                .createDate(LocalDateTime.now())
+                .slotHistory(slotHistoryService.create(user, slot))
+                .price(slot.getRoom().getPricing().getPrice())
+                .user(user)
+                .note("Thanh toán cho phòng %s".formatted(slot.getRoom().getRoomNumber()))
                 .build());
     }
 
@@ -158,9 +172,9 @@ public class PaymentService {
      * @return lịch sủ thanh toán
      */
     public PagedModel<PaymentResponse> history(PaymentStatus status, Pageable pageable) {
+        User user = SecurityUtils.getCurrentUser();
         Sort validSort = SortUtil.getSort(pageable, "createDate", "price");
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), Math.min(pageable.getPageSize(), 99), validSort);
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
         return new PagedModel<>(paymentRepository.findAll(Specification.allOf(
                 (root, query, cb) -> cb.equal(root.get("user"), user),
                 status != null ? (root, query, cb) -> cb.equal(root.get("status"), status) : Specification.unrestricted()
@@ -198,6 +212,19 @@ public class PaymentService {
         return !payments.isEmpty() ? payments.getContent().getFirst() : null;
     }
 
+    public Payment getLatestPendingBookingByUserAndSlot(User user, Slot slot) {
+        var payments = paymentRepository.findAll(
+                (r, q, c) -> c.and(
+                        c.equal(r.get("user"), user),
+                        c.equal(r.get("slotHistory").get("slotId"), slot.getId()),
+                        c.equal(r.get("type"), PaymentType.BOOKING),
+                        c.equal(r.get("status"), PaymentStatus.PENDING)
+                ),
+                PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createDate"))
+        );
+        return !payments.isEmpty() ? payments.getContent().getFirst() : null;
+    }
+
     public boolean isExpire(Payment payment) {
         return ChronoUnit.MINUTES.between(payment.getCreateDate(), LocalDateTime.now()) >= 10;
     }
@@ -205,5 +232,15 @@ public class PaymentService {
     public Payment expire(Payment payment) {
         payment.setStatus(PaymentStatus.CANCEL);
         return paymentRepository.save(payment);
+    }
+
+    public boolean hasBooking(User user) {
+        return paymentRepository.exists(
+                (r, q, c) -> c.and(
+                        c.equal(r.get("user"), user),
+                        c.equal(r.get("type"), PaymentType.BOOKING),
+                        c.equal(r.get("status"), PaymentStatus.PENDING)
+                )
+        );
     }
 }

@@ -5,6 +5,7 @@ import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
+import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
@@ -215,5 +216,40 @@ public class RoomService {
 
     public List<Room> getAllByDorm(Dorm dorm) {
         return roomRepository.findAll((r, q, c) -> c.equal(r.get("dorm"), dorm));
+    }
+
+    /**
+     * Lock slot
+     * @param slot slot
+     * @param user user
+     * @throws AppException SLOT_NOT_AVAILABLE
+     */
+    public void lockSlot(Slot slot, User user) {
+        // đổi trạng thái slot
+        slot = slotService.lock(slot, user);
+        // đổi trạng thái room (nếu tất cả các slot đều unavailable)
+        checkFullAndUpdate(slot.getRoom());
+    }
+
+    public void unlockSlot(Slot slot) {
+        slot = slotService.unlock(slot);
+        checkFullAndUpdate(slot.getRoom());
+    }
+
+    public void successSlot(Slot slot) {
+        slot = slotService.success(slot);
+        checkFullAndUpdate(slot.getRoom());
+    }
+
+    @Transactional
+    public void onPayment(Payment payment, VNPayStatus status) {
+        Slot slot = slotService.getById(payment.getSlotHistory().getSlotId()).orElse(null);
+        // slot deleted, ignore this
+        if (slot == null) return;
+        if (status == VNPayStatus.SUCCESS) {
+            successSlot(slot);
+        } else {
+            unlockSlot(slot);
+        }
     }
 }

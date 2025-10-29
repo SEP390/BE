@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -22,8 +23,6 @@ public class Slot extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @OneToMany(mappedBy = "slot")
-    private List<SlotHistory> slotHistory;
     @ManyToOne
     @JoinColumn(name = "room_id")
     @JsonIgnore
