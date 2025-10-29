@@ -18,12 +18,14 @@ import com.capstone.capstone.repository.*;
 import com.capstone.capstone.service.interfaces.IRequestService;
 import com.capstone.capstone.util.AuthenUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -49,7 +51,9 @@ public class RequestService implements IRequestService {
         newRequest.setContent(request.getContent());
         newRequest.setExecuteTime(null);
         newRequest.setCreateTime(LocalDateTime.now());
-        newRequest.setRoomNumber(slotRepository.findByUser(user).getRoom().getRoomNumber());
+        Slot slot = Optional.ofNullable(slotRepository.findByUser(user))
+                .orElseThrow(() -> new NotFoundException("Slot not found"));
+        newRequest.setRoomNumber(slot.getRoom().getRoomNumber());
         requestRepository.save(newRequest);
         CreateRequestResponse createRequestResponse = new CreateRequestResponse();
         createRequestResponse.setRequestType(newRequest.getRequestType());
@@ -83,20 +87,22 @@ public class RequestService implements IRequestService {
 
     @Override
     public GetRequestByIdResponse getRequestById(UUID id) {
-        Request currentRequest = requestRepository.findById(id).orElseThrow(() -> new NotFoundException("Request not found"));
-        User user = currentRequest.getUser();
+        Request request = requestRepository.findById(id).orElseThrow(() -> new NotFoundException("Request not found"));
+        User user = request.getUser();
         GetRequestByIdResponse getRequestByIdResponse = new GetRequestByIdResponse();
-        getRequestByIdResponse.setRequestId(currentRequest.getId());
-        getRequestByIdResponse.setRequestType(currentRequest.getRequestType());
-        getRequestByIdResponse.setResponseMessage(currentRequest.getResponseMessage());
-        getRequestByIdResponse.setContent(currentRequest.getContent());
-        getRequestByIdResponse.setCreateTime(currentRequest.getCreateTime());
-        getRequestByIdResponse.setExecuteTime(currentRequest.getExecuteTime());
-        getRequestByIdResponse.setResponseMessage(currentRequest.getResponseMessage());
-        getRequestByIdResponse.setSemesterName(semesterRepository.findCurrent().getName());
+        getRequestByIdResponse.setRequestId(request.getId());
+        getRequestByIdResponse.setRequestType(request.getRequestType());
+        getRequestByIdResponse.setResponseMessage(request.getResponseMessage());
+        getRequestByIdResponse.setContent(request.getContent());
+        getRequestByIdResponse.setCreateTime(request.getCreateTime());
+        getRequestByIdResponse.setExecuteTime(request.getExecuteTime());
+        getRequestByIdResponse.setResponseMessage(request.getResponseMessage());
+        getRequestByIdResponse.setSemesterName(request.getSemester().getName());
+        getRequestByIdResponse.setResponseStatus(request.getRequestStatus());
         getRequestByIdResponse.setUserId(user.getId());
         Slot slot = slotRepository.findByUser(user);
         getRequestByIdResponse.setRoomName(slot.getRoom().getRoomNumber());
+        getRequestByIdResponse.setStatus(request.getRequestStatus());
         return getRequestByIdResponse;
     }
 
@@ -109,6 +115,8 @@ public class RequestService implements IRequestService {
             requests = requestRepository.findAll();
         } else if  (user.getRole() == RoleEnum.RESIDENT) {
             requests = requestRepository.findRequestByUser(user);
+        }else {
+            throw new AccessDeniedException("Forbidden");
         }
         List<GetAllRequestResponse> getAllRequestResponse = requests.stream().map(request -> {
             GetAllRequestResponse requestResponse = new GetAllRequestResponse();
