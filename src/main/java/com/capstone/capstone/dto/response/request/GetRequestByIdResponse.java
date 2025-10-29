@@ -26,4 +26,5 @@ public class GetRequestByIdResponse {
     private String ResponseMessage;
     private String semesterName;
     private String roomName;
+    private RequestStatusEnum status;
 }
