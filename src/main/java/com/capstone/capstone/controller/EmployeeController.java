@@ -44,7 +44,7 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping(ApiConstant.REQUEST.GET_BY_ID)
+    @PutMapping(ApiConstant.EMPLOYEE.GET_BY_ID)
     public ResponseEntity<BaseResponse<UpdateEmployeeResponse>> updateEmployee(@PathVariable UUID id, @RequestBody UpdateEmployeeRequest request) {
         UpdateEmployeeResponse updateEmployeeResponse = iEmployeeService.updateEmployee(id, request);
         BaseResponse<UpdateEmployeeResponse> response = new BaseResponse<>();
@@ -54,7 +54,7 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping(ApiConstant.REQUEST.GET_BY_ID)
+    @GetMapping(ApiConstant.EMPLOYEE.GET_BY_ID)
     public ResponseEntity<BaseResponse<GetEmployeeById>> getEmployeeById(@PathVariable UUID id) {
         GetEmployeeById getEmployeeById = iEmployeeService.getEmployeeById(id);
         BaseResponse<GetEmployeeById> response = new BaseResponse<>();
