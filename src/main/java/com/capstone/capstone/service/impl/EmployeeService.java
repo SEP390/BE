@@ -73,7 +73,6 @@ public class EmployeeService implements IEmployeeService {
             response1.setEmail(employee.getUser().getEmail());
             response1.setUsername(employee.getUser().getUsername());
             response1.setRole(employee.getUser().getRole());
-            response1.setEmployeeId(employee.getUser().getId());
             response1.setDormName(employee.getDorm().getDormName());
             response1.setPhone(employee.getUser().getPhoneNumber());
             response.add(response1);
