@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -25,6 +26,7 @@ public class PaymentElectricWaterService {
     private final ElectricWaterService electricWaterService;
     private final PaymentElectricWaterRepository paymentElectricWaterRepository;
     private final ModelMapper modelMapper;
+    private final PaymentService paymentService;
 
     public Optional<PaymentElectricWater> getByPayment(Payment payment) {
         return paymentElectricWaterRepository.findOne((r,q,c) -> {
@@ -87,5 +89,25 @@ public class PaymentElectricWaterService {
             getByBillAndUserAndSuccess(bill, user).map(PaymentElectricWater::getPayment).ifPresent(payment -> response.setPayment(modelMapper.map(payment, PaymentCoreResponse.class)));
             return response;
         }));
+    }
+
+    public PaymentElectricWater create(User user, ElectricWaterBill bill) {
+        Payment payment = paymentService.create(user, bill);
+        PaymentElectricWater pew = new  PaymentElectricWater();
+        pew.setPayment(payment);
+        pew.setBill(bill);
+        return paymentElectricWaterRepository.save(pew);
+    }
+
+    @Transactional
+    public String createPaymentUrl(UUID billId) {
+        User user = SecurityUtils.getCurrentUser();
+        ElectricWaterBill bill = electricWaterService.getBillById(billId);
+        return createPaymentUrl(user, bill);
+    }
+
+    public String createPaymentUrl(User user, ElectricWaterBill bill) {
+        PaymentElectricWater pew = create(user, bill);
+        return paymentService.createPaymentUrl(pew.getPayment());
     }
 }

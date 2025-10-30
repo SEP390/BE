@@ -2,8 +2,10 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.PaymentType;
+import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
 import com.capstone.capstone.entity.*;
+import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.PaymentSlotRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -24,8 +27,10 @@ public class PaymentSlotService {
     private final PaymentService paymentService;
     private final RoomService roomService;
     private final SlotService slotService;
+    private final SemesterService semesterService;
     private final PaymentSlotRepository paymentSlotRepository;
     private final ModelMapper modelMapper;
+    private final SlotHistoryService slotHistoryService;
 
     public PaymentSlot create(User user, Slot slot, Semester semester) {
         PaymentSlot paymentSlot = new PaymentSlot();
@@ -36,10 +41,16 @@ public class PaymentSlotService {
         paymentSlot.setPrice(slot.getRoom().getPricing().getPrice());
         paymentSlot.setRoomNumber(slot.getRoom().getRoomNumber());
         paymentSlot.setDormName(slot.getRoom().getDorm().getDormName());
-        paymentSlot = paymentSlotRepository.save(paymentSlot);
         Payment payment = paymentService.create(user, slot);
         paymentSlot.setPayment(payment);
+        paymentSlot = paymentSlotRepository.save(paymentSlot);
         return paymentSlot;
+    }
+
+    public PaymentSlot create(User user, Slot slot) {
+        Semester semester = semesterService.getNext();
+        if (semester == null) throw new AppException("SEMESTER_NOT_FOUND");
+        return create(user, slot, semester);
     }
 
     public Optional<PaymentSlot> getByPayment(Payment payment) {
@@ -57,8 +68,9 @@ public class PaymentSlotService {
      * @return history
      */
     public PagedModel<BookingHistoryResponse> getBookingHistory(User user, List<PaymentStatus> status, Pageable pageable) {
-        Sort validSort = Sort.by(Optional.ofNullable(pageable.getSort().getOrderFor("createDate"))
-                .orElse(Sort.Order.desc("createDate")));
+        var createDateDirection = Optional.ofNullable(pageable.getSort().getOrderFor("createDate")).map(Sort.Order::getDirection)
+                .orElse(Sort.Direction.DESC);
+        Sort validSort = Sort.by(createDateDirection, "payment.createDate");
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), 5, validSort);
         return new PagedModel<>(paymentSlotRepository.findAll(Specification.allOf(
                 (root, query, cb) -> cb.equal(root.get("payment").get("user"), user),
@@ -89,17 +101,27 @@ public class PaymentSlotService {
         return !payments.isEmpty() ? payments.getContent().getFirst().getPayment() : null;
     }
 
-    public Payment getPendingPayment(User user, Slot slot) {
+    public PaymentSlot getPending(User user, Slot slot) {
+        final UUID slotId = slot.getId();
         var payments = paymentSlotRepository.findAll(
                 (r, q, c) -> c.and(
                         c.equal(r.get("payment").get("user"), user),
-                        c.equal(r.get("slotId"), slot.getId()),
+                        c.equal(r.get("slotId"), slotId),
                         c.equal(r.get("payment").get("type"), PaymentType.BOOKING),
                         c.equal(r.get("payment").get("status"), PaymentStatus.PENDING)
                 ),
                 PageRequest.of(0, 1)
         );
-        return !payments.isEmpty() ? payments.getContent().getFirst().getPayment() : null;
+        PaymentSlot paymentSlot = !payments.isEmpty() ? payments.getContent().getFirst() : null;
+        if (paymentSlot != null) {
+            // unlock if expire
+            if (paymentService.isExpire(paymentSlot.getPayment()) && slot.getStatus() == StatusSlotEnum.LOCK) {
+                paymentSlot.setPayment(paymentService.expire(paymentSlot.getPayment()));
+                slotService.unlock(slot);
+            }
+            return null;
+        }
+        return paymentSlot;
     }
 
     @Transactional
@@ -109,9 +131,19 @@ public class PaymentSlotService {
         // slot deleted/invalid
         if (slot == null) return;
         if (payment.getStatus() == PaymentStatus.SUCCESS) {
-            roomService.successSlot(slot);
+            slot = roomService.successSlot(slot);
+            slotHistoryService.create(payment.getUser(), paymentSlot.getSemester(), slot);
         } else {
             roomService.unlockSlot(slot);
         }
+    }
+
+    public String createPaymentUrl(User user, Slot slot) {
+        PaymentSlot ps = create(user, slot);
+        return paymentService.createPaymentUrl(ps.getPayment());
+    }
+
+    public String createPaymentUrl(Payment payment) {
+        return paymentService.createPaymentUrl(payment);
     }
 }

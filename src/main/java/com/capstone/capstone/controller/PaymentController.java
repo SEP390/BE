@@ -11,8 +11,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
@@ -40,5 +43,10 @@ public class PaymentController {
             @RequestParam(required = false) PaymentStatus status,
             @PageableDefault Pageable pageable) {
         return new BaseResponse<>(paymentService.history(status, pageable));
+    }
+
+    @GetMapping("/api/payment/{id}/url")
+    public BaseResponse<String> getUrl(@PathVariable UUID id) {
+        return new BaseResponse<>(paymentService.createPaymentUrl(paymentService.getById(id)));
     }
 }
