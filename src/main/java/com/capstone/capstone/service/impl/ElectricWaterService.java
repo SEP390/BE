@@ -36,9 +36,6 @@ public class ElectricWaterService {
     private final ElectricWaterIndexRepository electricWaterIndexRepository;
     private final ElectricWaterBillRepository electricWaterBillRepository;
     private final ElectricWaterPricingRepository electricWaterPricingRepository;
-    private final UserRepository userRepository;
-
-    private final PaymentService paymentService;
     private final ModelMapper modelMapper;
 
     @Transactional
@@ -204,19 +201,10 @@ public class ElectricWaterService {
         return modelMapper.map(pricing, ElectricWaterPricingResponse.class);
     }
 
-    /**
-     * Tạo đường dẫn thanh toán cho hóa đơn điện nước
-     * @param billId id hóa đơn
-     * @return đường dẫn thanh toán
-     */
-    public String createPaymentUrl(UUID billId) {
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
-        ElectricWaterBill bill = getBillById(billId);
-        return paymentService.createPaymentUrl(user, bill);
-    }
-
     public ElectricWaterPricingResponse getCurrentPricing() {
-        return modelMapper.map(electricWaterPricingRepository.latestPricing(), ElectricWaterPricingResponse.class);
+        var latestPricing = electricWaterPricingRepository.latestPricing();
+        if (latestPricing == null) return null;
+        return modelMapper.map(latestPricing, ElectricWaterPricingResponse.class);
     }
 
     public ElectricWaterIndexResponse getIndexResponse(UUID roomId, UUID semesterId) {
