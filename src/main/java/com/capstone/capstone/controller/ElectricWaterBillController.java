@@ -58,7 +58,7 @@ public class ElectricWaterBillController {
 
     @GetMapping("/api/electric-water-bill/{id}/payment-url")
     public BaseResponse<String> getBillPayment(@PathVariable UUID id) {
-        return new BaseResponse<>(electricWaterService.createPaymentUrl(id));
+        return new BaseResponse<>(paymentElectricWaterService.createPaymentUrl(id));
     }
 
     @GetMapping("/api/electric-water-pricing")

@@ -35,7 +35,7 @@ public class ElectricWaterBill extends BaseEntity {
      * Chỉ số điện nước của phòng
      */
     @ManyToOne
-    @JoinColumn(name = "index")
+    @JoinColumn(name = "index_id")
     private ElectricWaterIndex index;
     /**
      * Trạng thái thanh toán, thành công nếu tất cả thành viên trong phòng đều dã trả tiền

@@ -7,6 +7,7 @@ import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
 import com.capstone.capstone.dto.response.booking.CreateBookingResponse;
 import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.entity.Payment;
+import com.capstone.capstone.entity.PaymentSlot;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
@@ -25,7 +26,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BookingService {
     private final SlotService slotService;
-    private final PaymentService paymentService;
     private final PaymentSlotService paymentSlotService;
     private final RoomService roomService;
     private final ModelMapper modelMapper;
@@ -37,17 +37,18 @@ public class BookingService {
 
         // get slot
         UUID slotId = request.getSlotId();
+
+        // slot not found
         Slot slot = slotService.getById(slotId).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
 
+        // slot not available
         if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
 
+        // already book other slot
         if (paymentSlotService.hasPendingPayment(user)) throw new AppException("ALREADY_BOOKED");
 
-        // create payment
-        Payment payment = paymentService.create(user, slot);
-
-        // create payment url for invoice
-        String paymentUrl = paymentService.createPaymentUrl(payment);
+        // create payment url
+        String paymentUrl = paymentSlotService.createPaymentUrl(user, slot);
 
         // lock slot (so other user cannot book this slot)
         roomService.lockSlot(slot, user);
@@ -66,16 +67,8 @@ public class BookingService {
         User user = SecurityUtils.getCurrentUser();
         Slot slot = slotService.getByUser(user);
         if (slot == null) return null;
-        Payment payment = paymentSlotService.getPendingPayment(user, slot);
-        if (payment != null) {
-            // unlock if expire
-            if (paymentService.isExpire(payment) && slot.getStatus() == StatusSlotEnum.LOCK) {
-                payment = paymentService.expire(payment);
-                slot = slotService.unlock(slot);
-                return null;
-            }
-        } else {
-            // bug: no payment but lock slot
+        PaymentSlot paymentSlot = paymentSlotService.getPending(user, slot);
+        if (paymentSlot == null) {
             if (slot.getStatus() == StatusSlotEnum.LOCK) slot = slotService.unlock(slot);
         }
         return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricing.class);
@@ -86,6 +79,6 @@ public class BookingService {
         User user = SecurityUtils.getCurrentUser();
         Payment payment = paymentSlotService.getPendingPayment(user);
         if (payment == null) throw new AppException("PAYMENT_NOT_FOUND");
-        return paymentService.createPaymentUrl(payment);
+        return paymentSlotService.createPaymentUrl(payment);
     }
 }

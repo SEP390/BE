@@ -16,11 +16,13 @@ import com.capstone.capstone.service.impl.SemesterService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 @ActiveProfiles("dev")
@@ -37,6 +39,8 @@ class TestDataBuilder {
     SemesterService semesterService;
     @Autowired
     private ElectricWaterService electricWaterService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     Random random = new Random();
 
@@ -56,6 +60,7 @@ class TestDataBuilder {
         semesterService.create("SP25", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 31));
         semesterService.create("SU25", LocalDate.of(2025, 5, 1), LocalDate.of(2025, 7, 31));
         semesterService.create("FA25", LocalDate.of(2025, 9, 1), LocalDate.of(2025, 11, 30));
+        semesterService.create("SU26", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31));
     }
 
     void generateRoomPricing() {
@@ -74,7 +79,8 @@ class TestDataBuilder {
     User createUser(String username, String email, GenderEnum gender, RoleEnum role) {
         User user = new User();
         user.setUsername(username);
-        user.setPassword("123456");
+        user.setPassword(passwordEncoder.encode("123456"));
+        user.setFullName(Arrays.stream(username.split("_")).map(s -> s.substring(0, 1).toUpperCase() + s.substring(1)).collect(Collectors.joining(" ")));
         user.setEmail(email);
         user.setDob(LocalDate.of(2025, 1, 1));
         user.setRole(role);

@@ -3,9 +3,14 @@ POST http://localhost:8080/api/auth
 Content-Type: application/json
 
 {
-  "username": "resident",
-  "password": "resident"
+  "username": "manager",
+  "password": "123456"
 }
+
+> {%
+    client.global.set("token", response.body.data.token)
+    console.log("Token:", client.global.get("token"));
+%}
 
 ### Get slot
 GET http://localhost:8080/api/rooms
@@ -24,6 +29,11 @@ Content-Type: application/json
 {
   "slotId": "{{slotId}}"
 }
+
+> {%
+    client.global.set("paymentUrl", response.body.data.paymentUrl)
+    client.log("paymentUrl =", client.global.get("paymentUrl"))
+%}
 
 ### latest payment url
 GET http://localhost:8080/api/booking/latest-payment-url

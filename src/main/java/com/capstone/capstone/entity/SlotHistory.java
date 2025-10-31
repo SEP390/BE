@@ -25,6 +25,7 @@ public class SlotHistory extends BaseEntity {
 
     // clone slot information, nullable (for slot delete in room update)
     private UUID slotId;
+    private UUID roomId;
     private String slotName;
     private String roomNumber;
     private String dormName;

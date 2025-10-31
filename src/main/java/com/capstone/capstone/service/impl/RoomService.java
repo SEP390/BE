@@ -36,6 +36,7 @@ public class RoomService {
     private final MatchingRepository matchingRepository;
     private final SlotRepository slotRepository;
     private final SlotService slotService;
+    private final SlotHistoryService slotHistoryService;
 
     @Transactional
     public List<RoomMatchingResponse> getMatching() {
@@ -236,9 +237,10 @@ public class RoomService {
         checkFullAndUpdate(slot.getRoom());
     }
 
-    public void successSlot(Slot slot) {
+    public Slot successSlot(Slot slot) {
         slot = slotService.success(slot);
         checkFullAndUpdate(slot.getRoom());
+        return slot;
     }
 
     public Optional<Room> getByUser(User user) {
