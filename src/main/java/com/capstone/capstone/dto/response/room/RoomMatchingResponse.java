@@ -4,6 +4,6 @@ import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class RoomMatchingResponse extends RoomResponseJoinPricingAndDorm {
+public class RoomMatchingResponse extends RoomResponseJoinPricingAndDormAndSlot {
     private Double matching;
 }

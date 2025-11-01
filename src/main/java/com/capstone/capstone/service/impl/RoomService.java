@@ -36,7 +36,6 @@ public class RoomService {
     private final MatchingRepository matchingRepository;
     private final SlotRepository slotRepository;
     private final SlotService slotService;
-    private final SlotHistoryService slotHistoryService;
 
     @Transactional
     public List<RoomMatchingResponse> getMatching() {
@@ -106,7 +105,7 @@ public class RoomService {
     }
 
     @Transactional
-    public PagedModel<RoomResponseJoinPricing> getBooking(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
+    public PagedModel<RoomResponseJoinPricingAndDormAndSlot> getBooking(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
         User user = SecurityUtils.getCurrentUser();
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
         int validPageSize = Math.min(pageable.getPageSize(), 100);
@@ -121,7 +120,7 @@ public class RoomService {
                         (r,q,c) -> r.in(rooms)
                 ),
                 validPageable
-        ).map(room -> modelMapper.map(room, RoomResponseJoinPricing.class)));
+        ).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
     }
 
     @Transactional
