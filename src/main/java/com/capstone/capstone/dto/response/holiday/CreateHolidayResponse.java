@@ -1,0 +1,21 @@
+package com.capstone.capstone.dto.response.holiday;
+
+import com.capstone.capstone.entity.Holiday;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class CreateHolidayResponse {
+    private String holidayName;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private UUID semesterId;
+}
