@@ -1,28 +1,27 @@
 package com.capstone.capstone.entity;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class Semester extends BaseEntity {
-    private String name;
+public class Holiday extends BaseEntity {
+    private String holidayName;
     private LocalDate startDate;
     private LocalDate endDate;
 
-    @OneToMany(mappedBy = "semester")
-    private List<Request>  requests;
-
-    @OneToMany(mappedBy = "semester")
-    private List<Holiday> holidays;
+    @ManyToOne
+    @JoinColumn(name = "semester_id")
+    private Semester semester;
 }

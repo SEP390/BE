@@ -18,4 +18,6 @@ public interface SurveySelectRepository extends JpaRepository<SurveyQuetionSelec
     boolean existsByUserAndQuestion(@Param("user") User user, @Param("question") SurveyQuestion question);
 
     boolean existsByUser(User user);
+
+    boolean existsByUser_Id(UUID userId);
 }
