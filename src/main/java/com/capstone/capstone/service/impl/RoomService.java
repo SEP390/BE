@@ -105,7 +105,7 @@ public class RoomService {
     }
 
     @Transactional
-    public PagedModel<RoomResponseJoinPricing> getBooking(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
+    public PagedModel<RoomResponseJoinPricingAndDormAndSlot> getBooking(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
         User user = SecurityUtils.getCurrentUser();
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
         int validPageSize = Math.min(pageable.getPageSize(), 100);
@@ -120,7 +120,7 @@ public class RoomService {
                         (r,q,c) -> r.in(rooms)
                 ),
                 validPageable
-        ).map(room -> modelMapper.map(room, RoomResponseJoinPricing.class)));
+        ).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
     }
 
     @Transactional
@@ -236,20 +236,13 @@ public class RoomService {
         checkFullAndUpdate(slot.getRoom());
     }
 
-    public void successSlot(Slot slot) {
+    public Slot successSlot(Slot slot) {
         slot = slotService.success(slot);
         checkFullAndUpdate(slot.getRoom());
+        return slot;
     }
 
-    @Transactional
-    public void onPayment(Payment payment, VNPayStatus status) {
-        Slot slot = slotService.getById(payment.getSlotHistory().getSlotId()).orElse(null);
-        // slot deleted, ignore this
-        if (slot == null) return;
-        if (status == VNPayStatus.SUCCESS) {
-            successSlot(slot);
-        } else {
-            unlockSlot(slot);
-        }
+    public Optional<Room> getByUser(User user) {
+        return Optional.ofNullable(roomRepository.findByUser(user));
     }
 }

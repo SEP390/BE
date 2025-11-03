@@ -6,6 +6,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -24,8 +25,12 @@ public class SlotHistory extends BaseEntity {
 
     // clone slot information, nullable (for slot delete in room update)
     private UUID slotId;
+    private UUID roomId;
     private String slotName;
     private String roomNumber;
     private String dormName;
     private Long price;
+
+    private LocalDate checkin;
+    private LocalDate checkout;
 }

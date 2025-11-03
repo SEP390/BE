@@ -66,6 +66,13 @@ public class RoomPricingService {
         return pricing;
     }
 
+    public RoomPricing create(Integer totalSlot, Long price) {
+        return create(RoomPricing.builder()
+                .price(price)
+                .totalSlot(totalSlot)
+                .build());
+    }
+
     public RoomPricing create(RoomPricing pricing) {
         if (pricing.getId() != null) pricing.setId(null);
         if (roomPricingRepository.findByTotalSlot(pricing.getTotalSlot()).isPresent()) {

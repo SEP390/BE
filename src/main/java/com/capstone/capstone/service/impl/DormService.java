@@ -46,6 +46,13 @@ public class DormService {
         return modelMapper.map(dorm, DormResponse.class);
     }
 
+    public Dorm create(String dormName, Integer totalFloor) {
+        Dorm dorm = new Dorm();
+        dorm.setDormName(dormName);
+        dorm.setTotalFloor(totalFloor);
+        return create(dorm);
+    }
+
     public Dorm create(Dorm dorm) {
         if (dorm.getStatus() == null) dorm.setStatus(DormStatus.ACTIVE);
         if (dormRepository.exists((r, q, c) -> c.equal(r.get("dormName"), dorm.getDormName())))
