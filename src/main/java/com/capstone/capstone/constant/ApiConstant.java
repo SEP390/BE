@@ -6,8 +6,8 @@ public class ApiConstant {
     public static class USER {
         public static final String USER = API + "/users";
         public static final String PROFILE = "/profile";
-        public static final String GET_ALL_RESIDENT = "/users/residents";
-        public static final String GET_RESIDENT_BY_ID = "/users/residents/{id}";
+        public static final String GET_ALL_RESIDENT = "/residents";
+        public static final String GET_RESIDENT_BY_ID = "/residents/{id}";
     }
     public static class AUTH {
         public static final String AUTH = API + "/auth";
@@ -36,18 +36,25 @@ public class ApiConstant {
     public static class EMPLOYEE {
         public static final String EMPLOYEE = API + "/employees";
         public static final String GET_BY_ID = "/{id}";
+        public static final String RESET_PASSWORD = "/{id}/passwords";
     }
 
     public static class NEWS {
         public static final String NEWS = API + "/news";
-        public static final String CREATE_NEWS = "/createnews";
-        public static final String UPDATE = "/updatenews/{id}";
-        public static final String GET_DETAIL_BY_ID = "/getnewsdetail/{id}";
-        public static final String SEARCH = "/search";
+        public static final String UPDATE = "/{id}";
     }
 
     public static class REPORTS {
         public static final String REPORT = API + "/reports";
         public static final String GET_BY_ID = "/{id}";
+    }
+
+    public static class HOLIDAY {
+        public static final String HOLIDAY = API + "/holidays";
+        public static final String GET_BY_ID = "/{id}";
+    }
+
+    public static class SHIFT {
+        public static final String SHIFT = API + "/shifts";
     }
 }

@@ -24,7 +24,7 @@ import java.util.UUID;
 public class QuestionController {
     final ISurveyQuestionService surveyQuestionService;
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MANAGER')")
     @PostMapping
     public ResponseEntity<BaseResponse<CreateSurveyQuestionResponse>> createQuestion(@RequestBody CreateSurveyQuestionRequest request) {
         CreateSurveyQuestionResponse createSurveyQuestionResponse = surveyQuestionService.createSurveyQuestion(request);

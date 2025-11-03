@@ -47,8 +47,8 @@ public class ReportController {
     }
 
     @PutMapping(ApiConstant.REPORTS.GET_BY_ID)
-    public ResponseEntity<BaseResponse<UpdateReportResponse>> updateReportById(@PathVariable UUID reportId, @RequestBody UpdateReportRequest requestUpdate) {
-        UpdateReportResponse response = iReportService.updateReport(reportId, requestUpdate);
+    public ResponseEntity<BaseResponse<UpdateReportResponse>> updateReportById(@PathVariable UUID id, @RequestBody UpdateReportRequest requestUpdate) {
+        UpdateReportResponse response = iReportService.updateReport(id, requestUpdate);
         BaseResponse<UpdateReportResponse> methodResponse = new BaseResponse<>();
         methodResponse.setStatus(HttpStatus.OK.value());
         methodResponse.setMessage("Report updated successfully");

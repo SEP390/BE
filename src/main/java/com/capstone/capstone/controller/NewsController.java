@@ -22,7 +22,6 @@ public class NewsController {
     private final NewsService newsService;
 
     // --- 1. GET ALL NEWS ---
-    // Đường dẫn: GET /api/news
     @GetMapping()
     public ResponseEntity<BaseResponse<List<NewsResponse>>> getAllNews() {
         List<NewsResponse> newsList = newsService.getAllNews();
@@ -35,8 +34,7 @@ public class NewsController {
     }
 
     // --- 2. CREATE NEWS (POST) ---
-    // Đường dẫn: POST /api/news/createNews
-    @PostMapping(ApiConstant.NEWS.CREATE_NEWS)
+    @PostMapping()
     public ResponseEntity<BaseResponse<NewsResponse>> createNews(@RequestBody NewsRequest newsRequest) {
         NewsResponse newsResponse = newsService.createNews(newsRequest);
         BaseResponse<NewsResponse> response = new BaseResponse<>(
@@ -48,8 +46,7 @@ public class NewsController {
     }
 
     // --- 3. GET NEWS DETAIL (GET by ID) ---
-    // Đường dẫn: GET /api/news/getnewsdetail/{id}
-    @GetMapping(ApiConstant.NEWS.GET_DETAIL_BY_ID)
+    @GetMapping(ApiConstant.NEWS.UPDATE)
     public ResponseEntity<BaseResponse<NewsResponse>> getNewsDetail(@PathVariable UUID id) {
         NewsResponse newsResponse = newsService.getNewsDetail(id);
         BaseResponse<NewsResponse> response = new BaseResponse<>(
@@ -61,7 +58,6 @@ public class NewsController {
     }
 
     // --- 4. UPDATE NEWS (PUT) ---
-    // Đường dẫn: PUT /api/news/updatenews/{id}
     @PutMapping(ApiConstant.NEWS.UPDATE)
     public ResponseEntity<BaseResponse<NewsResponse>> updateNews(@RequestBody NewsRequest newsRequest, @PathVariable UUID id) {
         NewsResponse newsResponse = newsService.updateNews(id, newsRequest);
@@ -73,16 +69,4 @@ public class NewsController {
         return ResponseEntity.ok(response);
     }
 
-    // --- 5. SEARCH NEWS (GET with RequestParam) ---
-    // Đường dẫn: GET /api/news/search?title=...
-    @GetMapping(ApiConstant.NEWS.SEARCH)
-    public ResponseEntity<BaseResponse<List<NewsResponse>>> searchNews(@RequestParam String title) {
-        List<NewsResponse> searchResults = newsService.searchNewAndFilter(title);
-        BaseResponse<List<NewsResponse>> response = new BaseResponse<>(
-                HttpStatus.OK.value(),
-                "Search for news successfully",
-                searchResults
-        );
-        return ResponseEntity.ok(response);
-    }
 }

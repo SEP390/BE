@@ -14,7 +14,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetEmployeeById {
+public class GetEmployeeByIdResponse {
     private UUID userId;
     private UUID employeeId;
     private String userCode;
