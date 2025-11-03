@@ -2,12 +2,10 @@ package com.capstone.capstone.controller;
 
 import com.capstone.capstone.constant.ApiConstant;
 import com.capstone.capstone.dto.request.employee.CreateEmployeeRequest;
+import com.capstone.capstone.dto.request.employee.ResetPasswordRequest;
 import com.capstone.capstone.dto.request.employee.UpdateEmployeeRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.employee.CreateEmployeeResponse;
-import com.capstone.capstone.dto.response.employee.GetAllEmployeeResponse;
-import com.capstone.capstone.dto.response.employee.GetEmployeeById;
-import com.capstone.capstone.dto.response.employee.UpdateEmployeeResponse;
+import com.capstone.capstone.dto.response.employee.*;
 import com.capstone.capstone.service.interfaces.IEmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -55,12 +53,22 @@ public class EmployeeController {
     }
 
     @GetMapping(ApiConstant.EMPLOYEE.GET_BY_ID)
-    public ResponseEntity<BaseResponse<GetEmployeeById>> getEmployeeById(@PathVariable UUID id) {
-        GetEmployeeById getEmployeeById = iEmployeeService.getEmployeeById(id);
-        BaseResponse<GetEmployeeById> response = new BaseResponse<>();
+    public ResponseEntity<BaseResponse<GetEmployeeByIdResponse>> getEmployeeById(@PathVariable UUID id) {
+        GetEmployeeByIdResponse getEmployeeByIdResponse = iEmployeeService.getEmployeeById(id);
+        BaseResponse<GetEmployeeByIdResponse> response = new BaseResponse<>();
         response.setStatus(HttpStatus.OK.value());
         response.setMessage("Get Employee ById Successfully");
-        response.setData(getEmployeeById);
+        response.setData(getEmployeeByIdResponse);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PutMapping(ApiConstant.EMPLOYEE.RESET_PASSWORD)
+    public ResponseEntity<BaseResponse<ResetPasswordResponse>> resetPassword(@PathVariable UUID id ,@RequestBody ResetPasswordRequest request) {
+        ResetPasswordResponse response = iEmployeeService.resetPassword(id, request);
+        BaseResponse<ResetPasswordResponse> response1 = new BaseResponse<>();
+        response1.setStatus(HttpStatus.OK.value());
+        response1.setMessage("Reset Password Successfully");
+        response1.setData(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response1);
     }
 }
