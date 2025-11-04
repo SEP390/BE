@@ -1,19 +1,18 @@
-package com.capstone.capstone.dto.response.Shift;
+package com.capstone.capstone.dto.response.shift;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-public class GetAllShiftResponse {
+public class CreateShiftResponse {
     private UUID id;
     private String name;
     private LocalTime startTime;

@@ -1,10 +1,12 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.constant.ApiConstant;
-import com.capstone.capstone.dto.request.Shift.CreateShiftRequest;
+import com.capstone.capstone.dto.request.shift.CreateShiftRequest;
+import com.capstone.capstone.dto.request.shift.UpdateShiftRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.Shift.CreateShiftResponse;
-import com.capstone.capstone.dto.response.Shift.GetAllShiftResponse;
+import com.capstone.capstone.dto.response.shift.CreateShiftResponse;
+import com.capstone.capstone.dto.response.shift.GetAllShiftResponse;
+import com.capstone.capstone.dto.response.shift.UpdateShiftResponse;
 import com.capstone.capstone.service.impl.ShiftService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,6 +39,16 @@ public class ShiftController {
         response.setData(getAllShiftResponseList);
         response.setStatus(HttpStatus.OK.value());
         response.setMessage("Successfully retrieved all shifts");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PutMapping(ApiConstant.SHIFT.GET_BY_ID)
+    public ResponseEntity<BaseResponse<UpdateShiftResponse>> updateShift(@PathVariable UUID id, @RequestBody UpdateShiftRequest updateShiftRequest) {
+        BaseResponse<UpdateShiftResponse> response = new BaseResponse<>();
+        UpdateShiftResponse updateShiftResponse = shiftService.updateShift(id, updateShiftRequest);
+        response.setData(updateShiftResponse);
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Successfully updated shift");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
