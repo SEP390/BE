@@ -1,9 +1,12 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.request.Shift.CreateShiftRequest;
-import com.capstone.capstone.dto.response.Shift.CreateShiftResponse;
-import com.capstone.capstone.dto.response.Shift.GetAllShiftResponse;
+import com.capstone.capstone.dto.request.shift.CreateShiftRequest;
+import com.capstone.capstone.dto.request.shift.UpdateShiftRequest;
+import com.capstone.capstone.dto.response.shift.CreateShiftResponse;
+import com.capstone.capstone.dto.response.shift.GetAllShiftResponse;
+import com.capstone.capstone.dto.response.shift.UpdateShiftResponse;
 import com.capstone.capstone.entity.Shift;
+import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.ShiftRepository;
 import com.capstone.capstone.service.interfaces.IShiftService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -45,5 +49,19 @@ public class ShiftService implements IShiftService {
             shiftResponseList.add(getAllShiftResponse);
         }
         return shiftResponseList;
+    }
+
+    @Override
+    public UpdateShiftResponse updateShift(UUID shiftId, UpdateShiftRequest request) {
+        Shift shift = shiftRepository.findById(shiftId).orElseThrow(()-> new NotFoundException("Shift not found"));
+        shift.setName(request.getName());
+        shift.setStartTime(request.getStartTime());
+        shift.setEndTime(request.getEndTime());
+        shift = shiftRepository.save(shift);
+        UpdateShiftResponse updateShiftResponse = new UpdateShiftResponse();
+        updateShiftResponse.setName(shift.getName());
+        updateShiftResponse.setStartTime(shift.getStartTime());
+        updateShiftResponse.setEndTime(shift.getEndTime());
+        return updateShiftResponse;
     }
 }

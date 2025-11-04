@@ -59,5 +59,6 @@ public class ApiConstant {
 
     public static class SHIFT {
         public static final String SHIFT = API + "/shifts";
+        public static final String GET_BY_ID = "/{id}";
     }
 }

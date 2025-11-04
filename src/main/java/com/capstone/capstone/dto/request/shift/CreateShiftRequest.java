@@ -1,21 +1,17 @@
-package com.capstone.capstone.dto.response.Shift;
+package com.capstone.capstone.dto.request.shift;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.checkerframework.checker.units.qual.A;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class CreateShiftResponse {
-    private UUID id;
+public class CreateShiftRequest {
     private String name;
     private LocalTime startTime;
     private LocalTime endTime;
