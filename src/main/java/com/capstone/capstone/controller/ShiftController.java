@@ -4,14 +4,14 @@ import com.capstone.capstone.constant.ApiConstant;
 import com.capstone.capstone.dto.request.Shift.CreateShiftRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.Shift.CreateShiftResponse;
+import com.capstone.capstone.dto.response.Shift.GetAllShiftResponse;
 import com.capstone.capstone.service.impl.ShiftService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,5 +27,15 @@ public class ShiftController {
         response.setStatus(HttpStatus.CREATED.value());
         response.setMessage("Successfully created shift");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<BaseResponse<List<GetAllShiftResponse>>> getAllShifts() {
+        BaseResponse<List<GetAllShiftResponse>> response = new BaseResponse<>();
+        List<GetAllShiftResponse> getAllShiftResponseList = shiftService.getAllShifts();
+        response.setData(getAllShiftResponseList);
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Successfully retrieved all shifts");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
