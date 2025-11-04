@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.checkerframework.checker.units.qual.A;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -16,6 +17,6 @@ import java.util.UUID;
 public class CreateShiftResponse {
     private UUID id;
     private String name;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
 }
