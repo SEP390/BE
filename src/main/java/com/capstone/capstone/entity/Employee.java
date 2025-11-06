@@ -16,10 +16,16 @@ public class Employee extends BaseEntity{
     @JoinColumn(name = "user_id")
     private User user;
     @ManyToOne
-    @JoinColumn(name = "dorm_id")
+    @JoinColumn(name = "dorm_id", nullable = true)
     @JsonIgnore
     private Dorm dorm;
 
     @OneToMany(mappedBy = "employee")
     private List<Report> reports;
+
+    @OneToMany(mappedBy = "employee")
+    private List<Schedule> schedules;
+
+    @OneToMany(mappedBy = "employee")
+    private List<Attendance> attendances;
 }

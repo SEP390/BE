@@ -9,6 +9,7 @@ import com.capstone.capstone.dto.response.user.GetUserInformationResponse;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.BadHttpRequestException;
+import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.EmployeeRepository;
 import com.capstone.capstone.repository.SlotRepository;
 import com.capstone.capstone.repository.UserRepository;
@@ -57,7 +58,7 @@ public class UserService implements IUserService {
     @Override
     public GetUserInformationResponse getCurrentUserInformation() {
         UUID id = AuthenUtil.getCurrentUserId();
-        User user = userRepository.findById(id).orElseThrow(() -> new BadHttpRequestException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
         Slot slot = slotRepository.findByUser(user);
         GetUserInformationResponse getUserInformationResponse = new GetUserInformationResponse();
         getUserInformationResponse.setUsername(user.getUsername());
@@ -80,6 +81,7 @@ public class UserService implements IUserService {
             getAllResidentResponse.setEmail(user.getEmail());
             getAllResidentResponse.setFullName(user.getFullName());
             getAllResidentResponse.setPhoneNumber(user.getPhoneNumber());
+            getAllResidentResponse.setSlotName(slotRepository.findByUser(user).getSlotName());
             responses.add(getAllResidentResponse);
         }
         return responses;
