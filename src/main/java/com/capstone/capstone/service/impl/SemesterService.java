@@ -9,9 +9,11 @@ import com.capstone.capstone.repository.SemesterRepository;
 import com.capstone.capstone.util.SortUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -36,12 +38,13 @@ public class SemesterService {
         return modelMapper.map(semesterRepository.findCurrent(), SemesterResponse.class);
     }
 
-    public List<SemesterResponse> getAll(String name, Pageable pageable) {
+    public PagedModel<SemesterResponse> getAll(String name, Pageable pageable) {
         Sort sort = SortUtil.getSort(pageable, "startDate");
-        return semesterRepository.findAll(
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        return new PagedModel<>(semesterRepository.findAll(
                 (name != null && !name.isBlank()) ? (r,q,c) -> c.equal(r.get("name"), name) : Specification.unrestricted(),
-                sort
-        ).stream().map(semester -> modelMapper.map(semester, SemesterResponse.class)).toList();
+                validPageable
+        ).map(semester -> modelMapper.map(semester, SemesterResponse.class)));
     }
 
     public SemesterResponse getResponseById(UUID id) {
