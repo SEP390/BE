@@ -5,6 +5,7 @@ import com.capstone.capstone.dto.request.semester.UpdateSemesterRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.semester.SemesterResponse;
 import com.capstone.capstone.service.impl.SemesterService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -41,8 +42,13 @@ public class SemesterController {
         return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.create(request));
     }
 
-    @PutMapping("/api/semesters")
-    public BaseResponse<SemesterResponse> update(@RequestBody UpdateSemesterRequest request) {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.update(request));
+    @PostMapping("/api/semesters/{id}")
+    public BaseResponse<SemesterResponse> update(@PathVariable UUID id, @RequestBody @Valid UpdateSemesterRequest request) {
+        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.update(id, request));
+    }
+
+    @DeleteMapping("/api/semesters/{id}")
+    public BaseResponse<SemesterResponse> delete(@PathVariable UUID id) {
+        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.delete(id));
     }
 }

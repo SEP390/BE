@@ -53,7 +53,7 @@ public class SemesterService {
     }
 
     public SemesterResponse create(CreateSemesterRequest request) {
-        Semester semester = semesterRepository.save(modelMapper.map(request,Semester.class));
+        Semester semester = modelMapper.map(request,Semester.class);
         semester = create(semester);
         // TODO: check overlapping date
         return modelMapper.map(semester, SemesterResponse.class);
@@ -80,11 +80,19 @@ public class SemesterService {
         return create(semester);
     }
 
-    public SemesterResponse update(UpdateSemesterRequest request) {
-        if (!semesterRepository.existsById(request.getId())) {
+    public SemesterResponse update(UUID id, UpdateSemesterRequest request) {
+        if (!semesterRepository.existsById(id)) {
             throw new AppException("SEMESTER_NOT_FOUND");
         }
+        Semester semester = modelMapper.map(request, Semester.class);
+        semester.setId(id);
         // TODO: check overlapping date
-        return modelMapper.map(semesterRepository.save(modelMapper.map(request,Semester.class)), SemesterResponse.class);
+        return modelMapper.map(semesterRepository.save(semester), SemesterResponse.class);
+    }
+
+    public SemesterResponse delete(UUID id) {
+        Semester semester = semesterRepository.findById(id).orElseThrow(() -> new AppException("SEMESTER_NOT_FOUND"));
+        semesterRepository.delete(semester);
+        return modelMapper.map(semester, SemesterResponse.class);
     }
 }

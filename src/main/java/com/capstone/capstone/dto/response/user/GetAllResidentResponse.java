@@ -17,4 +17,5 @@ public class GetAllResidentResponse {
     private String email;
     private String fullName;
     private String phoneNumber;
+    private String slotName;
 }
