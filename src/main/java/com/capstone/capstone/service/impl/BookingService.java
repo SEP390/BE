@@ -6,8 +6,6 @@ import com.capstone.capstone.dto.request.booking.CreateBookingRequest;
 import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
 import com.capstone.capstone.dto.response.booking.CreateBookingResponse;
 import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricing;
-import com.capstone.capstone.entity.Payment;
-import com.capstone.capstone.entity.PaymentSlot;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -36,16 +33,13 @@ public class BookingService {
         User user = SecurityUtils.getCurrentUser();
 
         // get slot
-        UUID slotId = request.getSlotId();
-
-        // slot not found
-        Slot slot = slotService.getById(slotId).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
+        Slot slot = slotService.getById(request.getSlotId()).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
 
         // slot not available
         if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
 
         // already book other slot
-        if (paymentSlotService.hasPendingPayment(user)) throw new AppException("ALREADY_BOOKED");
+        if (slotService.getByUser(user).isPresent()) throw new AppException("ALREADY_BOOKED");
 
         // create payment url
         String paymentUrl = paymentSlotService.createPaymentUrl(user, slot);
@@ -59,26 +53,19 @@ public class BookingService {
 
     public PagedModel<BookingHistoryResponse> history(List<PaymentStatus> status, Pageable pageable) {
         User user = SecurityUtils.getCurrentUser();
-        return paymentSlotService.getBookingHistory(user, status, pageable);
+        return paymentSlotService.getHistory(user, status, pageable);
     }
 
+    /**
+     * Get current slot
+     *
+     * @return slot
+     */
     @Transactional
     public SlotResponseJoinRoomAndDormAndPricing current() {
         User user = SecurityUtils.getCurrentUser();
-        Slot slot = slotService.getByUser(user);
+        Slot slot = slotService.getByUser(user).orElse(null);
         if (slot == null) return null;
-        PaymentSlot paymentSlot = paymentSlotService.getPending(user, slot);
-        if (paymentSlot == null) {
-            if (slot.getStatus() == StatusSlotEnum.LOCK) slot = slotService.unlock(slot);
-        }
         return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricing.class);
-    }
-
-    @Transactional
-    public String getLatestPendingUrl() {
-        User user = SecurityUtils.getCurrentUser();
-        Payment payment = paymentSlotService.getPendingPayment(user);
-        if (payment == null) throw new AppException("PAYMENT_NOT_FOUND");
-        return paymentSlotService.createPaymentUrl(payment);
     }
 }

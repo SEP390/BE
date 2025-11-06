@@ -25,11 +25,6 @@ public class BookingController {
         return new BaseResponse<>(bookingService.create(request));
     }
 
-    @GetMapping("/api/booking/latest-payment-url")
-    public BaseResponse<String> getLatestPaymentUrl() {
-        return new BaseResponse<>(bookingService.getLatestPendingUrl());
-    }
-
     @GetMapping("/api/booking/current")
     public BaseResponse<SlotResponseJoinRoomAndDormAndPricing> current() {
         return new BaseResponse<>(bookingService.current());

@@ -5,11 +5,12 @@ import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
-import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
-import com.capstone.capstone.repository.*;
-import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.repository.MatchingRepository;
+import com.capstone.capstone.repository.RoomRepository;
+import com.capstone.capstone.repository.SlotRepository;
+import com.capstone.capstone.repository.SurveyQuestionRepository;
 import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SortUtil;
 import lombok.AllArgsConstructor;
@@ -117,7 +118,7 @@ public class RoomService {
                         floor != null ? (root, query, cb) -> cb.equal(root.get("floor"), floor) : Specification.unrestricted(),
                         totalSlot != null ? (root, query, cb) -> cb.equal(root.get("totalSlot"), totalSlot) : Specification.unrestricted(),
                         roomNumber != null ? (root, query, cb) -> cb.like(root.get("roomNumber"), "%" + roomNumber + "%") : Specification.unrestricted(),
-                        (r,q,c) -> r.in(rooms)
+                        (r, q, c) -> r.in(rooms)
                 ),
                 validPageable
         ).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
@@ -138,7 +139,7 @@ public class RoomService {
         final String roomNumber = room.getRoomNumber();
         final Dorm dorm = room.getDorm();
         // trong cùng 1 dorm, ko có 2 phòng cùng tên
-        if (roomRepository.exists((r,q,c) -> c.and(
+        if (roomRepository.exists((r, q, c) -> c.and(
                 c.equal(r.get("roomNumber"), roomNumber),
                 c.equal(r.get("dorm"), dorm)
         ))) throw new AppException("ROOM_NUMBER_EXISTED");
@@ -183,7 +184,7 @@ public class RoomService {
         final String roomNumber = room.getRoomNumber();
         final Dorm dorm = room.getDorm();
         final UUID roomId = room.getId();
-        if (roomRepository.exists((r,q,c) -> c.and(
+        if (roomRepository.exists((r, q, c) -> c.and(
                 c.equal(r.get("roomNumber"), roomNumber),
                 c.equal(r.get("dorm"), dorm),
                 c.notEqual(r.get("id"), roomId)
@@ -220,6 +221,7 @@ public class RoomService {
 
     /**
      * Lock slot
+     *
      * @param slot slot
      * @param user user
      * @throws AppException SLOT_NOT_AVAILABLE

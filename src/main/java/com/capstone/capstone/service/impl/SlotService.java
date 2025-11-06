@@ -56,8 +56,8 @@ public class SlotService {
         return slotRepository.save(slot);
     }
 
-    public Slot getByUser(User user) {
-        return slotRepository.findByUser(user);
+    public Optional<Slot> getByUser(User user) {
+        return Optional.ofNullable(slotRepository.findByUser(user));
     }
 
     public List<Slot> create(Room room) {

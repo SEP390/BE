@@ -2,11 +2,11 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.PaymentType;
-import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.booking.BookingHistoryResponse;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.PaymentSlotRepository;
+import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +47,13 @@ public class PaymentSlotService {
         return paymentSlot;
     }
 
+    /**
+     * Create for next semester
+     *
+     * @param user user
+     * @param slot slot
+     * @return payment slot
+     */
     public PaymentSlot create(User user, Slot slot) {
         Semester semester = semesterService.getNext();
         if (semester == null) throw new AppException("SEMESTER_NOT_FOUND");
@@ -54,7 +61,7 @@ public class PaymentSlotService {
     }
 
     public Optional<PaymentSlot> getByPayment(Payment payment) {
-        return paymentSlotRepository.findOne((r,q,c) -> {
+        return paymentSlotRepository.findOne((r, q, c) -> {
             return c.equal(r.get("payment"), payment);
         });
     }
@@ -67,7 +74,7 @@ public class PaymentSlotService {
      * @param pageable pageable
      * @return history
      */
-    public PagedModel<BookingHistoryResponse> getBookingHistory(User user, List<PaymentStatus> status, Pageable pageable) {
+    public PagedModel<BookingHistoryResponse> getHistory(User user, List<PaymentStatus> status, Pageable pageable) {
         var createDateDirection = Optional.ofNullable(pageable.getSort().getOrderFor("createDate")).map(Sort.Order::getDirection)
                 .orElse(Sort.Direction.DESC);
         Sort validSort = Sort.by(createDateDirection, "payment.createDate");
@@ -79,7 +86,7 @@ public class PaymentSlotService {
         ), validPageable).map(p -> modelMapper.map(p, BookingHistoryResponse.class)));
     }
 
-    public boolean hasPendingPayment(User user) {
+    public boolean hasPending(User user) {
         return paymentSlotRepository.exists(
                 (r, q, c) -> c.and(
                         c.equal(r.get("payment").get("user"), user),
@@ -89,7 +96,7 @@ public class PaymentSlotService {
         );
     }
 
-    public Payment getPendingPayment(User user) {
+    public Optional<Payment> getPendingPayment(User user) {
         var payments = paymentSlotRepository.findAll(
                 (r, q, c) -> c.and(
                         c.equal(r.get("payment").get("user"), user),
@@ -98,7 +105,7 @@ public class PaymentSlotService {
                 ),
                 PageRequest.of(0, 1)
         );
-        return !payments.isEmpty() ? payments.getContent().getFirst().getPayment() : null;
+        return !payments.isEmpty() ? Optional.of(payments.getContent().getFirst().getPayment()) : Optional.empty();
     }
 
     public PaymentSlot getPending(User user, Slot slot) {
@@ -112,16 +119,7 @@ public class PaymentSlotService {
                 ),
                 PageRequest.of(0, 1)
         );
-        PaymentSlot paymentSlot = !payments.isEmpty() ? payments.getContent().getFirst() : null;
-        if (paymentSlot != null) {
-            // unlock if expire
-            if (paymentService.isExpire(paymentSlot.getPayment()) && slot.getStatus() == StatusSlotEnum.LOCK) {
-                paymentSlot.setPayment(paymentService.expire(paymentSlot.getPayment()));
-                slotService.unlock(slot);
-            }
-            return null;
-        }
-        return paymentSlot;
+        return !payments.isEmpty() ? payments.getContent().getFirst() : null;
     }
 
     @Transactional
@@ -145,5 +143,12 @@ public class PaymentSlotService {
 
     public String createPaymentUrl(Payment payment) {
         return paymentService.createPaymentUrl(payment);
+    }
+
+    @Transactional
+    public String getPendingPaymentUrl() {
+        User user = SecurityUtils.getCurrentUser();
+        Payment payment = getPendingPayment(user).orElseThrow(() -> new AppException("PAYMENT_NOT_FOUND"));
+        return createPaymentUrl(payment);
     }
 }

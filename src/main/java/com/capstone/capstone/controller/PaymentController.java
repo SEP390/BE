@@ -4,7 +4,6 @@ import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.PaymentType;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.payment.PaymentVerifyResponse;
-import com.capstone.capstone.entity.PaymentElectricWater;
 import com.capstone.capstone.service.impl.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -48,5 +47,10 @@ public class PaymentController {
     @GetMapping("/api/payment/{id}/url")
     public BaseResponse<String> getUrl(@PathVariable UUID id) {
         return new BaseResponse<>(paymentService.createPaymentUrl(paymentService.getById(id)));
+    }
+
+    @GetMapping("/api/payment/booking/latest")
+    public BaseResponse<String> getPendingBooking() {
+        return new BaseResponse<>(paymentSlotService.getPendingPaymentUrl());
     }
 }
