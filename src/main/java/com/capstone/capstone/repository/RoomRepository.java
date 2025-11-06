@@ -1,9 +1,6 @@
 package com.capstone.capstone.repository;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
-import com.capstone.capstone.dto.response.booking.UserMatching;
-import com.capstone.capstone.dto.response.room.RoomDetails;
-import com.capstone.capstone.dto.response.room.RoomMatching;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,4 +32,11 @@ public interface RoomRepository extends JpaRepository<Room, UUID>, JpaSpecificat
     WHERE r = :room
     """)
     List<User> findUsers(Room room);
+
+    @Query("""
+    FROM Room r
+    JOIN r.slots s
+    WHERE s.user = :user
+""")
+    Room findByUser(User user);
 }

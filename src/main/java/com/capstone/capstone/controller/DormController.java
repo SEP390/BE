@@ -1,17 +1,18 @@
 package com.capstone.capstone.controller;
 
-import com.capstone.capstone.dto.enums.GenderEnum;
-import com.capstone.capstone.dto.request.dorm.BookableDormRequest;
 import com.capstone.capstone.dto.request.dorm.CreateDormRequest;
+import com.capstone.capstone.dto.request.dorm.UpdateDormRequest;
+import com.capstone.capstone.dto.request.room.CreateRoomRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.dorm.BookableDormResponse;
-import com.capstone.capstone.dto.response.room.RoomResponse;
-import com.capstone.capstone.entity.User;
+import com.capstone.capstone.dto.response.dorm.DormResponse;
+import com.capstone.capstone.dto.response.dorm.DormResponseJoinRoomSlot;
+import com.capstone.capstone.dto.response.room.RoomResponseJoinDorm;
+import com.capstone.capstone.dto.response.room.RoomResponseJoinPricing;
+import com.capstone.capstone.dto.response.room.RoomResponseJoinPricingAndDorm;
 import com.capstone.capstone.service.impl.DormService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,29 +23,38 @@ import java.util.UUID;
 public class DormController {
     private final DormService dormService;
 
-    @PostMapping("/api/dorms/bookable")
-    public ResponseEntity<BaseResponse<List<BookableDormResponse>>> getBookableDorm(@RequestBody BookableDormRequest request, Authentication authentication) {
-        GenderEnum gender = ((User) authentication.getPrincipal()).getGender();
-        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", dormService.getBookableDorm(request.getTotalSlot(), gender)));
-    }
-
-    @GetMapping("/api/dorms/{id}/rooms")
-    public BaseResponse<List<RoomResponse>> getRooms(@PathVariable UUID id) {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", dormService.getRooms(id));
+    /**
+     * Create dorm
+     * @param request request
+     * @return dorm
+     */
+    @PostMapping("/api/dorms")
+    public BaseResponse<DormResponse> create(@RequestBody @Valid CreateDormRequest request) {
+        return new BaseResponse<>(dormService.create(request));
     }
 
     @GetMapping("/api/dorms")
-    public BaseResponse<?> getList() {
-        return new BaseResponse<>(dormService.getList());
+    public BaseResponse<List<DormResponse>> getAll() {
+        return new BaseResponse<>(dormService.getAllResponse());
     }
 
     @GetMapping("/api/dorms/{id}")
-    public BaseResponse<?> get(@PathVariable UUID id) {
-        return new BaseResponse<>(dormService.getResponse(id));
+    public BaseResponse<DormResponseJoinRoomSlot> getById(@PathVariable UUID id) {
+        return new BaseResponse<>(dormService.getResponseById(id));
     }
 
-    @PostMapping("/api/dorms")
-    public BaseResponse<?> create(CreateDormRequest request) {
-        return new BaseResponse<>(dormService.create(request));
+    @GetMapping("/api/dorms/{id}/rooms")
+    public BaseResponse<List<RoomResponseJoinPricing>> getRooms(@PathVariable UUID id) {
+        return new BaseResponse<>(HttpStatus.OK.value(), "success", dormService.getRooms(id));
+    }
+
+    @PostMapping("/api/dorms/{id}")
+    public BaseResponse<DormResponse> update(@PathVariable UUID id, @RequestBody @Valid UpdateDormRequest request) {
+        return new BaseResponse<>(dormService.update(id, request));
+    }
+
+    @PostMapping("/api/dorms/{id}/room")
+    public BaseResponse<RoomResponseJoinPricingAndDorm> addRoom(@PathVariable UUID id, @RequestBody @Valid CreateRoomRequest request) {
+        return new BaseResponse<>(dormService.addRoom(id, request));
     }
 }

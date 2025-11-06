@@ -1,0 +1,36 @@
+POST http://localhost:8080/api/auth
+Content-Type: application/json
+
+{
+  "username": "resident",
+  "password": "resident"
+}
+
+> {%
+    client.global.set("token", response.body.data.token)
+    console.log("Token:", client.global.get("token"));
+%}
+
+###
+GET http://localhost:8080/api/semesters
+Authorization: Bearer {{token}}
+
+###
+GET http://localhost:8080/api/semesters/current
+Authorization: Bearer {{token}}
+
+> {%
+ client.global.set("semesterId", response.body.data.id)
+ client.log("semesterId =", client.global.get("semesterId"))
+ %}
+
+###
+POST http://localhost:8080/api/semesters
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "SU26",
+  "startDate": "2026-01-01",
+  "endDate": "2026-04-01"
+}

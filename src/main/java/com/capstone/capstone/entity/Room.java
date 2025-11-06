@@ -29,4 +29,8 @@ public class Room extends BaseEntity {
     @JoinColumn(name = "dorm_id")
     @JsonIgnore
     private Dorm dorm;
+
+    @ManyToOne
+    @JoinColumn(name = "pricing_id")
+    private RoomPricing pricing;
 }

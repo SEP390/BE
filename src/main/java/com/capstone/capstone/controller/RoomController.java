@@ -1,20 +1,16 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.request.room.CreateRoomRequest;
+import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
+import com.capstone.capstone.dto.request.slot.CreateSlotRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.room.CurrentRoomResponse;
-import com.capstone.capstone.dto.response.room.RoomDetailsResponse;
-import com.capstone.capstone.dto.response.room.RoomMatchingResponse;
-import com.capstone.capstone.dto.response.room.RoommateResponse;
-import com.capstone.capstone.entity.User;
+import com.capstone.capstone.dto.response.room.*;
 import com.capstone.capstone.service.impl.RoomService;
-import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,18 +22,17 @@ public class RoomController {
     private final RoomService roomService;
 
     @GetMapping("/api/rooms-matching")
-    public ResponseEntity<BaseResponse<List<RoomMatchingResponse>>> getRoomMatching(Authentication authentication) {
-        User user = ((User) authentication.getPrincipal());
-        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoomMatching(user)));
+    public BaseResponse<List<RoomMatchingResponse>> getRoomMatching() {
+        return new BaseResponse<>(roomService.getMatching());
     }
 
     @GetMapping("/api/rooms/{id}")
-    public ResponseEntity<BaseResponse<RoomDetailsResponse>> getRoomById(@PathVariable UUID id) {
-        return ResponseEntity.ok(new BaseResponse<>(HttpStatus.OK.value(), "success", roomService.getRoomById(id)));
+    public BaseResponse<RoomResponseJoinPricingAndDormAndSlot> getRoomById(@PathVariable UUID id) {
+        return new BaseResponse<>(roomService.getResponseById(id));
     }
 
     @GetMapping("/api/rooms")
-    public BaseResponse<?> get(
+    public BaseResponse<PagedModel<RoomResponseJoinPricingAndDormAndSlot>> get(
             @RequestParam(required = false) UUID dormId,
             @RequestParam(required = false) Integer floor,
             @RequestParam(required = false) Integer totalSlot,
@@ -46,8 +41,18 @@ public class RoomController {
         return new BaseResponse<>(roomService.get(dormId, floor, totalSlot, roomNumber, pageable));
     }
 
+    @GetMapping("/api/rooms/booking")
+    public BaseResponse<PagedModel<RoomResponseJoinPricingAndDormAndSlot>> getBooking(
+            @RequestParam(required = false) UUID dormId,
+            @RequestParam(required = false) Integer floor,
+            @RequestParam(required = false) Integer totalSlot,
+            @RequestParam(required = false) String roomNumber,
+            @PageableDefault Pageable pageable) {
+        return new BaseResponse<>(roomService.getBooking(dormId, floor, totalSlot, roomNumber, pageable));
+    }
+
     @GetMapping("/api/rooms/current")
-    public BaseResponse<CurrentRoomResponse> current() {
+    public BaseResponse<RoomResponseJoinDorm> current() {
         return new BaseResponse<>(roomService.current());
     }
 
@@ -56,8 +61,13 @@ public class RoomController {
         return new BaseResponse<>(roomService.getRoommates(id));
     }
 
-    @PostMapping("/api/rooms")
-    public BaseResponse<?> create(CreateRoomRequest request) {
-        return new BaseResponse<>(roomService.create(request));
+    @GetMapping("/api/rooms/{id}/users")
+    public BaseResponse<List<RoomUserResponse>> getUsers(@PathVariable UUID id) {
+        return new BaseResponse<>(roomService.getUsersResponse(id));
+    }
+
+    @PostMapping("/api/rooms/{id}")
+    public BaseResponse<RoomResponseJoinPricingAndDormAndSlot> update(@PathVariable UUID id, @RequestBody @Valid UpdateRoomRequest request) {
+        return new BaseResponse<>(roomService.update(id, request));
     }
 }

@@ -2,14 +2,15 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
-import com.capstone.capstone.dto.request.room.CreateRoomRequest;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
+import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SortUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -29,50 +30,41 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class RoomService {
     private final RoomRepository roomRepository;
-    private final RoomPricingRepository roomPricingRepository;
     private final ModelMapper modelMapper;
     private final RoomPricingService roomPricingService;
-    private final UserRepository userRepository;
     private final SurveyQuestionRepository surveyQuestionRepository;
     private final MatchingRepository matchingRepository;
-    private final DormRepository dormRepository;
     private final SlotRepository slotRepository;
+    private final SlotService slotService;
 
     @Transactional
-    public List<RoomMatchingResponse> getRoomMatching(User user) {
-        int ROOM_COUNT = 5;
+    public List<RoomMatchingResponse> getMatching() {
+        User user = SecurityUtils.getCurrentUser();
         final long totalQuestion = surveyQuestionRepository.count();
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
         final Map<UUID, Double> matching = matchingRepository.computeRoomMatching(user, rooms)
                 .stream()
                 .collect(Collectors.toMap(RoomMatching::getRoomId, m -> (double) m.getSameOptionCount() / m.getUserCount() / totalQuestion * 100));
         Comparator<Room> comparator = Comparator.comparingDouble(o -> matching.getOrDefault(o.getId(), 0.0));
-        Map<Integer, Long> pricing = roomPricingService.getAll().stream().collect(Collectors.toMap(RoomPricingResponse::getTotalSlot, RoomPricingResponse::getPrice));
         rooms.sort(comparator.reversed());
-        return rooms.subList(0, Math.min(5, rooms.size())).stream().map(room -> RoomMatchingResponse.builder()
-                .id(room.getId())
-                .roomNumber(room.getRoomNumber())
-                .dormId(room.getDorm().getId())
-                .dormName(room.getDorm().getDormName())
-                .floor(room.getFloor())
-                .matching(matching.getOrDefault(room.getId(), 0.0))
-                .totalSlot(room.getTotalSlot())
-                .price(pricing.get(room.getTotalSlot()))
-                .build()).toList();
+        return rooms.subList(0, Math.min(5, rooms.size())).stream().map(room -> modelMapper.map(room, RoomMatchingResponse.class)).peek(room -> {
+            room.setMatching(matching.getOrDefault(room.getId(), 0.0));
+        }).toList();
     }
 
     @Transactional
-    public RoomDetailsResponse getRoomById(UUID id) {
-        Room room = roomRepository.findById(id).orElseThrow();
-        RoomPricing pricing = roomPricingRepository.findByRoom(room);
-        RoomDetailsResponse response = modelMapper.map(room, RoomDetailsResponse.class);
-        response.setPricing(pricing.getPrice());
-        return response;
+    public RoomResponseJoinPricingAndDormAndSlot getResponseById(UUID id) {
+        Room room = getById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
+        return modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class);
+    }
+
+    public Optional<Room> getById(UUID id) {
+        return roomRepository.findById(id);
     }
 
     @Transactional
     public List<RoommateResponse> getRoommates(UUID id) {
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+        User user = SecurityUtils.getCurrentUser();
         Room room = roomRepository.getReferenceById(id);
         long totalQuestion = surveyQuestionRepository.count();
         List<User> users = roomRepository.findUsers(room).stream().filter(u -> !u.getId().equals(user.getId())).collect(Collectors.toList());
@@ -84,14 +76,8 @@ public class RoomService {
     }
 
     public boolean isFull(Room room) {
-        var isFull = true;
-        for (Slot slot : room.getSlots()) {
-            if (slot.getStatus().equals(StatusSlotEnum.AVAILABLE)) {
-                isFull = false;
-                break;
-            }
-        }
-        return isFull;
+        List<Slot> slots = slotRepository.findAll((r, q, c) -> c.equal(r.get("room"), room));
+        return slots.stream().allMatch(slot -> slot.getStatus() == StatusSlotEnum.UNAVAILABLE);
     }
 
     public void checkFullAndUpdate(Room room) {
@@ -103,7 +89,7 @@ public class RoomService {
         roomRepository.save(room);
     }
 
-    public PagedModel<RoomResponse> get(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
+    public PagedModel<RoomResponseJoinPricingAndDormAndSlot> get(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
         int validPageSize = Math.min(pageable.getPageSize(), 100);
         Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), validPageSize, validSort);
@@ -115,47 +101,148 @@ public class RoomService {
                         roomNumber != null ? (root, query, cb) -> cb.like(root.get("roomNumber"), "%" + roomNumber + "%") : Specification.unrestricted()
                 ),
                 validPageable
-        ).map(room -> modelMapper.map(room, RoomResponse.class)));
+        ).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
     }
 
     @Transactional
-    public CurrentRoomResponse current() {
-        User user = userRepository.getReferenceById(Objects.requireNonNull(AuthenUtil.getCurrentUserId()));
+    public PagedModel<RoomResponseJoinPricingAndDormAndSlot> getBooking(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
+        User user = SecurityUtils.getCurrentUser();
+        List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
+        int validPageSize = Math.min(pageable.getPageSize(), 100);
+        Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), validPageSize, validSort);
+        return new PagedModel<>(roomRepository.findAll(
+                Specification.allOf(
+                        dormId != null ? (root, query, cb) -> cb.equal(root.get("dorm").get("id"), dormId) : Specification.unrestricted(),
+                        floor != null ? (root, query, cb) -> cb.equal(root.get("floor"), floor) : Specification.unrestricted(),
+                        totalSlot != null ? (root, query, cb) -> cb.equal(root.get("totalSlot"), totalSlot) : Specification.unrestricted(),
+                        roomNumber != null ? (root, query, cb) -> cb.like(root.get("roomNumber"), "%" + roomNumber + "%") : Specification.unrestricted(),
+                        (r,q,c) -> r.in(rooms)
+                ),
+                validPageable
+        ).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
+    }
+
+    @Transactional
+    public RoomResponseJoinDorm current() {
+        User user = SecurityUtils.getCurrentUser();
         Slot slot = slotRepository.findOne((r, q, cb) -> cb.equal(r.get("user"), user)).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        CurrentRoomResponse response = modelMapper.map(slot.getRoom(), CurrentRoomResponse.class);
-        response.setPrice(roomPricingService.getPriceOfRoom(slot.getRoom()));
-        return response;
+        return modelMapper.map(slot.getRoom(), RoomResponseJoinDorm.class);
+    }
+
+    public Room create(Room room) {
+        if (room.getStatus() == null) room.setStatus(StatusRoomEnum.AVAILABLE);
+        if (room.getTotalSlot() == null) room.setTotalSlot(2);
+        if (room.getFloor() == null) room.setFloor(1);
+        if (room.getDorm() == null) throw new AppException("DORM_NULL");
+        final String roomNumber = room.getRoomNumber();
+        final Dorm dorm = room.getDorm();
+        // trong cùng 1 dorm, ko có 2 phòng cùng tên
+        if (roomRepository.exists((r,q,c) -> c.and(
+                c.equal(r.get("roomNumber"), roomNumber),
+                c.equal(r.get("dorm"), dorm)
+        ))) throw new AppException("ROOM_NUMBER_EXISTED");
+        room.setPricing(roomPricingService.getOrCreate(room.getTotalSlot()));
+        room = roomRepository.save(room);
+        room.setSlots(slotService.create(room));
+        return room;
+    }
+
+    public List<Room> create(List<Room> rooms) {
+        rooms.forEach(room -> {
+            RoomPricing pricing = roomPricingService.getByTotalSlot(room.getTotalSlot()).orElse(null);
+            if (pricing == null) throw new AppException("ROOM_TYPE_NOT_EXIST");
+            room.setPricing(pricing);
+        });
+        List<Room> saved = roomRepository.saveAll(rooms);
+        saved.forEach(slotService::create);
+        return saved;
     }
 
     @Transactional
-    public RoomResponse create(CreateRoomRequest request) {
-        Dorm dorm = dormRepository.findById(request.getDormId()).orElseThrow(() -> new AppException("DORM_NOT_FOUND"));
-        Room room = new Room();
-        room.setDorm(dorm);
-        room.setFloor(request.getFloor());
-        room.setTotalSlot(request.getTotalSlot());
-        room.setRoomNumber(request.getRoomNumber());
-        room.setStatus(StatusRoomEnum.AVAILABLE);
+    public RoomResponseJoinPricingAndDormAndSlot update(UUID id, UpdateRoomRequest request) {
+        Room room = roomRepository.findById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
+        Room updated = new Room();
+        updated.setId(room.getId());
+        updated.setDorm(room.getDorm());
+        updated.setTotalSlot(request.getTotalSlot());
+        updated.setFloor(request.getFloor());
+        updated.setRoomNumber(request.getRoomNumber());
+        updated.setStatus(request.getStatus());
+        room = update(updated);
+        return modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class);
+    }
+
+    public Room update(Room room) {
+        if (room.getId() == null) throw new AppException("INVALID_ROOM");
+        if (room.getStatus() == null) room.setStatus(StatusRoomEnum.AVAILABLE);
+        final int currentTotalSlot = getById(room.getId()).orElseThrow().getTotalSlot();
+        if (room.getFloor() == null) room.setFloor(1);
+        if (room.getFloor() <= 0 || room.getFloor() > room.getDorm().getTotalFloor())
+            throw new AppException("INVALID_FLOOR");
+        final String roomNumber = room.getRoomNumber();
+        final Dorm dorm = room.getDorm();
+        final UUID roomId = room.getId();
+        if (roomRepository.exists((r,q,c) -> c.and(
+                c.equal(r.get("roomNumber"), roomNumber),
+                c.equal(r.get("dorm"), dorm),
+                c.notEqual(r.get("id"), roomId)
+        ))) throw new AppException("ROOM_NUMBER_EXISTED");
+
+        // đang có người ở, ko thể sửa slot
+        if (!getUsers(room).isEmpty()) throw new AppException("ALREADY_HAVE_USERS");
+        RoomPricing pricing = roomPricingService.getOrCreate(room.getTotalSlot());
+        room.setPricing(pricing);
         room = roomRepository.save(room);
-        List<Slot> slots = new ArrayList<>();
-        for (int i = 1; i <= request.getTotalSlot(); i++) {
-            Slot slot = new Slot();
-            slot.setRoom(room);
-            slot.setSlotName("Slot %s".formatted(i));
-            slot.setStatus(StatusSlotEnum.AVAILABLE);
-            slots.add(slot);
+        if (currentTotalSlot != room.getTotalSlot()) {
+            // xóa slot cũ?
+            slotService.deleteByRoom(room);
+            room.setSlots(slotService.create(room));
+        } else {
+            room.setSlots(slotService.getByRoom(room));
         }
-        slotRepository.saveAll(slots);
-        return modelMapper.map(room, RoomResponse.class);
+        return room;
     }
 
     @Transactional
-    public RoomResponse update(UpdateRoomRequest request) {
-        Room room = roomRepository.findById(request.getRoomId()).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        room.setFloor(request.getFloor());
-        room.setRoomNumber(request.getRoomNumber());
-        room.setStatus(request.getStatus());
-        room = roomRepository.save(room);
-        return modelMapper.map(room, RoomResponse.class);
+    public List<RoomUserResponse> getUsersResponse(UUID id) {
+        Room room = getById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
+        return getUsers(room).stream().map(user -> modelMapper.map(user, RoomUserResponse.class)).toList();
+    }
+
+    public List<User> getUsers(Room room) {
+        return roomRepository.findUsers(room);
+    }
+
+    public List<Room> getAllByDorm(Dorm dorm) {
+        return roomRepository.findAll((r, q, c) -> c.equal(r.get("dorm"), dorm));
+    }
+
+    /**
+     * Lock slot
+     * @param slot slot
+     * @param user user
+     * @throws AppException SLOT_NOT_AVAILABLE
+     */
+    public void lockSlot(Slot slot, User user) {
+        // đổi trạng thái slot
+        slot = slotService.lock(slot, user);
+        // đổi trạng thái room (nếu tất cả các slot đều unavailable)
+        checkFullAndUpdate(slot.getRoom());
+    }
+
+    public void unlockSlot(Slot slot) {
+        slot = slotService.unlock(slot);
+        checkFullAndUpdate(slot.getRoom());
+    }
+
+    public Slot successSlot(Slot slot) {
+        slot = slotService.success(slot);
+        checkFullAndUpdate(slot.getRoom());
+        return slot;
+    }
+
+    public Optional<Room> getByUser(User user) {
+        return Optional.ofNullable(roomRepository.findByUser(user));
     }
 }

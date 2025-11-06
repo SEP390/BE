@@ -1,10 +1,8 @@
 package com.capstone.capstone.entity;
 
+import com.capstone.capstone.dto.enums.DormStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,4 +31,7 @@ public class Dorm extends BaseEntity {
 
     @OneToMany(mappedBy = "dorm")
     private List<Schedule> schedules;
+
+    @Enumerated(EnumType.STRING)
+    private DormStatus status;
 }

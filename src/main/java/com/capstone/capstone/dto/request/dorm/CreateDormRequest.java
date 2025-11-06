@@ -1,20 +1,16 @@
 package com.capstone.capstone.dto.request.dorm;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 public class CreateDormRequest {
+    @NotNull(message = "DORM_NAME_NULL")
     private String dormName;
+    @NotNull(message = "TOTAL_FLOOR_NULL")
+    @Min(value = 1, message = "TOTAL_FLOOR_MIN")
+    @Max(value = 255, message = "TOTAL_FLOOR_MAX")
     private Integer totalFloor;
-    private Integer totalRoom;
-    private List<RoomRequest> rooms;
-
-    @Data
-    public static class RoomRequest {
-        private String roomNumber;
-        private Integer totalSlot;
-        private Integer floor;
-    }
 }

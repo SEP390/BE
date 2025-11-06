@@ -41,10 +41,7 @@ public class ApiConstant {
 
     public static class NEWS {
         public static final String NEWS = API + "/news";
-        public static final String CREATE_NEWS = "/createnews";
-        public static final String UPDATE = "/updatenews/{id}";
-        public static final String GET_DETAIL_BY_ID = "/getnewsdetail/{id}";
-        public static final String SEARCH = "/search";
+        public static final String UPDATE = "/{id}";
     }
 
     public static class REPORTS {
