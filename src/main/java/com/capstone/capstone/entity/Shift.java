@@ -1,13 +1,14 @@
 package com.capstone.capstone.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -18,4 +19,10 @@ public class Shift extends BaseEntity {
     private String name;
     private LocalTime startTime;
     private LocalTime endTime;
+
+    @OneToMany(mappedBy = "shift")
+    List<Schedule> schedules;
+
+    @OneToMany(mappedBy = "shift")
+    List<Attendance> attendances;
 }

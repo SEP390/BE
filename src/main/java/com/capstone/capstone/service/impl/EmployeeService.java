@@ -50,7 +50,7 @@ public class EmployeeService implements IEmployeeService {
         userRepository.save(user);
         Employee employee = new Employee();
         employee.setUser(user);
-        employee.setDorm(dormRepository.findById(request.getDormId()).orElseThrow(() -> new NotFoundException("Dorm not found")));
+        employee.setDorm(null);
         employeeRepository.save(employee);
         CreateEmployeeResponse response = new CreateEmployeeResponse();
         response.setEmail(request.getEmail());
