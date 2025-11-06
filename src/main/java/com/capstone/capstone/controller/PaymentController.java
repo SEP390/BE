@@ -49,7 +49,7 @@ public class PaymentController {
         return new BaseResponse<>(paymentService.createPaymentUrl(paymentService.getById(id)));
     }
 
-    @GetMapping("/api/payment/booking/latest")
+    @GetMapping("/api/payment/booking/pending")
     public BaseResponse<String> getPendingBooking() {
         return new BaseResponse<>(paymentSlotService.getPendingPaymentUrl());
     }
