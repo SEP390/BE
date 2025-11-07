@@ -9,6 +9,7 @@ import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAnd
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
+import com.capstone.capstone.repository.SlotRepository;
 import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -25,6 +26,7 @@ public class BookingService {
     private final SlotService slotService;
     private final PaymentSlotService paymentSlotService;
     private final RoomService roomService;
+    private final SlotRepository slotRepository;
     private final ModelMapper modelMapper;
 
     @Transactional
@@ -33,13 +35,13 @@ public class BookingService {
         User user = SecurityUtils.getCurrentUser();
 
         // get slot
-        Slot slot = slotService.getById(request.getSlotId()).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
+        Slot slot = slotRepository.findById(request.getSlotId()).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
 
         // slot not available
         if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
 
         // already book other slot
-        if (slotService.getByUser(user).isPresent()) throw new AppException("ALREADY_BOOKED");
+        if (roomService.getSlotByUser(user).isPresent()) throw new AppException("ALREADY_BOOKED");
 
         // create payment url
         String paymentUrl = paymentSlotService.createPaymentUrl(user, slot);
