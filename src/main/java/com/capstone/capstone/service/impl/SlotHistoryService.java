@@ -2,7 +2,9 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
+import com.capstone.capstone.repository.RoomRepository;
 import com.capstone.capstone.repository.SlotHistoryRepository;
+import com.capstone.capstone.repository.SlotRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +17,8 @@ public class SlotHistoryService {
     private final SlotHistoryRepository slotHistoryRepository;
     private final SemesterService semesterService;
     private final RoomPricingService roomPricingService;
-    private final RoomService roomService;
-    private final SlotService slotService;
+    private final RoomRepository roomRepository;
+    private final SlotRepository slotRepository;
 
     public boolean has(User user, Semester semester) {
         return slotHistoryRepository.exists((r, q, c) -> {
@@ -35,7 +37,7 @@ public class SlotHistoryService {
                     c.equal(r.get("semester"), semester),
                     c.isNotNull(r.get("slotId"))
             );
-        }).stream().map(sh -> roomService.getById(sh.getRoomId()).orElse(null)).toList();
+        }).stream().map(sh -> roomRepository.findById(sh.getRoomId()).orElse(null)).toList();
     }
 
     public List<Slot> getSlots(User user, Semester semester) {
@@ -45,7 +47,7 @@ public class SlotHistoryService {
                     c.equal(r.get("semester"), semester),
                     c.isNotNull(r.get("slotId"))
             );
-        }).stream().map(sh -> slotService.getById(sh.getSlotId()).orElse(null)).toList();
+        }).stream().map(sh -> slotRepository.findById(sh.getSlotId()).orElse(null)).toList();
     }
 
     /**
@@ -76,7 +78,26 @@ public class SlotHistoryService {
                         .user(user)
                         .semester(semester)
                         .price(pricing.getPrice())
-                        .checkin(LocalDate.now())
+                        .build()
+        );
+    }
+
+    public SlotHistory create(User user, Semester semester, Slot slotFrom, Slot slotTo) {
+        // get current price of slot (can be updated in the future, so only save price in slot history)
+        var pricing = roomPricingService.getBySlot(slotTo).orElseThrow(() -> new AppException("INVALID_ROOM_TYPE"));
+
+        return slotHistoryRepository.save(
+                SlotHistory.builder()
+                        .fromSlotId(slotFrom.getId())
+                        .fromRoomId(slotFrom.getRoom().getId())
+                        .slotId(slotTo.getId())
+                        .slotName(slotTo.getSlotName())
+                        .roomId(slotTo.getRoom().getId())
+                        .roomNumber(slotTo.getRoom().getRoomNumber())
+                        .dormName(slotTo.getRoom().getDorm().getDormName())
+                        .user(user)
+                        .semester(semester)
+                        .price(pricing.getPrice())
                         .build()
         );
     }
