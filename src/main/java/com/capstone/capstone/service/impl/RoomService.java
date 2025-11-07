@@ -38,6 +38,8 @@ public class RoomService {
     private final MatchingRepository matchingRepository;
     private final SlotRepository slotRepository;
     private final SlotService slotService;
+    private final SlotHistoryService slotHistoryService;
+    private final SemesterService semesterService;
 
     @Transactional
     public List<RoomMatchingResponse> getMatching() {
@@ -226,31 +228,82 @@ public class RoomService {
     }
 
     /**
-     * Lock slot
+     * Change slot status from available to lock (dont create slot history)
      *
      * @param slot slot
      * @param user user
      * @throws AppException SLOT_NOT_AVAILABLE
      */
     public void lockSlot(Slot slot, User user) {
-        // đổi trạng thái slot
-        slot = slotService.lock(slot, user);
-        // đổi trạng thái room (nếu tất cả các slot đều unavailable)
+        // change slot status
+        slot = slotService.fromAvailableToLock(slot, user);
+        // change room status to full if all slot is not available
         checkFullAndUpdate(slot.getRoom());
     }
 
+    /**
+     * Change slot status from lock to available (dont create slot history)
+     *
+     * @param slot slot
+     * @throws AppException SLOT_NOT_AVAILABLE
+     */
     public void unlockSlot(Slot slot) {
-        slot = slotService.unlock(slot);
+        // unlock and change slot status to available
+        slot = slotService.fromLockToAvailable(slot);
+        // change room status to full if all slot is not available
         checkFullAndUpdate(slot.getRoom());
     }
 
+    /**
+     * Change slot status from lock to unavailable (booking success) and create slot history
+     *
+     * @param slot slot
+     * @throws AppException SLOT_NOT_AVAILABLE
+     */
     public Slot successSlot(Slot slot) {
-        slot = slotService.success(slot);
+        // change slot status from lock to unavailable
+        slot = slotService.fromLockToUnavailable(slot);
+        // change room status to full if all slot is not available
         checkFullAndUpdate(slot.getRoom());
+        // create history that user from null to slot for next semester
+        slotHistoryService.create(slot.getUser(), slot);
         return slot;
     }
 
     public Optional<Room> getByUser(User user) {
         return Optional.ofNullable(roomRepository.findByUser(user));
+    }
+
+    /**
+     * Get current semester slot of user
+     * @param user user
+     * @return current slot
+     */
+    public Optional<Slot> getSlotByUser(User user) {
+        return slotService.getByUser(user);
+    }
+
+    public Slot removeUserFromSlot(Slot slot) {
+        Slot updatedSlot = slotService.removeUser(slot);
+        Room room = slot.getRoom();
+        room.setStatus(StatusRoomEnum.AVAILABLE);
+        roomRepository.save(room);
+        return updatedSlot;
+    }
+
+    public Slot setUserToSlot(User user, Slot slot) {
+        slot = slotService.setUser(slot, user);
+        checkFullAndUpdate(slot.getRoom());
+        return slot;
+    }
+
+    public Slot changeSlot(User user, Slot slot) {
+        Semester currentSemester = semesterService.getCurrent().orElseThrow();
+        if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
+        Slot slotFrom = getSlotByUser(user).orElseThrow();
+        slotFrom = removeUserFromSlot(slot);
+        slot = setUserToSlot(user, slot);
+        slotHistoryService.create(user, currentSemester, slotFrom, slot);
+        return slot;
     }
 }

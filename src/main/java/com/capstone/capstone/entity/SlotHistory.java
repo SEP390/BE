@@ -23,6 +23,9 @@ public class SlotHistory extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private UUID fromSlotId;
+    private UUID fromRoomId;
+
     // clone slot information, nullable (for slot delete in room update)
     private UUID slotId;
     private UUID roomId;

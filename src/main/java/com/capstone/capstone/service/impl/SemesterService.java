@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -30,8 +31,8 @@ public class SemesterService {
         return semesterRepository.findNextSemester();
     }
 
-    public Semester getCurrent() {
-        return semesterRepository.findCurrent();
+    public Optional<Semester> getCurrent() {
+        return Optional.ofNullable(semesterRepository.findCurrent());
     }
 
     public SemesterResponse getCurrentResponse() {
