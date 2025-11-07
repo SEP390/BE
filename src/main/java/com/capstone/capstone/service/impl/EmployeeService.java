@@ -4,6 +4,7 @@ import com.capstone.capstone.dto.request.employee.CreateEmployeeRequest;
 import com.capstone.capstone.dto.request.employee.ResetPasswordRequest;
 import com.capstone.capstone.dto.request.employee.UpdateEmployeeRequest;
 import com.capstone.capstone.dto.response.employee.*;
+import com.capstone.capstone.entity.Dorm;
 import com.capstone.capstone.entity.Employee;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.BadHttpRequestException;
@@ -15,6 +16,7 @@ import com.capstone.capstone.service.interfaces.IEmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,20 +62,29 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<GetAllEmployeeResponse> getAllEmployee() {
-        List<Employee> employees = employeeRepository.findAll();
-        List<GetAllEmployeeResponse> response = new ArrayList<>();
-        for (Employee employee : employees) {
-            GetAllEmployeeResponse response1 = new GetAllEmployeeResponse();
-            response1.setEmployeeId(employee.getId());
-            response1.setEmail(employee.getUser().getEmail());
-            response1.setUsername(employee.getUser().getUsername());
-            response1.setRole(employee.getUser().getRole());
-            response1.setDormName(employee.getDorm().getDormName());
-            response1.setPhone(employee.getUser().getPhoneNumber());
-            response.add(response1);
-        }
-        return response;
+        return employeeRepository.findAll()
+                .stream()
+                .map(this::toGetAllEmployeeResponse)
+                .toList();
+    }
+
+
+    private GetAllEmployeeResponse toGetAllEmployeeResponse(Employee e) {
+        GetAllEmployeeResponse dto = new GetAllEmployeeResponse();
+        dto.setEmployeeId(e.getId());
+
+        User u = e.getUser();           // có thể null tùy dữ liệu
+        dto.setUsername(u != null ? u.getUsername() : null);
+        dto.setRole(u != null ? u.getRole() : null);   // RoleEnum
+        dto.setPhone(u != null ? u.getPhoneNumber() : null);
+        dto.setEmail(u != null ? u.getEmail() : null);
+
+        Dorm d = e.getDorm();           // kỹ thuật viên có thể null
+        dto.setDormName(d != null ? d.getDormName() : null); // hoặc "Unassigned"
+
+        return dto;
     }
 
     @Override
