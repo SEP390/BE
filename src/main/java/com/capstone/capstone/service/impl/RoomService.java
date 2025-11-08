@@ -3,6 +3,7 @@ package com.capstone.capstone.service.impl;
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
+import com.capstone.capstone.dto.response.booking.SlotResponse;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
@@ -207,7 +208,12 @@ public class RoomService {
     @Transactional
     public List<RoomUserResponse> getUsersResponse(UUID id) {
         Room room = getById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        return getUsers(room).stream().map(user -> modelMapper.map(user, RoomUserResponse.class)).toList();
+        return room.getSlots().stream().map((slot) -> {
+            if (slot.getUser() == null) return null;
+            var res = modelMapper.map(slot.getUser(), RoomUserResponse.class);
+            res.setSlot(modelMapper.map(slot, SlotResponse.class));
+            return res;
+        }).toList();
     }
 
     public List<User> getUsers(Room room) {
