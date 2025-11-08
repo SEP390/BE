@@ -30,6 +30,8 @@ public class News  {
     @GeneratedValue(strategy=GenerationType.UUID)
     private UUID newsid;
     private String title;
+
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     @UpdateTimestamp
