@@ -49,7 +49,7 @@ class TestDataBuilder {
         generateSemester();
         generateRoomPricing();
         generateDorm();
-        generateUser();
+//        generateUser();
         generateEWPricing();
     }
 
@@ -97,32 +97,32 @@ class TestDataBuilder {
         }
     }
 
-    void generateEmployee() {
-        var dorms = dormService.getAll();
-        for (Dorm dorm : dorms) {
-            String dormNameNormalize = dorm.getDormName().replace(' ', '_').toLowerCase();
-            var user = createUser("guard_%s".formatted(dormNameNormalize), "manager@gmail.com", GenderEnum.MALE, RoleEnum.GUARD);
-            Employee employee = new Employee();
-            employee.setUser(user);
-            employee.setDorm(dorm);
-            employeeRepository.save(employee);
-        }
-        for (Dorm dorm : dorms) {
-            String dormNameNormalize = dorm.getDormName().replace(' ', '_').toLowerCase();
-            var user = createUser("cleaner_%s".formatted(dormNameNormalize), "manager@gmail.com", GenderEnum.MALE, RoleEnum.CLEANER);
-            Employee employee = new Employee();
-            employee.setUser(user);
-            employee.setDorm(dorm);
-            employeeRepository.save(employee);
-        }
-    }
+//    void generateEmployee() {
+//        var dorms = dormService.getAll();
+//        for (Dorm dorm : dorms) {
+//            String dormNameNormalize = dorm.getDormName().replace(' ', '_').toLowerCase();
+//            var user = createUser("guard_%s".formatted(dormNameNormalize), "manager@gmail.com", GenderEnum.MALE, RoleEnum.GUARD);
+//            Employee employee = new Employee();
+//            employee.setUser(user);
+//            employee.setDorm(dorm);
+//            employeeRepository.save(employee);
+//        }
+//        for (Dorm dorm : dorms) {
+//            String dormNameNormalize = dorm.getDormName().replace(' ', '_').toLowerCase();
+//            var user = createUser("cleaner_%s".formatted(dormNameNormalize), "manager@gmail.com", GenderEnum.MALE, RoleEnum.CLEANER);
+//            Employee employee = new Employee();
+//            employee.setUser(user);
+//            employee.setDorm(dorm);
+//            employeeRepository.save(employee);
+//        }
+//    }
 
-    void generateUser() {
-        generateResident();
-        generateEmployee();
-        createUser("manager", "manager@gmail.com", GenderEnum.MALE, RoleEnum.MANAGER);
-        createUser("admin", "admin@gmail.com", GenderEnum.MALE, RoleEnum.ADMIN);
-    }
+//    void generateUser() {
+//        generateResident();
+//        generateEmployee();
+//        createUser("manager", "manager@gmail.com", GenderEnum.MALE, RoleEnum.MANAGER);
+//        createUser("admin", "admin@gmail.com", GenderEnum.MALE, RoleEnum.ADMIN);
+//    }
 
     void generateRoom(Dorm dorm) {
         for (int floor = 1; floor <= dorm.getTotalFloor(); floor++) {

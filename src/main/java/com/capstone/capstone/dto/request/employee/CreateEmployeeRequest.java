@@ -25,4 +25,6 @@ public class CreateEmployeeRequest {
     private GenderEnum gender;
     private RoleEnum role;
     private String phoneNumber;
+    private LocalDate hireDate;
+    private LocalDate contractEndDate;
 }

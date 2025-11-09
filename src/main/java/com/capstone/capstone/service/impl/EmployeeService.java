@@ -6,11 +6,13 @@ import com.capstone.capstone.dto.request.employee.UpdateEmployeeRequest;
 import com.capstone.capstone.dto.response.employee.*;
 import com.capstone.capstone.entity.Dorm;
 import com.capstone.capstone.entity.Employee;
+import com.capstone.capstone.entity.Schedule;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.BadHttpRequestException;
 import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.DormRepository;
 import com.capstone.capstone.repository.EmployeeRepository;
+import com.capstone.capstone.repository.ScheduleRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IEmployeeService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,6 @@ import java.util.UUID;
 public class EmployeeService implements IEmployeeService {
 
     private final EmployeeRepository employeeRepository;
-    private final DormRepository dormRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     @Override
@@ -52,7 +53,8 @@ public class EmployeeService implements IEmployeeService {
         userRepository.save(user);
         Employee employee = new Employee();
         employee.setUser(user);
-        employee.setDorm(null);
+        employee.setHireDate(request.getHireDate());
+        employee.setContractEndDate(request.getContractEndDate());
         employeeRepository.save(employee);
         CreateEmployeeResponse response = new CreateEmployeeResponse();
         response.setEmail(request.getEmail());
@@ -81,10 +83,6 @@ public class EmployeeService implements IEmployeeService {
         dto.setRole(u != null ? u.getRole() : null);   // RoleEnum
         dto.setPhone(u != null ? u.getPhoneNumber() : null);
         dto.setEmail(u != null ? u.getEmail() : null);
-
-        Dorm d = e.getDorm();           // kỹ thuật viên có thể null
-        dto.setDormName(d != null ? d.getDormName() : null); // hoặc "Unassigned"
-
         return dto;
     }
 
@@ -112,7 +110,6 @@ public class EmployeeService implements IEmployeeService {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setDob(request.getBirthDate());
         user.setRole(request.getRole());
-        employee.setDorm(dormRepository.findById(request.getDormId()).orElseThrow(() -> new NotFoundException("Dorm not found")));
         userRepository.save(user);
         return null;
     }
