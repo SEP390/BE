@@ -58,6 +58,7 @@ public class EmployeeService implements IEmployeeService {
         response.setEmail(request.getEmail());
         response.setUsername(request.getUsername());
         response.setRole(request.getRole());
+        response.setEmployeeId(employee.getId());
         return  response;
     }
 

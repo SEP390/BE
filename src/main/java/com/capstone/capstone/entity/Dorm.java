@@ -27,9 +27,6 @@ public class Dorm extends BaseEntity {
     private List<Employee> employees;
 
     @OneToMany(mappedBy = "dorm")
-    private List<Attendance> attendances;
-
-    @OneToMany(mappedBy = "dorm")
     private List<Schedule> schedules;
 
     @Enumerated(EnumType.STRING)

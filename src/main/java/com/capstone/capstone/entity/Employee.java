@@ -26,6 +26,4 @@ public class Employee extends BaseEntity{
     @OneToMany(mappedBy = "employee")
     private List<Schedule> schedules;
 
-    @OneToMany(mappedBy = "employee")
-    private List<Attendance> attendances;
 }
