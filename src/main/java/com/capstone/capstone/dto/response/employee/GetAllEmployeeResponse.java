@@ -18,6 +18,5 @@ public class GetAllEmployeeResponse {
     private String username;
     private RoleEnum role;
     private String phone;
-    private String dormName;
     private String email;
 }

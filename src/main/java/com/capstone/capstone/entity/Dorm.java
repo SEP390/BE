@@ -23,8 +23,6 @@ public class Dorm extends BaseEntity {
     @OneToMany(mappedBy = "dorm")
     private List<Room> rooms;
 
-    @OneToMany(mappedBy = "dorm")
-    private List<Employee> employees;
 
     @OneToMany(mappedBy = "dorm")
     private List<Schedule> schedules;

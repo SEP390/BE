@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -15,10 +16,9 @@ public class Employee extends BaseEntity{
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @ManyToOne
-    @JoinColumn(name = "dorm_id", nullable = true)
-    @JsonIgnore
-    private Dorm dorm;
+
+    private LocalDate hireDate;
+    private LocalDate contractEndDate;
 
     @OneToMany(mappedBy = "employee")
     private List<Report> reports;

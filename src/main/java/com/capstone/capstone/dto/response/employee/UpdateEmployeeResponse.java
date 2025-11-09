@@ -7,5 +7,4 @@ public class UpdateEmployeeResponse {
     private String employeeId;
     private String fullName;
     private LocalDate birthDate;
-    private String dorm;
 }
