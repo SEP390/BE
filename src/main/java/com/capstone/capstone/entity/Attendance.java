@@ -26,30 +26,15 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class Attendance extends BaseEntity {
+    private Boolean late = false;         // đi muộn?
+    private Boolean earlyLeave = false;   // về sớm?
+    private Integer overtimeMin = 0;  // phút OT
+    private Boolean excused = false;
+
     // --- Tham chiếu tới kế hoạch (có thể null nếu chấm công không theo lịch)
     @OneToOne
-    @JoinColumn(name = "schedule_id", unique = true)
+    @JoinColumn(name = "schedule_id")
     private Schedule schedule;
-
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    @JsonIgnore
-    private Employee employee;
-
-    @ManyToOne
-    @JoinColumn(name = "shift_id")
-    @JsonIgnore
-    private Shift shift;
-
-    @ManyToOne
-    @JoinColumn(name = "semester_id")
-    @JsonIgnore
-    private Semester semester;
-
-    @ManyToOne
-    @JoinColumn(name = "dorm_id")
-    @JsonIgnore
-    private Dorm dorm;
 
     // --- Ngày làm việc thực tế
     @Column(name = "attendance_date")

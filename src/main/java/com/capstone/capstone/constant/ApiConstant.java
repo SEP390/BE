@@ -58,4 +58,9 @@ public class ApiConstant {
         public static final String SHIFT = API + "/shifts";
         public static final String GET_BY_ID = "/{id}";
     }
+
+    public static class SCHEDULE {
+        public static final String SCHEDULE = API + "/schedules";
+        public static final String GET_BY_ID = "/{id}";
+    }
 }

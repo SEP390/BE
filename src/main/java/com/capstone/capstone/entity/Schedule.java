@@ -6,10 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -47,7 +47,17 @@ public class Schedule extends BaseEntity {
     @JsonIgnore
     private Dorm dorm;
 
+    @CreationTimestamp                 // Hibernate tự set khi INSERT
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp                   // Hibernate tự set khi UPDATE
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "work_date", nullable = false)
     private LocalDate workDate;
+
     private String note;
 
     @OneToOne(mappedBy = "schedule", cascade = CascadeType.ALL)
