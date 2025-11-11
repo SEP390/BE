@@ -110,12 +110,15 @@ public class RequestService implements IRequestService {
     public List<GetAllRequestResponse> getAllRequest() {
         UUID userid = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userid).orElseThrow(() -> new NotFoundException("User not found"));
-        List<Request> requests = new ArrayList<>();
-        if (user.getRole() == RoleEnum.MANAGER) {
+        List<Request> requests;
+        if (user.getRole().equals(RoleEnum.MANAGER) || user.getRole().equals(RoleEnum.ADMIN)) {
             requests = requestRepository.findAll();
-        } else if  (user.getRole() == RoleEnum.RESIDENT) {
+        } else if  (user.getRole().equals(RoleEnum.RESIDENT)
+                || user.getRole().equals(RoleEnum.GUARD)
+                || user.getRole().equals(RoleEnum.TECHNICAL)
+                || user.getRole().equals(RoleEnum.CLEANER)){
             requests = requestRepository.findRequestByUser(user);
-        }else {
+        } else {
             throw new AccessDeniedException("Forbidden");
         }
         List<GetAllRequestResponse> getAllRequestResponse = requests.stream().map(request -> {

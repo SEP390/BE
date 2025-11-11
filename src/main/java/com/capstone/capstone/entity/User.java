@@ -26,8 +26,10 @@ public class User extends BaseEntity implements UserDetails {
     private LocalDate dob;
     private String userCode;
     private String phoneNumber;
+
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
+
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
     @OneToMany(mappedBy = "user")
