@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.RequestStatusEnum;
+import com.capstone.capstone.dto.enums.RequestTypeEnum;
 import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.request.CreateRequestRequest;
 import com.capstone.capstone.dto.request.request.UpdateRequestRequest;
@@ -111,12 +112,14 @@ public class RequestService implements IRequestService {
         UUID userid = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userid).orElseThrow(() -> new NotFoundException("User not found"));
         List<Request> requests;
-        if (user.getRole().equals(RoleEnum.MANAGER) || user.getRole().equals(RoleEnum.ADMIN)) {
+        RoleEnum role = user.getRole();
+        if (role == RoleEnum.MANAGER || role == RoleEnum.ADMIN) {
             requests = requestRepository.findAll();
-        } else if  (user.getRole().equals(RoleEnum.RESIDENT)
-                || user.getRole().equals(RoleEnum.GUARD)
-                || user.getRole().equals(RoleEnum.TECHNICAL)
-                || user.getRole().equals(RoleEnum.CLEANER)){
+        } else if (role == RoleEnum.TECHNICAL) {
+            requests = requestRepository.findRequestByRequestType(RequestTypeEnum.TECHNICAL_ISSUE);
+        } else if (role == RoleEnum.RESIDENT
+                || role == RoleEnum.GUARD
+                || role == RoleEnum.CLEANER) {
             requests = requestRepository.findRequestByUser(user);
         } else {
             throw new AccessDeniedException("Forbidden");
