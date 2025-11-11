@@ -1,5 +1,6 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.FineBillStatus;
 import com.capstone.capstone.entity.FineBill;
 import com.capstone.capstone.entity.User;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ public class FineBillService {
         fineBill.setPrice(price);
         fineBill.setReason(reason);
         fineBill.setUser(user);
+        fineBill.setStatus(FineBillStatus.UNPAID);
         return fineBillRepository.save(fineBill);
     }
 
@@ -35,4 +37,8 @@ public class FineBillService {
         });
     }
 
+    public FineBill setPaid(FineBill bill) {
+        bill.setStatus(FineBillStatus.PAID);
+        return fineBillRepository.save(bill);
+    }
 }

@@ -1,5 +1,6 @@
 package com.capstone.capstone.entity;
 
+import com.capstone.capstone.dto.enums.FineBillStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -17,4 +18,5 @@ public class FineBill extends BaseEntity {
     private User user;
     private Long price;
     private String reason;
+    private FineBillStatus status;
 }

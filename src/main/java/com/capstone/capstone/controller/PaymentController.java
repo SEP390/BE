@@ -22,6 +22,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final PaymentSlotService paymentSlotService;
     private final PaymentElectricWaterService paymentElectricWaterService;
+    private final PaymentFineService paymentFineService;
 
     @GetMapping("/api/payment/verify")
     public BaseResponse<?> verify(HttpServletRequest request) {
@@ -32,6 +33,9 @@ public class PaymentController {
             }
             if (verifyResponse.getPayment().getType() == PaymentType.BOOKING) {
                 paymentSlotService.onPayment(verifyResponse.getPayment());
+            }
+            if (verifyResponse.getPayment().getType() == PaymentType.FINE) {
+                paymentFineService.onPayment(verifyResponse.getPayment());
             }
         }
         return new BaseResponse<>(paymentService.toResponse(verifyResponse.getPayment()));
