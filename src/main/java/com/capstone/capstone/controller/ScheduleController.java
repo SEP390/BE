@@ -3,10 +3,14 @@ package com.capstone.capstone.controller;
 import com.capstone.capstone.constant.ApiConstant;
 import com.capstone.capstone.dto.request.schedule.CreateScheduleRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
+import com.capstone.capstone.dto.response.PageResponse;
 import com.capstone.capstone.dto.response.schedule.CreateScheduleResponse;
+import com.capstone.capstone.dto.response.schedule.GetScheduleResponse;
 import com.capstone.capstone.entity.BaseEntity;
 import com.capstone.capstone.service.impl.ScheduleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +32,17 @@ public class ScheduleController {
         response.setData(schedules);
         response.setStatus(HttpStatus.CREATED.value());
         response.setMessage("Schedule created");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<BaseResponse<PageResponse<GetScheduleResponse>>> GetAllSchedules(@RequestParam int page, @RequestParam int size) {
+        Pageable pageable = Pageable.ofSize(size).withPage(page - 1);
+        BaseResponse<PageResponse<GetScheduleResponse>> response = new BaseResponse<>();
+        PageResponse<GetScheduleResponse> schedules = scheduleService.getAllSchedules(pageable);
+        response.setData(schedules);
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Schedules found");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
