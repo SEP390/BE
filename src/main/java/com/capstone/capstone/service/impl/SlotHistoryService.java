@@ -8,7 +8,6 @@ import com.capstone.capstone.repository.SlotRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -80,6 +79,18 @@ public class SlotHistoryService {
                         .price(pricing.getPrice())
                         .build()
         );
+    }
+
+    public SlotHistory createForCheckout(User user, Slot slot, Semester semester) {
+        var pricing = roomPricingService.getBySlot(slot).orElseThrow(() -> new AppException("INVALID_ROOM_TYPE"));
+        return slotHistoryRepository.save(
+                SlotHistory.builder()
+                        .fromSlotId(slot.getId())
+                        .fromRoomId(slot.getRoom().getId())
+                        .user(user)
+                        .semester(semester)
+                        .price(pricing.getPrice())
+                        .build());
     }
 
     public SlotHistory create(User user, Semester semester, Slot slotFrom, Slot slotTo) {

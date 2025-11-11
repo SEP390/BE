@@ -291,6 +291,14 @@ public class RoomService {
         return updatedSlot;
     }
 
+    public void checkout(Slot slot) {
+        User user = slot.getUser();
+        Semester semester = semesterService.getCurrent().orElseThrow();
+        Slot updatedSlot = slotService.removeUser(slot);
+        checkFullAndUpdate(updatedSlot.getRoom());
+        SlotHistory slotHistory = slotHistoryService.createForCheckout(user, updatedSlot, semester);
+    }
+
     public Slot setUserToSlot(User user, Slot slot) {
         slot = slotService.setUser(slot, user);
         checkFullAndUpdate(slot.getRoom());
