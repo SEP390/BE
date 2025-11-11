@@ -6,12 +6,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.util.UUID;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class CreateEmployeeResponse {
-    private String employeeId;
+    private UUID employeeId;
     private String email;
     private String username;
     private RoleEnum role;

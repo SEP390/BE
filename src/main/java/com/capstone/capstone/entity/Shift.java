@@ -23,6 +23,4 @@ public class Shift extends BaseEntity {
     @OneToMany(mappedBy = "shift")
     List<Schedule> schedules;
 
-    @OneToMany(mappedBy = "shift")
-    List<Attendance> attendances;
 }
