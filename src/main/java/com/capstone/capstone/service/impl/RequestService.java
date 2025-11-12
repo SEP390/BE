@@ -10,10 +10,7 @@ import com.capstone.capstone.dto.response.request.GetAllRequestResponse;
 import com.capstone.capstone.dto.response.request.GetRequestByIdResponse;
 import com.capstone.capstone.dto.response.request.UpdateRequestResponse;
 import com.capstone.capstone.dto.response.surveyQuestion.GetAllQuestionResponse;
-import com.capstone.capstone.entity.Request;
-import com.capstone.capstone.entity.Semester;
-import com.capstone.capstone.entity.Slot;
-import com.capstone.capstone.entity.User;
+import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.service.interfaces.IRequestService;
@@ -24,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +35,8 @@ public class RequestService implements IRequestService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final SlotRepository slotRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public CreateRequestResponse createRequest(CreateRequestRequest request) {
@@ -111,17 +111,18 @@ public class RequestService implements IRequestService {
     public List<GetAllRequestResponse> getAllRequest() {
         UUID userid = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userid).orElseThrow(() -> new NotFoundException("User not found"));
+        Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
         List<Request> requests;
         RoleEnum role = user.getRole();
         if (role == RoleEnum.MANAGER || role == RoleEnum.ADMIN) {
             requests = requestRepository.findAll();
         } else if (role == RoleEnum.TECHNICAL) {
             requests = requestRepository.findRequestByRequestType(RequestTypeEnum.TECHNICAL_ISSUE);
-        } else if (role == RoleEnum.RESIDENT
-                || role == RoleEnum.GUARD
-                || role == RoleEnum.CLEANER) {
+        } else if (role == RoleEnum.RESIDENT){
             requests = requestRepository.findRequestByUser(user);
-        } else {
+        }else if(role == RoleEnum.GUARD || role == RoleEnum.CLEANER){
+            requests = requestRepository.findAllDormRequestsICanViewOnDay(employee.getId(), LocalDate.now());
+        }else {
             throw new AccessDeniedException("Forbidden");
         }
         List<GetAllRequestResponse> getAllRequestResponse = requests.stream().map(request -> {
