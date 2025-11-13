@@ -15,9 +15,6 @@ public interface SurveySelectRepository extends JpaRepository<SurveyQuetionSelec
         FROM SurveyQuetionSelected s
         WHERE s.user = :user AND s.surveyOption.surveyQuestion = :question
     """)
-    boolean existsByUserAndQuestion(@Param("user") User user, @Param("question") SurveyQuestion question);
 
     boolean existsByUser(User user);
-
-    boolean existsByUser_Id(UUID userId);
 }
