@@ -1,6 +1,7 @@
 package com.capstone.capstone.entity;
 
 import com.capstone.capstone.dto.enums.ReportStatusEnum;
+import com.capstone.capstone.dto.enums.ReportTypeEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -23,9 +24,10 @@ public class Report extends BaseEntity {
     private ReportStatusEnum reportStatus;
     private String responseMessage;
     private String userCode;
+    private ReportTypeEnum reportType;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id")
+    @JoinColumn(name = "employee_id", nullable = false)
     @JsonIgnore
     private Employee employee;
 }

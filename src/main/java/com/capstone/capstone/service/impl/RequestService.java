@@ -35,7 +35,6 @@ public class RequestService implements IRequestService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final SlotRepository slotRepository;
-    private final ScheduleRepository scheduleRepository;
     private final EmployeeRepository employeeRepository;
 
     @Override
