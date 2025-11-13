@@ -1,6 +1,8 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.ReportStatusEnum;
+import com.capstone.capstone.dto.enums.ReportTypeEnum;
+import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.report.CreateReportRequest;
 import com.capstone.capstone.dto.request.report.UpdateReportRequest;
 import com.capstone.capstone.dto.response.report.CreateReportResponse;
@@ -16,6 +18,7 @@ import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IReportService;
 import com.capstone.capstone.util.AuthenUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,6 +40,7 @@ public class ReportService implements IReportService {
         Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
         Report report = new Report();
         report.setContent(request.getContent());
+        report.setReportType(request.getReportType());
         report.setReportStatus(ReportStatusEnum.PENDING);
         report.setCreatedAt(LocalDateTime.now());
         report.setUserCode(user.getUserCode());
@@ -47,12 +51,25 @@ public class ReportService implements IReportService {
         createReportResponse.setReportStatus(report.getReportStatus());
         createReportResponse.setCreatedAt(report.getCreatedAt());
         createReportResponse.setUserCode(report.getUserCode());
+        createReportResponse.setReportType(report.getReportType());
         return createReportResponse;
     }
 
     @Override
     public List<GetAllReportResponse> getAllReports() {
-        List<Report> reports = reportRepository.findAll();
+        UUID  userId = AuthenUtil.getCurrentUserId();
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
+        List<Report> reports;
+        if (user.getRole() == RoleEnum.MANAGER) {
+            reports = reportRepository.findAll();
+        } else if (user.getRole() == RoleEnum.TECHNICAL) {
+            reports = reportRepository.findByReportType(ReportTypeEnum.MAINTENANCE_REQUEST);
+        } else if  (user.getRole() == RoleEnum.GUARD ||  user.getRole() == RoleEnum.CLEANER) {
+            reports = reportRepository.findByEmployeeId(employee.getId());
+        } else {
+            throw new AccessDeniedException("Forbidden");
+        }
         List<GetAllReportResponse> responses = new ArrayList<>();
         for (Report report : reports) {
             GetAllReportResponse response = new GetAllReportResponse();

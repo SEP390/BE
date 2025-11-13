@@ -27,12 +27,12 @@ public class Request extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RequestStatusEnum requestStatus;
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "semester_id")
+    @JoinColumn(name = "semester_id", nullable = false)
     @JsonIgnore
     private Semester semester;
 }
