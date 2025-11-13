@@ -14,4 +14,6 @@ import java.util.UUID;
 @Setter
 public class CreateQuestionSelectedResponse {
     private List<UUID> ids;
+    boolean hasCompletedSurvey;
+
 }
