@@ -26,6 +26,7 @@ public class ApiConstant {
 
     public static class SURVEY_SELECT {
         public static final String SURVEY_SELECT = API + "/survey-select";
+        public static final String ANSWER_SELECTED = "/answer-selected";
     }
 
     public static class REQUEST {
