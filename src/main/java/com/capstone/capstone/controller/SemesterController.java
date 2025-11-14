@@ -33,6 +33,11 @@ public class SemesterController {
         return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getCurrentResponse());
     }
 
+    @GetMapping("/api/semesters/next")
+    public BaseResponse<SemesterResponse> getNext() {
+        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getNextResponse());
+    }
+
     @GetMapping("/api/semesters/{id}")
     public BaseResponse<SemesterResponse> getByName(@PathVariable UUID id) {
         return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getResponseById(id));

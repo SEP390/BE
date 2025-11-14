@@ -4,7 +4,9 @@ import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.PaymentType;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.payment.PaymentVerifyResponse;
-import com.capstone.capstone.service.impl.*;
+import com.capstone.capstone.service.impl.PaymentElectricWaterService;
+import com.capstone.capstone.service.impl.PaymentService;
+import com.capstone.capstone.service.impl.PaymentSlotService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -22,20 +24,16 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final PaymentSlotService paymentSlotService;
     private final PaymentElectricWaterService paymentElectricWaterService;
-    private final PaymentFineService paymentFineService;
 
     @GetMapping("/api/payment/verify")
     public BaseResponse<?> verify(HttpServletRequest request) {
         PaymentVerifyResponse verifyResponse = paymentService.verify(request);
         if (verifyResponse.getUpdate()) {
-            if (verifyResponse.getPayment().getType() == PaymentType.ELECTRIC_WATER){
+            if (verifyResponse.getPayment().getType() == PaymentType.ELECTRIC_WATER) {
                 paymentElectricWaterService.onPayment(verifyResponse.getPayment());
             }
             if (verifyResponse.getPayment().getType() == PaymentType.BOOKING) {
                 paymentSlotService.onPayment(verifyResponse.getPayment());
-            }
-            if (verifyResponse.getPayment().getType() == PaymentType.FINE) {
-                paymentFineService.onPayment(verifyResponse.getPayment());
             }
         }
         return new BaseResponse<>(paymentService.toResponse(verifyResponse.getPayment()));

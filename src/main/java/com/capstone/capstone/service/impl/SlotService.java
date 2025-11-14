@@ -1,12 +1,20 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
+import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricing;
+import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricingAndUser;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.SlotRepository;
+import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,10 +22,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class SlotService {
     private final SlotRepository slotRepository;
+    private final ModelMapper modelMapper;
 
     public Optional<Slot> getById(UUID id) {
         return slotRepository.findById(id);
@@ -74,6 +84,7 @@ public class SlotService {
 
     /**
      * Get slot by current user in it
+     *
      * @param user user
      * @return slot
      */
@@ -82,7 +93,17 @@ public class SlotService {
     }
 
     /**
+     * Get slot by current user in it
+     */
+    public SlotResponseJoinRoomAndDormAndPricing getCurrent() {
+        User user = SecurityUtils.getCurrentUser();
+        Slot slot = getByUser(user).orElseThrow();
+        return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricing.class);
+    }
+
+    /**
      * Create slots for rooms (by totalSlot)
+     *
      * @param room room
      * @return list slots
      */
@@ -100,6 +121,7 @@ public class SlotService {
 
     /**
      * Delete all slots in room
+     *
      * @param room room
      */
     public void deleteByRoom(Room room) {
@@ -124,5 +146,38 @@ public class SlotService {
         slot.setUser(user);
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
         return slotRepository.save(slot);
+    }
+
+    public SlotResponseJoinRoomAndDormAndPricingAndUser getResponseById(UUID id) {
+        Slot slot = slotRepository.findById(id).orElseThrow();
+        return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);
+    }
+
+    /**
+     * Danh sách các slot đang chờ checkin
+     * @param userCode
+     * @param pageable
+     * @return
+     */
+    public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAllCheckin(String userCode, Pageable pageable) {
+        return new PagedModel<>(slotRepository.findAll(Specification.allOf((r, q, c) -> {
+            return c.equal(r.get("status"), StatusSlotEnum.CHECKIN);
+        }, userCode != null ? (r, q, c) -> {
+            return c.like(r.get("user").get("userCode"), "%" + userCode + "%");
+        } : Specification.unrestricted()), pageable).map(s -> modelMapper.map(s, SlotResponseJoinRoomAndDormAndPricingAndUser.class)));
+    }
+
+    /**
+     * [Guard] checkin slot cho sinh viên
+     *
+     * @param id id của slot
+     * @return slot
+     */
+    public SlotResponseJoinRoomAndDormAndPricingAndUser checkin(UUID id) {
+        Slot slot = slotRepository.findById(id).orElseThrow();
+        // chuyển trạng thái sang unavailable
+        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
+        slot = slotRepository.save(slot);
+        return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);
     }
 }

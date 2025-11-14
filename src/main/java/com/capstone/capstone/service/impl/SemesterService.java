@@ -99,4 +99,10 @@ public class SemesterService {
         semesterRepository.delete(semester);
         return modelMapper.map(semester, SemesterResponse.class);
     }
+
+    public SemesterResponse getNextResponse() {
+        var next = getNext();
+        if (next == null) throw new AppException("SEMESTER_NOT_FOUND");
+        return modelMapper.map(next, SemesterResponse.class);
+    }
 }

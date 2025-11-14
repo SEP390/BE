@@ -291,12 +291,16 @@ public class RoomService {
         return updatedSlot;
     }
 
+    /**
+     * [Manager] checkout cho sinh vien
+     * @param slot
+     */
     public void checkout(Slot slot) {
         User user = slot.getUser();
         Semester semester = semesterService.getCurrent().orElseThrow();
         Slot updatedSlot = slotService.removeUser(slot);
         checkFullAndUpdate(updatedSlot.getRoom());
-        SlotHistory slotHistory = slotHistoryService.createForCheckout(user, updatedSlot, semester);
+        slotHistoryService.updateCheckoutTime(user, updatedSlot, semester);
     }
 
     public Slot setUserToSlot(User user, Slot slot) {
