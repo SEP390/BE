@@ -22,6 +22,6 @@ public class Holiday extends BaseEntity {
     private LocalDate endDate;
 
     @ManyToOne
-    @JoinColumn(name = "semester_id")
+    @JoinColumn(name = "semester_id", nullable = false)
     private Semester semester;
 }

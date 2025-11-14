@@ -28,22 +28,22 @@ import java.time.LocalDateTime;
 public class Schedule extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "employee_id")
+    @JoinColumn(name = "employee_id", nullable = false)
     @JsonIgnore
     private Employee employee;
 
     @ManyToOne
-    @JoinColumn(name = "shift_id")
+    @JoinColumn(name = "shift_id", nullable = false)
     @JsonIgnore
     private Shift shift;
 
     @ManyToOne
-    @JoinColumn(name = "semester_id")
+    @JoinColumn(name = "semester_id", nullable = false)
     @JsonIgnore
     private Semester semester;
 
     @ManyToOne
-    @JoinColumn(name = "dorm_id")
+    @JoinColumn(name = "dorm_id", nullable = false)
     @JsonIgnore
     private Dorm dorm;
 
@@ -52,7 +52,7 @@ public class Schedule extends BaseEntity {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp                   // Hibernate tự set khi UPDATE
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(name = "work_date", nullable = false)

@@ -1,6 +1,7 @@
 package com.capstone.capstone.dto.response.report;
 
 import com.capstone.capstone.dto.enums.ReportStatusEnum;
+import com.capstone.capstone.dto.enums.ReportTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,4 +19,5 @@ public class CreateReportResponse {
     private ReportStatusEnum reportStatus;
     private String responseMessage;
     private String userCode;
+    private ReportTypeEnum reportType;
 }

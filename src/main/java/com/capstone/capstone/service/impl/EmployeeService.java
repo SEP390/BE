@@ -110,6 +110,7 @@ public class EmployeeService implements IEmployeeService {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setDob(request.getBirthDate());
         user.setRole(request.getRole());
+        employee.setContractEndDate(request.getContractEndDate());
         userRepository.save(user);
         return null;
     }

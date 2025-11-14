@@ -19,4 +19,5 @@ public class UpdateEmployeeRequest {
     private String phoneNumber;
     private LocalDate birthDate;
     private RoleEnum role;
+    private LocalDate contractEndDate;
 }

@@ -17,22 +17,23 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class Request extends BaseEntity {
-    private String content;
-    private String responseMessage;
-    private LocalDateTime executeTime;
-    private LocalDateTime createTime;
-    private String roomNumber;
+    private String content; //1
+    private String responseByEmployeeMessage; //2 to manager
+    private String responseByManagerMessage; //3 to residen
+    private LocalDateTime executeTime; //4
+    private LocalDateTime createTime; //5
+    private String roomNumber; //6
     @Enumerated(EnumType.STRING)
-    private RequestTypeEnum requestType;
+    private RequestTypeEnum requestType; //7
     @Enumerated(EnumType.STRING)
-    private RequestStatusEnum requestStatus;
+    private RequestStatusEnum requestStatus; //8
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
-    private User user;
+    private User user; //9 nguowif tao don
 
     @ManyToOne
-    @JoinColumn(name = "semester_id")
+    @JoinColumn(name = "semester_id", nullable = false)
     @JsonIgnore
-    private Semester semester;
+    private Semester semester;//10
 }

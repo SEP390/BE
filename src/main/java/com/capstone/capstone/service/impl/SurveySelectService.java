@@ -30,6 +30,7 @@ public class SurveySelectService implements ISurveySelectService {
     public CreateQuestionSelectedResponse createQuestionSelected(CreateQuestionSelectedRequest request) {
         UUID userId = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userId).orElseThrow(()-> new NotFoundException("User not found"));
+        Boolean hasCompletedSurvey = surveySelectRepository.existsByUser(user);
 //        for (UUID id : request.getIds()){
 //            SurveyOption option = surveyOptionRepository.findById(id).orElseThrow(()-> new NotFoundException("Survey option not found"));
 //            SurveyQuestion question = option.getSurveyQuestion();
@@ -59,6 +60,7 @@ public class SurveySelectService implements ISurveySelectService {
         surveySelectRepository.saveAll(questionSelected.values());
         CreateQuestionSelectedResponse response = new CreateQuestionSelectedResponse();
         response.setIds(request.getIds());
+        response.setHasCompletedSurvey(hasCompletedSurvey);
         return response;
     }
 }

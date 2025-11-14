@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class AuthenUtil {
-
     //Lay userID tu token
     public static UUID getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

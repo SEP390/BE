@@ -1,9 +1,11 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.constant.ApiConstant;
+import com.capstone.capstone.dto.request.surveyOption.CreateSurveyOptionRequest;
 import com.capstone.capstone.dto.request.surveyQuestion.CreateSurveyQuestionRequest;
 import com.capstone.capstone.dto.request.surveyQuestion.UpdateQuestionRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
+import com.capstone.capstone.dto.response.surveyOption.CreateSurveyOptionResponse;
 import com.capstone.capstone.dto.response.surveyQuestion.CreateSurveyQuestionResponse;
 import com.capstone.capstone.dto.response.surveyQuestion.GetAllQuestionResponse;
 import com.capstone.capstone.dto.response.surveyQuestion.GetQuestionByIdResponse;
@@ -65,4 +67,13 @@ public class QuestionController {
         return ResponseEntity.status(HttpStatus.OK).body(baseResponse);
     }
 
+    @PostMapping(ApiConstant.SURVEY.CREATE_OPTIONS)
+    public ResponseEntity<BaseResponse<CreateSurveyOptionResponse>> createSurveyQuestion(@RequestBody CreateSurveyOptionRequest request, @PathVariable UUID id) {
+        CreateSurveyOptionResponse response = surveyQuestionService.createSurveyOptionForQuestion(request, id);
+        BaseResponse<CreateSurveyOptionResponse> baseResponse = new BaseResponse<>();
+        baseResponse.setStatus(HttpStatus.OK.value());
+        baseResponse.setMessage("Create Question Successfully");
+        baseResponse.setData(response);
+        return ResponseEntity.status(HttpStatus.OK).body(baseResponse);
+    }
 }

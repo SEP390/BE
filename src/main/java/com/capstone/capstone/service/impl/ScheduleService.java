@@ -1,19 +1,31 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.schedule.CreateScheduleRequest;
+import com.capstone.capstone.dto.request.schedule.UpdateScheduleRequest;
+import com.capstone.capstone.dto.response.PageResponse;
 import com.capstone.capstone.dto.response.schedule.CreateScheduleResponse;
+import com.capstone.capstone.dto.response.schedule.GetScheduleResponse;
+import com.capstone.capstone.dto.response.schedule.UpdateScheduleResponse;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.service.interfaces.IScheduleService;
+import com.capstone.capstone.util.AuthenUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -23,6 +35,7 @@ public class ScheduleService implements IScheduleService {
     private final ShiftRepository shiftRepository;
     private final DormRepository dormRepository;
     private final SemesterRepository semesterRepository;
+    private final UserRepository userRepository;
 
 
     @Override
@@ -118,6 +131,68 @@ public class ScheduleService implements IScheduleService {
 
         r.setCreatedAt(s.getCreatedAt());
         r.setUpdatedAt(s.getUpdatedAt());
+        return r;
+    }
+
+
+    @Override
+    public PageResponse<GetScheduleResponse> getAllSchedules(Pageable pageable) {
+        UUID currentUserId = AuthenUtil.getCurrentUserId();
+        User user = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+        Page<Schedule> schedules = null;
+        if (user.getRole().equals(RoleEnum.MANAGER)) {
+            schedules = scheduleRepository.findAll(pageable);
+        } else if(user.getRole().equals(RoleEnum.GUARD) || user.getRole().equals(RoleEnum.CLEANER)) {
+            Employee emp = employeeRepository.findEmployeeByUser(user).orElseThrow(() -> new RuntimeException("Employee not found"));
+            schedules = scheduleRepository.findByEmployee(emp, pageable);
+        }
+        PageResponse<GetScheduleResponse> response = new PageResponse<>();
+        response.setCurrentPage(schedules.getNumber() + 1);
+        response.setPageSize(schedules.getSize());
+        response.setTotalPage(schedules.getTotalPages());
+        response.setTotalCount(schedules.getNumberOfElements());
+        response.setData(schedules.stream().map(s -> {
+            GetScheduleResponse resp = new GetScheduleResponse();
+            resp.setScheduleId(s.getId());
+            resp.setEmployeeId(s.getEmployee().getId());
+            resp.setEmployeeName(s.getEmployee().getUser().getFullName());
+            resp.setShiftId(s.getShift().getId());
+            resp.setShiftName(s.getShift().getName());
+            resp.setSemesterId(s.getSemester().getId());
+            resp.setSemesterName(s.getSemester().getName());
+            resp.setDormId(s.getDorm().getId());
+            resp.setDormName(s.getDorm().getDormName());
+            resp.setCreatedAt(s.getCreatedAt());
+            resp.setUpdatedAt(null);
+            resp.setNote(s.getNote());
+            return resp;
+        }).collect(Collectors.toList()));
+        return response;
+    }
+
+    @Override
+    public UpdateScheduleResponse updateSchedule(UpdateScheduleRequest request, UUID scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new RuntimeException("Schedule not found"));
+        Dorm newDorm = dormRepository.findById(request.getDormID()).orElseThrow(() -> new RuntimeException("Dorm not found"));
+        Shift shift = shiftRepository.findById(request.getShiftId()).orElseThrow(() -> new RuntimeException("Shift not found"));
+        schedule.setDorm(newDorm);
+        schedule.setNote(request.getNote());
+        schedule.setShift(shift);
+        schedule.setUpdatedAt(LocalDateTime.now());
+        scheduleRepository.save(schedule);
+        UpdateScheduleResponse r = new UpdateScheduleResponse();
+        r.setId(schedule.getId());
+        r.setEmployeeId(schedule.getEmployee().getId());
+        r.setEmployeeName(schedule.getEmployee().getUser().getFullName());
+        r.setShiftId(schedule.getShift().getId());
+        r.setShiftName(schedule.getShift().getName());
+        r.setDormId(schedule.getDorm().getId());
+        r.setDormName(schedule.getDorm().getDormName());
+        r.setSemesterId(schedule.getSemester().getId());
+        r.setSemesterName(schedule.getSemester().getName());
+        r.setWorkDate(schedule.getWorkDate());
+        r.setCreatedAt(schedule.getCreatedAt());
+        r.setUpdatedAt(schedule.getUpdatedAt());
         return r;
     }
 }
