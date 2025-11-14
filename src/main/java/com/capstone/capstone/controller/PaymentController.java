@@ -4,8 +4,9 @@ import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.PaymentType;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.payment.PaymentVerifyResponse;
-import com.capstone.capstone.entity.PaymentElectricWater;
-import com.capstone.capstone.service.impl.*;
+import com.capstone.capstone.service.impl.PaymentElectricWaterService;
+import com.capstone.capstone.service.impl.PaymentService;
+import com.capstone.capstone.service.impl.PaymentSlotService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,7 @@ public class PaymentController {
     public BaseResponse<?> verify(HttpServletRequest request) {
         PaymentVerifyResponse verifyResponse = paymentService.verify(request);
         if (verifyResponse.getUpdate()) {
-            if (verifyResponse.getPayment().getType() == PaymentType.ELECTRIC_WATER){
+            if (verifyResponse.getPayment().getType() == PaymentType.ELECTRIC_WATER) {
                 paymentElectricWaterService.onPayment(verifyResponse.getPayment());
             }
             if (verifyResponse.getPayment().getType() == PaymentType.BOOKING) {
@@ -48,5 +49,10 @@ public class PaymentController {
     @GetMapping("/api/payment/{id}/url")
     public BaseResponse<String> getUrl(@PathVariable UUID id) {
         return new BaseResponse<>(paymentService.createPaymentUrl(paymentService.getById(id)));
+    }
+
+    @GetMapping("/api/payment/booking/pending")
+    public BaseResponse<String> getPendingBooking() {
+        return new BaseResponse<>(paymentSlotService.getPendingPaymentUrl());
     }
 }

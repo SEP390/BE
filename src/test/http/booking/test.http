@@ -36,7 +36,7 @@ Content-Type: application/json
 %}
 
 ### latest payment url
-GET http://localhost:8080/api/booking/latest-payment-url
+GET http://localhost:8080/api/payment/booking/pending
 Authorization: Bearer {{token}}
 
 ### current booking

@@ -1,65 +1,112 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
+import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricing;
+import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricingAndUser;
 import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.SlotRepository;
+import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class SlotService {
     private final SlotRepository slotRepository;
+    private final ModelMapper modelMapper;
 
     public Optional<Slot> getById(UUID id) {
         return slotRepository.findById(id);
     }
 
     /**
-     * Lock slot
+     * Change slot status from available to lock for user
+     *
      * @param slot slot
      * @param user user
-     * @throws AppException SLOT_NOT_AVAILABLE
      * @return slot
+     * @throws AppException SLOT_NOT_AVAILABLE
      */
-    public Slot lock(Slot slot, User user) {
-        // slot đã có người đặt
+    public Slot fromAvailableToLock(Slot slot, User user) {
+        // slot not available
         if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE", slot.getId());
+        // lock
         slot.setStatus(StatusSlotEnum.LOCK);
+        // lock for user
         slot.setUser(user);
         return slotRepository.save(slot);
     }
 
-    public Slot unlock(Slot slot) {
-        // slot không khóa
+    /**
+     * Change slot status from lock to available
+     *
+     * @param slot slot
+     * @return slot
+     * @throws AppException SLOT_NOT_LOCKED
+     */
+    public Slot fromLockToAvailable(Slot slot) {
+        // slot not locked
         if (slot.getStatus() != StatusSlotEnum.LOCK) throw new AppException("SLOT_NOT_LOCKED");
+        // remove user
         slot.setUser(null);
+        // change status to available
         slot.setStatus(StatusSlotEnum.AVAILABLE);
         return slotRepository.save(slot);
     }
 
-    public Slot success(Slot slot) {
+    /**
+     * Change slot status from lock to unavailable (booking success)
+     *
+     * @param slot slot
+     * @return slot
+     * @throws AppException SLOT_NOT_LOCKED
+     */
+    public Slot fromLockToUnavailable(Slot slot) {
+        if (slot.getStatus() != StatusSlotEnum.LOCK) throw new AppException("SLOT_NOT_LOCKED");
+        // change to unavailable
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
         return slotRepository.save(slot);
     }
 
-    public Slot save(Slot slot) {
-        return slotRepository.save(slot);
+    /**
+     * Get slot by current user in it
+     *
+     * @param user user
+     * @return slot
+     */
+    public Optional<Slot> getByUser(User user) {
+        return Optional.ofNullable(slotRepository.findByUser(user));
     }
 
-    public Slot getByUser(User user) {
-        return slotRepository.findByUser(user);
+    /**
+     * Get slot by current user in it
+     */
+    public SlotResponseJoinRoomAndDormAndPricing getCurrent() {
+        User user = SecurityUtils.getCurrentUser();
+        Slot slot = getByUser(user).orElseThrow();
+        return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricing.class);
     }
 
+    /**
+     * Create slots for rooms (by totalSlot)
+     *
+     * @param room room
+     * @return list slots
+     */
     public List<Slot> create(Room room) {
         List<Slot> slots = new ArrayList<>();
         for (int i = 1; i <= room.getTotalSlot(); i++) {
@@ -72,11 +119,65 @@ public class SlotService {
         return slotRepository.saveAll(slots);
     }
 
+    /**
+     * Delete all slots in room
+     *
+     * @param room room
+     */
     public void deleteByRoom(Room room) {
+        // TODO: check room contains users
         slotRepository.deleteAllByRoom(room);
     }
 
     public List<Slot> getByRoom(Room room) {
         return slotRepository.findByRoom(room);
+    }
+
+    public Slot removeUser(Slot slot) {
+        if (slot.getUser() == null) throw new AppException("SLOT_EMPTY");
+        slot.setUser(null);
+        slot.setStatus(StatusSlotEnum.AVAILABLE);
+        return slotRepository.save(slot);
+    }
+
+    public Slot setUser(Slot slot, User user) {
+        if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
+        if (slot.getUser() != null) throw new AppException("SLOT_NOT_AVAILABLE");
+        slot.setUser(user);
+        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
+        return slotRepository.save(slot);
+    }
+
+    public SlotResponseJoinRoomAndDormAndPricingAndUser getResponseById(UUID id) {
+        Slot slot = slotRepository.findById(id).orElseThrow();
+        return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);
+    }
+
+    /**
+     * Danh sách các slot đang chờ checkin
+     * @param userCode
+     * @param pageable
+     * @return
+     */
+    public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAllCheckin(String userCode, Pageable pageable) {
+        return new PagedModel<>(slotRepository.findAll(Specification.allOf((r, q, c) -> {
+            return c.equal(r.get("status"), StatusSlotEnum.CHECKIN);
+        }, userCode != null ? (r, q, c) -> {
+            return c.like(r.get("user").get("userCode"), "%" + userCode + "%");
+        } : Specification.unrestricted()), pageable).map(s -> modelMapper.map(s, SlotResponseJoinRoomAndDormAndPricingAndUser.class)));
+    }
+
+    /**
+     * [Guard] checkin slot cho sinh viên
+     *
+     * @param id id của slot
+     * @return slot
+     */
+    public SlotResponseJoinRoomAndDormAndPricingAndUser checkin(UUID id) {
+        Slot slot = slotRepository.findById(id).orElseThrow();
+        // chuyển trạng thái sang unavailable
+        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
+        slot = slotRepository.save(slot);
+        return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);
     }
 }

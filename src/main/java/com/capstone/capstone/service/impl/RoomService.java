@@ -6,11 +6,12 @@ import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
 import com.capstone.capstone.dto.response.booking.SlotResponse;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
-import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
-import com.capstone.capstone.repository.*;
-import com.capstone.capstone.util.AuthenUtil;
+import com.capstone.capstone.repository.MatchingRepository;
+import com.capstone.capstone.repository.RoomRepository;
+import com.capstone.capstone.repository.SlotRepository;
+import com.capstone.capstone.repository.SurveyQuestionRepository;
 import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SortUtil;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,8 @@ public class RoomService {
     private final MatchingRepository matchingRepository;
     private final SlotRepository slotRepository;
     private final SlotService slotService;
+    private final SlotHistoryService slotHistoryService;
+    private final SemesterService semesterService;
 
     @Transactional
     public List<RoomMatchingResponse> getMatching() {
@@ -118,7 +121,7 @@ public class RoomService {
                         floor != null ? (root, query, cb) -> cb.equal(root.get("floor"), floor) : Specification.unrestricted(),
                         totalSlot != null ? (root, query, cb) -> cb.equal(root.get("totalSlot"), totalSlot) : Specification.unrestricted(),
                         roomNumber != null ? (root, query, cb) -> cb.like(root.get("roomNumber"), "%" + roomNumber + "%") : Specification.unrestricted(),
-                        (r,q,c) -> r.in(rooms)
+                        (r, q, c) -> r.in(rooms)
                 ),
                 validPageable
         ).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
@@ -139,7 +142,7 @@ public class RoomService {
         final String roomNumber = room.getRoomNumber();
         final Dorm dorm = room.getDorm();
         // trong cùng 1 dorm, ko có 2 phòng cùng tên
-        if (roomRepository.exists((r,q,c) -> c.and(
+        if (roomRepository.exists((r, q, c) -> c.and(
                 c.equal(r.get("roomNumber"), roomNumber),
                 c.equal(r.get("dorm"), dorm)
         ))) throw new AppException("ROOM_NUMBER_EXISTED");
@@ -184,7 +187,7 @@ public class RoomService {
         final String roomNumber = room.getRoomNumber();
         final Dorm dorm = room.getDorm();
         final UUID roomId = room.getId();
-        if (roomRepository.exists((r,q,c) -> c.and(
+        if (roomRepository.exists((r, q, c) -> c.and(
                 c.equal(r.get("roomNumber"), roomNumber),
                 c.equal(r.get("dorm"), dorm),
                 c.notEqual(r.get("id"), roomId)
@@ -225,30 +228,94 @@ public class RoomService {
     }
 
     /**
-     * Lock slot
+     * Change slot status from available to lock (dont create slot history)
+     *
      * @param slot slot
      * @param user user
      * @throws AppException SLOT_NOT_AVAILABLE
      */
     public void lockSlot(Slot slot, User user) {
-        // đổi trạng thái slot
-        slot = slotService.lock(slot, user);
-        // đổi trạng thái room (nếu tất cả các slot đều unavailable)
+        // change slot status
+        slot = slotService.fromAvailableToLock(slot, user);
+        // change room status to full if all slot is not available
         checkFullAndUpdate(slot.getRoom());
     }
 
+    /**
+     * Change slot status from lock to available (dont create slot history)
+     *
+     * @param slot slot
+     * @throws AppException SLOT_NOT_AVAILABLE
+     */
     public void unlockSlot(Slot slot) {
-        slot = slotService.unlock(slot);
+        // unlock and change slot status to available
+        slot = slotService.fromLockToAvailable(slot);
+        // change room status to full if all slot is not available
         checkFullAndUpdate(slot.getRoom());
     }
 
+    /**
+     * Change slot status from lock to unavailable (booking success) and create slot history
+     *
+     * @param slot slot
+     * @throws AppException SLOT_NOT_AVAILABLE
+     */
     public Slot successSlot(Slot slot) {
-        slot = slotService.success(slot);
+        // change slot status from lock to unavailable
+        slot = slotService.fromLockToUnavailable(slot);
+        // change room status to full if all slot is not available
         checkFullAndUpdate(slot.getRoom());
+        // create history that user from null to slot for next semester
+        slotHistoryService.create(slot.getUser(), slot);
         return slot;
     }
 
     public Optional<Room> getByUser(User user) {
         return Optional.ofNullable(roomRepository.findByUser(user));
+    }
+
+    /**
+     * Get current semester slot of user
+     * @param user user
+     * @return current slot
+     */
+    public Optional<Slot> getSlotByUser(User user) {
+        return slotService.getByUser(user);
+    }
+
+    public Slot removeUserFromSlot(Slot slot) {
+        Slot updatedSlot = slotService.removeUser(slot);
+        Room room = slot.getRoom();
+        room.setStatus(StatusRoomEnum.AVAILABLE);
+        roomRepository.save(room);
+        return updatedSlot;
+    }
+
+    /**
+     * [Manager] checkout cho sinh vien
+     * @param slot
+     */
+    public void checkout(Slot slot) {
+        User user = slot.getUser();
+        Semester semester = semesterService.getCurrent().orElseThrow();
+        Slot updatedSlot = slotService.removeUser(slot);
+        checkFullAndUpdate(updatedSlot.getRoom());
+        slotHistoryService.updateCheckoutTime(user, updatedSlot, semester);
+    }
+
+    public Slot setUserToSlot(User user, Slot slot) {
+        slot = slotService.setUser(slot, user);
+        checkFullAndUpdate(slot.getRoom());
+        return slot;
+    }
+
+    public Slot changeSlot(User user, Slot slot) {
+        Semester currentSemester = semesterService.getCurrent().orElseThrow();
+        if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
+        Slot slotFrom = getSlotByUser(user).orElseThrow();
+        slotFrom = removeUserFromSlot(slot);
+        slot = setUserToSlot(user, slot);
+        slotHistoryService.create(user, currentSemester, slotFrom, slot);
+        return slot;
     }
 }
