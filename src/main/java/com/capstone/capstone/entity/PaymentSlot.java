@@ -6,6 +6,9 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+/**
+ * Thông thanh toán cho đặt phòng
+ */
 @Entity
 @Getter
 @Setter

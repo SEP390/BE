@@ -1,11 +1,14 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.response.ew.EWRoomResponse;
 import com.capstone.capstone.entity.EWRoom;
 import com.capstone.capstone.repository.EWRoomRepository;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -13,6 +16,13 @@ import java.util.Optional;
 @AllArgsConstructor
 public class EWRoomService {
     private final EWRoomRepository ewRoomRepository;
+    private final ModelMapper modelMapper;
+
+    @Transactional
+    public EWRoomResponse getLatestResponse() {
+        var res = getLatest().orElseThrow();
+        return modelMapper.map(res, EWRoomResponse.class);
+    }
 
     public Optional<EWRoom> getLatest() {
         var page = ewRoomRepository.findAll(PageRequest.of(0, 1, Sort.Direction.DESC, "createTime"));
