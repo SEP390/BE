@@ -22,6 +22,7 @@ public class SurveyOption extends BaseEntity {
     @JoinColumn(name = "survey_question_id")
     @JsonIgnore
     private SurveyQuestion  surveyQuestion;
+
     private String optionContent;
 
     @OneToMany(mappedBy = "surveyOption")

@@ -2,9 +2,11 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.schedule.CreateScheduleRequest;
+import com.capstone.capstone.dto.request.schedule.UpdateScheduleRequest;
 import com.capstone.capstone.dto.response.PageResponse;
 import com.capstone.capstone.dto.response.schedule.CreateScheduleResponse;
 import com.capstone.capstone.dto.response.schedule.GetScheduleResponse;
+import com.capstone.capstone.dto.response.schedule.UpdateScheduleResponse;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.service.interfaces.IScheduleService;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -165,5 +168,31 @@ public class ScheduleService implements IScheduleService {
             return resp;
         }).collect(Collectors.toList()));
         return response;
+    }
+
+    @Override
+    public UpdateScheduleResponse updateSchedule(UpdateScheduleRequest request, UUID scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new RuntimeException("Schedule not found"));
+        Dorm newDorm = dormRepository.findById(request.getDormID()).orElseThrow(() -> new RuntimeException("Dorm not found"));
+        Shift shift = shiftRepository.findById(request.getShiftId()).orElseThrow(() -> new RuntimeException("Shift not found"));
+        schedule.setDorm(newDorm);
+        schedule.setNote(request.getNote());
+        schedule.setShift(shift);
+        schedule.setUpdatedAt(LocalDateTime.now());
+        scheduleRepository.save(schedule);
+        UpdateScheduleResponse r = new UpdateScheduleResponse();
+        r.setId(schedule.getId());
+        r.setEmployeeId(schedule.getEmployee().getId());
+        r.setEmployeeName(schedule.getEmployee().getUser().getFullName());
+        r.setShiftId(schedule.getShift().getId());
+        r.setShiftName(schedule.getShift().getName());
+        r.setDormId(schedule.getDorm().getId());
+        r.setDormName(schedule.getDorm().getDormName());
+        r.setSemesterId(schedule.getSemester().getId());
+        r.setSemesterName(schedule.getSemester().getName());
+        r.setWorkDate(schedule.getWorkDate());
+        r.setCreatedAt(schedule.getCreatedAt());
+        r.setUpdatedAt(schedule.getUpdatedAt());
+        return r;
     }
 }

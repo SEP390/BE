@@ -96,4 +96,18 @@ public class SurveyQuestionService implements ISurveyQuestionService {
         response.setQuestionContent(surveyQuestion.getQuestionContent());
         return response;
     }
+
+
+    @Override
+    public CreateSurveyOptionResponse createSurveyOptionForQuestion(CreateSurveyOptionRequest request, UUID questionId) {
+        SurveyQuestion question =  surveyQuestionRepository.findById(questionId).orElseThrow(()-> new NotFoundException("Question not found"));
+        SurveyOption surveyOption = new SurveyOption();
+        surveyOption.setSurveyQuestion(question);
+        surveyOption.setOptionContent(request.getOptionName());
+        surveyOptionRepository.save(surveyOption);
+        CreateSurveyOptionResponse response = new CreateSurveyOptionResponse();
+        response.setSurveyOption(surveyOption.getOptionContent());
+        return response;
+    }
+
 }

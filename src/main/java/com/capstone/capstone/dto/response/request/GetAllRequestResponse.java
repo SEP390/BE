@@ -2,7 +2,6 @@ package com.capstone.capstone.dto.response.request;
 
 import com.capstone.capstone.dto.enums.RequestStatusEnum;
 import com.capstone.capstone.dto.enums.RequestTypeEnum;
-import com.capstone.capstone.entity.Semester;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,11 +16,13 @@ import java.util.UUID;
 @Setter
 public class GetAllRequestResponse {
     private UUID requestId;
-    private UUID userId;
-    private String userName;
+    private UUID residentId;
+    private String residentName;
     private LocalDateTime createTime;
     private RequestStatusEnum responseStatus;
     private RequestTypeEnum requestType;
     private String semesterName;
     private String roomName;
+    private String responseByEmployee;
+    private String responseByManager;
 }

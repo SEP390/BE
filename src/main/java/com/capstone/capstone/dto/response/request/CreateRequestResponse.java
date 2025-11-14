@@ -15,6 +15,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class CreateRequestResponse {
+    private UUID requestId;
     private RequestTypeEnum requestType;
     private String content;
     private String userName;
@@ -24,5 +25,4 @@ public class CreateRequestResponse {
     private String responseMessage;
     private UUID semesterId;
     private UUID useId;
-    private UUID requestId;
 }

@@ -16,6 +16,7 @@ public class ApiConstant {
     public static class SURVEY {
         public static final String SURVEY = API + "/surveys";
         public static final String GET_BY_ID = "/{id}";
+        public static final String CREATE_OPTIONS = "/{id}/options";
     }
 
     public static class SURVEY_OPTIONS {
