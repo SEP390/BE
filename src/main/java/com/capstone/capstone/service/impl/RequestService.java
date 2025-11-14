@@ -120,7 +120,6 @@ public class RequestService implements IRequestService {
     public List<GetAllRequestResponse> getAllRequest() {
         UUID userid = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userid).orElseThrow(() -> new NotFoundException("User not found"));
-        Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
         List<Request> requests;
         RoleEnum role = user.getRole();
         if (role == RoleEnum.MANAGER || role == RoleEnum.ADMIN) {
@@ -130,6 +129,7 @@ public class RequestService implements IRequestService {
         } else if (role == RoleEnum.RESIDENT){
             requests = requestRepository.findRequestByUser(user);
         }else if(role == RoleEnum.GUARD || role == RoleEnum.CLEANER){
+            Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
             requests = requestRepository.findAllDormRequestsICanViewOnDay(employee.getId(), LocalDate.now());
         }else {
             throw new AccessDeniedException("Access denied");
