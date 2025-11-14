@@ -23,7 +23,8 @@ public class GetRequestByIdResponse {
     private LocalDateTime executeTime;
     private RequestStatusEnum responseStatus;
     private RequestTypeEnum requestType;
-    private String ResponseMessage;
+    private String ResponseMessageByEmployee;
+    private String ResponseMessageByManager;
     private String semesterName;
     private String roomName;
     private RequestStatusEnum status;

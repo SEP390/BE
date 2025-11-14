@@ -20,5 +20,6 @@ public class UpdateRequestResponse {
     private UUID useId;
     private RequestStatusEnum requestStatus;
     private LocalDateTime executeTime;
-    private String responseMessage;
+    private String responseMessageByEmployee;
+    private String responseMessageByManager;
 }

@@ -1,8 +1,10 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.constant.ApiConstant;
+import com.capstone.capstone.dto.request.surveyOption.CreateSurveyOptionRequest;
 import com.capstone.capstone.dto.request.surveyOption.UpdateOptionRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
+import com.capstone.capstone.dto.response.surveyOption.CreateSurveyOptionResponse;
 import com.capstone.capstone.dto.response.surveyOption.UpdateOptionResponse;
 import com.capstone.capstone.service.interfaces.ISurveyOptionService;
 import lombok.RequiredArgsConstructor;

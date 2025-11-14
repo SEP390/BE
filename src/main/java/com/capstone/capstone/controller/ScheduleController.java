@@ -1,11 +1,14 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.constant.ApiConstant;
+import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.schedule.CreateScheduleRequest;
+import com.capstone.capstone.dto.request.schedule.UpdateScheduleRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.PageResponse;
 import com.capstone.capstone.dto.response.schedule.CreateScheduleResponse;
 import com.capstone.capstone.dto.response.schedule.GetScheduleResponse;
+import com.capstone.capstone.dto.response.schedule.UpdateScheduleResponse;
 import com.capstone.capstone.entity.BaseEntity;
 import com.capstone.capstone.service.impl.ScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +17,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.service.annotation.PutExchange;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,6 +49,16 @@ public class ScheduleController {
         response.setData(schedules);
         response.setStatus(HttpStatus.OK.value());
         response.setMessage("Schedules found");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    @PutExchange(ApiConstant.SCHEDULE.GET_BY_ID)
+    public ResponseEntity<BaseResponse<UpdateScheduleResponse>> updateSchedule(@RequestBody UpdateScheduleRequest updateScheduleRequest, @PathVariable UUID id) {
+        BaseResponse<UpdateScheduleResponse> response = new BaseResponse<>();
+        UpdateScheduleResponse r = scheduleService.updateSchedule(updateScheduleRequest, id);
+        response.setData(r);
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Schedule updated");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

@@ -15,5 +15,4 @@ import java.time.LocalDateTime;
 public class UpdateRequestRequest {
     private RequestStatusEnum requestStatus;
     private String responseMessage;
-    private LocalDateTime executeTime;
 }
