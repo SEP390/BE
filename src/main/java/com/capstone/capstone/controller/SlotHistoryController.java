@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SlotHistoryController {
     private final SlotHistoryService slotHistoryService;
 
-    @GetMapping("/api/user/slot-history")
+    @GetMapping("/api/slots/history")
     public BaseResponse<PagedModel<SlotHistoryResponse>> getByCurrentUser(@PageableDefault Pageable pageable) {
         return new BaseResponse<>(slotHistoryService.getByCurrentUser(pageable));
     }

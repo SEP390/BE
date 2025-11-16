@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -22,6 +23,7 @@ public class InvoiceService {
         invoice.setPrice(price);
         invoice.setType(type);
         invoice.setReason(reason);
+        invoice.setStatus(PaymentStatus.PENDING);
         invoice.setCreateTime(LocalDateTime.now());
         return invoiceRepository.save(invoice);
     }

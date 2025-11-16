@@ -100,9 +100,11 @@ public class SlotService {
      * @param pageable page, size
      * @return
      */
-    public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAll(String userCode, Pageable pageable) {
+    public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAll(String userCode, StatusSlotEnum status, Pageable pageable) {
         return new PagedModel<>(slotRepository.findAll(Specification.allOf(userCode != null ? (r, q, c) -> {
             return c.like(r.get("user").get("userCode"), "%" + userCode + "%");
+        } : Specification.unrestricted(), status != null ? (r,q,c) -> {
+            return c.equal(r.get("status"), status);
         } : Specification.unrestricted()), pageable).map(s -> modelMapper.map(s, SlotResponseJoinRoomAndDormAndPricingAndUser.class)));
     }
 
@@ -149,7 +151,7 @@ public class SlotService {
     }
 
     public void book(Slot slot, Semester semester) {
-        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
+        slot.setStatus(StatusSlotEnum.CHECKIN);
         SlotHistory slotHistory = new SlotHistory();
         slotRepository.save(slot);
         slotHistory.setSlotId(slot.getId());
@@ -170,7 +172,7 @@ public class SlotService {
         slot = slotRepository.save(slot);
         var his = slotHistoryRepository.getLatest(user, slot.getId()).orElse(null);
         if (his != null) {
-            his.setCheckin(LocalDateTime.now());
+            his.setCheckout(LocalDateTime.now());
             his = slotHistoryRepository.save(his);
         }
         return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);

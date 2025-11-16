@@ -1,5 +1,6 @@
 package com.capstone.capstone.controller;
 
+import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
@@ -35,8 +36,9 @@ public class SlotController {
     @GetMapping("/api/slots")
     public BaseResponse<PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser>> getAll(
             @RequestParam(required = false) String userCode,
+            @RequestParam(required = false) StatusSlotEnum status,
             @PageableDefault Pageable pageable) {
-        return new BaseResponse<>(slotService.getAll(userCode, pageable));
+        return new BaseResponse<>(slotService.getAll(userCode, status, pageable));
     }
 
     /**
