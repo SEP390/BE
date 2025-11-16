@@ -15,7 +15,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -194,5 +193,36 @@ public class ScheduleService implements IScheduleService {
         r.setCreatedAt(schedule.getCreatedAt());
         r.setUpdatedAt(schedule.getUpdatedAt());
         return r;
+    }
+
+    @Override
+    public List<GetScheduleResponse> getAllScheduleByDate(LocalDate from, LocalDate to) {
+        UUID currentUserId = AuthenUtil.getCurrentUserId();
+        User user = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+        List<Schedule> schedules = new ArrayList<>();
+        if (user.getRole().equals(RoleEnum.MANAGER)) {
+            schedules = scheduleRepository.findAllByWorkDateBetween(from, to);
+        } else if(user.getRole().equals(RoleEnum.GUARD) || user.getRole().equals(RoleEnum.CLEANER)) {
+            Employee emp = employeeRepository.findEmployeeByUser(user).orElseThrow(() -> new RuntimeException("Employee not found"));
+            schedules = scheduleRepository.findAllByEmployee_IdAndWorkDateBetween(emp.getId(), from, to);
+        }
+        List<GetScheduleResponse> response = new ArrayList<>();
+        for(Schedule s : schedules) {
+            GetScheduleResponse resp = new GetScheduleResponse();
+            resp.setScheduleId(s.getId());
+            resp.setEmployeeId(s.getEmployee().getId());
+            resp.setEmployeeName(s.getEmployee().getUser().getFullName());
+            resp.setShiftId(s.getShift().getId());
+            resp.setShiftName(s.getShift().getName());
+            resp.setSemesterId(s.getSemester().getId());
+            resp.setSemesterName(s.getSemester().getName());
+            resp.setDormId(s.getDorm().getId());
+            resp.setDormName(s.getDorm().getDormName());
+            resp.setCreatedAt(s.getCreatedAt());
+            resp.setUpdatedAt(s.getUpdatedAt());
+            resp.setNote(s.getNote());
+            response.add(resp);
+        }
+        return response;
     }
 }
