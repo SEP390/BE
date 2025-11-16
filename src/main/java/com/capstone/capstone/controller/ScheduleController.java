@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.service.annotation.PutExchange;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,24 +42,34 @@ public class ScheduleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping
-    public ResponseEntity<BaseResponse<PageResponse<GetScheduleResponse>>> GetAllSchedules(@RequestParam int page, @RequestParam int size) {
-        Pageable pageable = Pageable.ofSize(size).withPage(page - 1);
-        BaseResponse<PageResponse<GetScheduleResponse>> response = new BaseResponse<>();
-        PageResponse<GetScheduleResponse> schedules = scheduleService.getAllSchedules(pageable);
-        response.setData(schedules);
-        response.setStatus(HttpStatus.OK.value());
-        response.setMessage("Schedules found");
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+//    @GetMapping
+//    public ResponseEntity<BaseResponse<PageResponse<GetScheduleResponse>>> GetAllSchedules(@RequestParam int page, @RequestParam int size) {
+//        Pageable pageable = Pageable.ofSize(size).withPage(page - 1);
+//        BaseResponse<PageResponse<GetScheduleResponse>> response = new BaseResponse<>();
+//        PageResponse<GetScheduleResponse> schedules = scheduleService.getAllSchedules(pageable);
+//        response.setData(schedules);
+//        response.setStatus(HttpStatus.OK.value());
+//        response.setMessage("Schedules found");
+//        return ResponseEntity.status(HttpStatus.OK).body(response);
+//    }
     
-    @PutExchange(ApiConstant.SCHEDULE.GET_BY_ID)
+    @PutMapping(ApiConstant.SCHEDULE.GET_BY_ID)
     public ResponseEntity<BaseResponse<UpdateScheduleResponse>> updateSchedule(@RequestBody UpdateScheduleRequest updateScheduleRequest, @PathVariable UUID id) {
         BaseResponse<UpdateScheduleResponse> response = new BaseResponse<>();
         UpdateScheduleResponse r = scheduleService.updateSchedule(updateScheduleRequest, id);
         response.setData(r);
         response.setStatus(HttpStatus.OK.value());
         response.setMessage("Schedule updated");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<BaseResponse<List<GetScheduleResponse>>> getAllScheduleByDate(@RequestParam LocalDate from, @RequestParam LocalDate to) {
+        BaseResponse<List<GetScheduleResponse>> response = new BaseResponse<>();
+        List<GetScheduleResponse> schedules = scheduleService.getAllScheduleByDate(from, to);
+        response.setData(schedules);
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Schedules found");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
