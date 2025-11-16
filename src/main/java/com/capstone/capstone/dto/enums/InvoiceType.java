@@ -1,5 +1,5 @@
 package com.capstone.capstone.dto.enums;
 
-public enum PaymentType {
+public enum InvoiceType {
     BOOKING, ELECTRIC_WATER, OTHER
 }

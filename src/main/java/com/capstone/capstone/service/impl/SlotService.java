@@ -1,12 +1,13 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
-import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricing;
-import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricingAndUser;
-import com.capstone.capstone.entity.Room;
-import com.capstone.capstone.entity.Slot;
-import com.capstone.capstone.entity.User;
-import com.capstone.capstone.exception.AppException;
+import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
+import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
+import com.capstone.capstone.entity.*;
+import com.capstone.capstone.repository.RoomRepository;
+import com.capstone.capstone.repository.SlotHistoryRepository;
+import com.capstone.capstone.repository.SlotInvoiceRepository;
 import com.capstone.capstone.repository.SlotRepository;
 import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,58 +29,12 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SlotService {
     private final SlotRepository slotRepository;
+    private final RoomRepository roomRepository;
     private final ModelMapper modelMapper;
+    private final SlotHistoryRepository slotHistoryRepository;
+    private final SlotInvoiceRepository slotInvoiceRepository;
 
-    public Optional<Slot> getById(UUID id) {
-        return slotRepository.findById(id);
-    }
-
-    /**
-     * Change slot status from available to lock for user
-     *
-     * @param slot slot
-     * @param user user
-     * @return slot
-     * @throws AppException SLOT_NOT_AVAILABLE
-     */
-    public Slot fromAvailableToLock(Slot slot, User user) {
-        // slot not available
-        if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE", slot.getId());
-        // lock
-        slot.setStatus(StatusSlotEnum.LOCK);
-        // lock for user
-        slot.setUser(user);
-        return slotRepository.save(slot);
-    }
-
-    /**
-     * Change slot status from lock to available
-     *
-     * @param slot slot
-     * @return slot
-     * @throws AppException SLOT_NOT_LOCKED
-     */
-    public Slot fromLockToAvailable(Slot slot) {
-        // slot not locked
-        if (slot.getStatus() != StatusSlotEnum.LOCK) throw new AppException("SLOT_NOT_LOCKED");
-        // remove user
-        slot.setUser(null);
-        // change status to available
-        slot.setStatus(StatusSlotEnum.AVAILABLE);
-        return slotRepository.save(slot);
-    }
-
-    /**
-     * Change slot status from lock to unavailable (booking success)
-     *
-     * @param slot slot
-     * @return slot
-     * @throws AppException SLOT_NOT_LOCKED
-     */
-    public Slot fromLockToUnavailable(Slot slot) {
-        if (slot.getStatus() != StatusSlotEnum.LOCK) throw new AppException("SLOT_NOT_LOCKED");
-        // change to unavailable
-        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
+    public Slot save(Slot slot) {
         return slotRepository.save(slot);
     }
 
@@ -133,21 +89,6 @@ public class SlotService {
         return slotRepository.findByRoom(room);
     }
 
-    public Slot removeUser(Slot slot) {
-        if (slot.getUser() == null) throw new AppException("SLOT_EMPTY");
-        slot.setUser(null);
-        slot.setStatus(StatusSlotEnum.AVAILABLE);
-        return slotRepository.save(slot);
-    }
-
-    public Slot setUser(Slot slot, User user) {
-        if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
-        if (slot.getUser() != null) throw new AppException("SLOT_NOT_AVAILABLE");
-        slot.setUser(user);
-        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
-        return slotRepository.save(slot);
-    }
-
     public SlotResponseJoinRoomAndDormAndPricingAndUser getResponseById(UUID id) {
         Slot slot = slotRepository.findById(id).orElseThrow();
         return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);
@@ -155,14 +96,12 @@ public class SlotService {
 
     /**
      * Danh sách các slot đang chờ checkin
-     * @param userCode
-     * @param pageable
+     * @param userCode mã sinh viên
+     * @param pageable page, size
      * @return
      */
-    public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAllCheckin(String userCode, Pageable pageable) {
-        return new PagedModel<>(slotRepository.findAll(Specification.allOf((r, q, c) -> {
-            return c.equal(r.get("status"), StatusSlotEnum.CHECKIN);
-        }, userCode != null ? (r, q, c) -> {
+    public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAll(String userCode, Pageable pageable) {
+        return new PagedModel<>(slotRepository.findAll(Specification.allOf(userCode != null ? (r, q, c) -> {
             return c.like(r.get("user").get("userCode"), "%" + userCode + "%");
         } : Specification.unrestricted()), pageable).map(s -> modelMapper.map(s, SlotResponseJoinRoomAndDormAndPricingAndUser.class)));
     }
@@ -175,9 +114,65 @@ public class SlotService {
      */
     public SlotResponseJoinRoomAndDormAndPricingAndUser checkin(UUID id) {
         Slot slot = slotRepository.findById(id).orElseThrow();
+        User user = Optional.ofNullable(slot.getUser()).orElseThrow();
         // chuyển trạng thái sang unavailable
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
         slot = slotRepository.save(slot);
+        var his = slotHistoryRepository.getLatest(user, slot.getId()).orElse(null);
+        if (his != null) {
+            his.setCheckin(LocalDateTime.now());
+            his = slotHistoryRepository.save(his);
+        }
+        return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);
+    }
+
+    public void lock(Slot slot, User user) {
+        slot.setStatus(StatusSlotEnum.LOCK);
+        slot.setUser(user);
+        slot = slotRepository.save(slot);
+        if (roomRepository.isFull(slot.getRoom())) {
+            Room room = slot.getRoom();
+            room.setStatus(StatusRoomEnum.FULL);
+            roomRepository.save(room);
+        }
+    }
+
+    public void unlock(Slot slot) {
+        slot.setStatus(StatusSlotEnum.AVAILABLE);
+        slot.setUser(null);
+        slot = slotRepository.save(slot);
+        if (!roomRepository.isFull(slot.getRoom())) {
+            Room room = slot.getRoom();
+            room.setStatus(StatusRoomEnum.AVAILABLE);
+            roomRepository.save(room);
+        }
+    }
+
+    public void book(Slot slot, Semester semester) {
+        slot.setStatus(StatusSlotEnum.UNAVAILABLE);
+        SlotHistory slotHistory = new SlotHistory();
+        slotRepository.save(slot);
+        slotHistory.setSlotId(slot.getId());
+        slotHistory.setSlotName(slot.getSlotName());
+        slotHistory.setRoom(slot.getRoom());
+        slotHistory.setUser(slot.getUser());
+        slotHistory.setSemester(semester);
+        slotHistoryRepository.save(slotHistory);
+    }
+
+    public SlotResponseJoinRoomAndDormAndPricingAndUser checkout(UUID id) {
+        Slot slot = slotRepository.findById(id).orElseThrow();
+        User user = Optional.ofNullable(slot.getUser()).orElseThrow();
+        // chuyển trạng thái sang available
+        slot.setStatus(StatusSlotEnum.AVAILABLE);
+        // xóa user
+        slot.setUser(null);
+        slot = slotRepository.save(slot);
+        var his = slotHistoryRepository.getLatest(user, slot.getId()).orElse(null);
+        if (his != null) {
+            his.setCheckin(LocalDateTime.now());
+            his = slotHistoryRepository.save(his);
+        }
         return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);
     }
 }

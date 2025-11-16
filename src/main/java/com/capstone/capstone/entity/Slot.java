@@ -24,7 +24,7 @@ public class Slot extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
     @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
+    @JoinColumn(name = "room_id")
     @JsonIgnore
     private Room room;
 }

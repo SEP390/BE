@@ -3,7 +3,7 @@ package com.capstone.capstone.service.impl;
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
-import com.capstone.capstone.dto.response.booking.SlotResponse;
+import com.capstone.capstone.dto.response.slot.SlotResponse;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
 import com.capstone.capstone.entity.*;
@@ -58,7 +58,7 @@ public class RoomService {
 
     @Transactional
     public RoomResponseJoinPricingAndDormAndSlot getResponseById(UUID id) {
-        Room room = getById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
+        Room room = roomRepository.findById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
         return modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class);
     }
 
@@ -79,13 +79,8 @@ public class RoomService {
                 .peek(rm -> rm.setMatching(matching.getOrDefault(rm.getId(), 0.0))).toList();
     }
 
-    public boolean isFull(Room room) {
-        List<Slot> slots = slotRepository.findAll((r, q, c) -> c.equal(r.get("room"), room));
-        return slots.stream().allMatch(slot -> slot.getStatus() == StatusSlotEnum.UNAVAILABLE);
-    }
-
     public void checkFullAndUpdate(Room room) {
-        if (isFull(room)) {
+        if (roomRepository.isFull(room)) {
             room.setStatus(StatusRoomEnum.FULL);
         } else {
             room.setStatus(StatusRoomEnum.AVAILABLE);
@@ -227,95 +222,4 @@ public class RoomService {
         return roomRepository.findAll((r, q, c) -> c.equal(r.get("dorm"), dorm));
     }
 
-    /**
-     * Change slot status from available to lock (dont create slot history)
-     *
-     * @param slot slot
-     * @param user user
-     * @throws AppException SLOT_NOT_AVAILABLE
-     */
-    public void lockSlot(Slot slot, User user) {
-        // change slot status
-        slot = slotService.fromAvailableToLock(slot, user);
-        // change room status to full if all slot is not available
-        checkFullAndUpdate(slot.getRoom());
-    }
-
-    /**
-     * Change slot status from lock to available (dont create slot history)
-     *
-     * @param slot slot
-     * @throws AppException SLOT_NOT_AVAILABLE
-     */
-    public void unlockSlot(Slot slot) {
-        // unlock and change slot status to available
-        slot = slotService.fromLockToAvailable(slot);
-        // change room status to full if all slot is not available
-        checkFullAndUpdate(slot.getRoom());
-    }
-
-    /**
-     * Change slot status from lock to unavailable (booking success) and create slot history
-     *
-     * @param slot slot
-     * @throws AppException SLOT_NOT_AVAILABLE
-     */
-    public Slot successSlot(Slot slot) {
-        // change slot status from lock to unavailable
-        slot = slotService.fromLockToUnavailable(slot);
-        // change room status to full if all slot is not available
-        checkFullAndUpdate(slot.getRoom());
-        // create history that user from null to slot for next semester
-        slotHistoryService.create(slot.getUser(), slot);
-        return slot;
-    }
-
-    public Optional<Room> getByUser(User user) {
-        return Optional.ofNullable(roomRepository.findByUser(user));
-    }
-
-    /**
-     * Get current semester slot of user
-     * @param user user
-     * @return current slot
-     */
-    public Optional<Slot> getSlotByUser(User user) {
-        return slotService.getByUser(user);
-    }
-
-    public Slot removeUserFromSlot(Slot slot) {
-        Slot updatedSlot = slotService.removeUser(slot);
-        Room room = slot.getRoom();
-        room.setStatus(StatusRoomEnum.AVAILABLE);
-        roomRepository.save(room);
-        return updatedSlot;
-    }
-
-    /**
-     * [Manager] checkout cho sinh vien
-     * @param slot
-     */
-    public void checkout(Slot slot) {
-        User user = slot.getUser();
-        Semester semester = semesterService.getCurrent().orElseThrow();
-        Slot updatedSlot = slotService.removeUser(slot);
-        checkFullAndUpdate(updatedSlot.getRoom());
-        slotHistoryService.updateCheckoutTime(user, updatedSlot, semester);
-    }
-
-    public Slot setUserToSlot(User user, Slot slot) {
-        slot = slotService.setUser(slot, user);
-        checkFullAndUpdate(slot.getRoom());
-        return slot;
-    }
-
-    public Slot changeSlot(User user, Slot slot) {
-        Semester currentSemester = semesterService.getCurrent().orElseThrow();
-        if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
-        Slot slotFrom = getSlotByUser(user).orElseThrow();
-        slotFrom = removeUserFromSlot(slot);
-        slot = setUserToSlot(user, slot);
-        slotHistoryService.create(user, currentSemester, slotFrom, slot);
-        return slot;
-    }
 }

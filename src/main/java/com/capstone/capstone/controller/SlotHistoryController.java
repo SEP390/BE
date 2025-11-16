@@ -1,7 +1,7 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.booking.SlotHistoryResponse;
+import com.capstone.capstone.dto.slotHistory.SlotHistoryResponse;
 import com.capstone.capstone.service.impl.SlotHistoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;

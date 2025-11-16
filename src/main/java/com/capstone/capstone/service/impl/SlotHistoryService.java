@@ -1,6 +1,6 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.response.booking.SlotHistoryResponse;
+import com.capstone.capstone.dto.slotHistory.SlotHistoryResponse;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.RoomRepository;
@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;

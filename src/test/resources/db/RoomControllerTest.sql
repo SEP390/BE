@@ -41,6 +41,6 @@ VALUES (@dorm_id, 'Dorm Test', null, 1, 1);
 INSERT INTO room(id, floor, room_number, status, total_slot, dorm_id, pricing_id)
 VALUES (@room_id, 1, 'Room Test', 'AVAILABLE', 3, @dorm_id, @room_pricing_id);
 INSERT INTO slot(id, slot_name, status, room_id, user_id)
-VALUES (@slot_id, 'Slot Test', 'AVAILABLE', @room_id, @user2_id),
-       (@slot2_id, 'Slot Test', 'AVAILABLE', @room_id, @user3_id),
+VALUES (@slot_id, 'Slot Test', 'UNAVAILABLE', @room_id, @user2_id),
+       (@slot2_id, 'Slot Test', 'UNAVAILABLE', @room_id, @user3_id),
        (@slot3_id, 'Slot Test', 'AVAILABLE', @room_id, null);

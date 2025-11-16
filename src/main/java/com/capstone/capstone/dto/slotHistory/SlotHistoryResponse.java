@@ -1,4 +1,4 @@
-package com.capstone.capstone.dto.response.booking;
+package com.capstone.capstone.dto.slotHistory;
 
 import com.capstone.capstone.dto.response.semester.SemesterResponse;
 import lombok.Data;

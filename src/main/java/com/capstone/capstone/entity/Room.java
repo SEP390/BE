@@ -3,10 +3,7 @@ package com.capstone.capstone.entity;
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -15,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Room extends BaseEntity {
     private String roomNumber;
     private Integer totalSlot;

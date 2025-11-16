@@ -1,8 +1,8 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricing;
-import com.capstone.capstone.dto.response.booking.SlotResponseJoinRoomAndDormAndPricingAndUser;
+import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
+import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
 import com.capstone.capstone.service.impl.SlotService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -28,16 +28,15 @@ public class SlotController {
     }
 
     /**
-     * [Guard] xem danh sách chờ checkin
      * @param userCode lọc theo mã sinh viên
      * @param pageable phân trang/sort
      * @return danh sách các slot chờ checkin
      */
-    @GetMapping("/api/slots/checkin")
-    public BaseResponse<PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser>> getAllCheckin(
+    @GetMapping("/api/slots")
+    public BaseResponse<PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser>> getAll(
             @RequestParam(required = false) String userCode,
             @PageableDefault Pageable pageable) {
-        return new BaseResponse<>(slotService.getAllCheckin(userCode, pageable));
+        return new BaseResponse<>(slotService.getAll(userCode, pageable));
     }
 
     /**
@@ -47,5 +46,14 @@ public class SlotController {
     @PostMapping("/api/slots/checkin/{id}")
     public BaseResponse<SlotResponseJoinRoomAndDormAndPricingAndUser> checkin(@PathVariable UUID id) {
         return new BaseResponse<>(slotService.checkin(id));
+    }
+
+    /**
+     * [Guard] checkin cho slot
+     * @param id id của slot
+     */
+    @PostMapping("/api/slots/checkout/{id}")
+    public BaseResponse<SlotResponseJoinRoomAndDormAndPricingAndUser> checkout(@PathVariable UUID id) {
+        return new BaseResponse<>(slotService.checkout(id));
     }
 }

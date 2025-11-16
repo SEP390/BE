@@ -7,25 +7,29 @@ import lombok.Setter;
 import java.util.UUID;
 
 /**
- * Thông thanh toán cho đặt phòng
+ * Thông tin hóa đơn đặt phòng
  */
 @Entity
 @Getter
 @Setter
-public class PaymentSlot extends BaseEntity {
-    @ManyToOne(optional = false)
+public class SlotInvoice extends BaseEntity {
+    @ManyToOne
     @JoinColumn(name = "semester_id")
     private Semester semester;
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @OneToOne(optional = false)
-    @JoinColumn(name = "payment_id")
-    private Payment payment;
+
+    @OneToOne
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
+
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
     // clone slot information, nullable (for slot delete in room update)
     private UUID slotId;
     private String slotName;
-    private String roomNumber;
-    private String dormName;
+
     private Long price;
 }

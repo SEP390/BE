@@ -1,16 +1,18 @@
 package com.capstone.capstone.controller;
 
-import com.capstone.capstone.repository.SemesterRepository;
+import com.capstone.capstone.entity.Slot;
+import com.capstone.capstone.repository.SlotRepository;
 import com.google.gson.Gson;
 import com.jayway.jsonpath.JsonPath;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,12 +22,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
+@Slf4j
 @SpringBootTest
-@AutoConfigureMockMvc
 @ActiveProfiles("test")
+@AutoConfigureMockMvc
 @Transactional
+@Sql(scripts = "classpath:db/BookingControllerTest.sql")
 public class BookingControllerTest {
+
     @Autowired
     MockMvc mockMvc;
     Gson gson = new Gson();
@@ -46,5 +50,17 @@ public class BookingControllerTest {
                 .andDo(result -> {
                     token = JsonPath.read(result.getResponse().getContentAsString(), "$.data.token");
                 });
+    }
+
+    @Test
+    void createBooking(@Autowired SlotRepository slotRepository) throws Exception {
+        Slot slot = slotRepository.findAll((r, q, c) -> {
+            return c.isNull(r.get("user"));
+        }).getFirst();
+        mockMvc.perform(post("/api/booking")
+                        .header("Authorization", "Bearer " + token)
+                        .param("slotId", slot.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty());
     }
 }
