@@ -2,7 +2,6 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.InvoiceType;
 import com.capstone.capstone.dto.enums.PaymentStatus;
-import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayResult;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
@@ -91,12 +90,10 @@ class PaymentServiceTest {
         VNPayResult result = new VNPayResult();
         result.setId(invoice.getId());
         result.setStatus(VNPayStatus.SUCCESS);
-        InvoiceResponse response = paymentService.handle(result);
+        Invoice invoice = paymentService.handle(result);
 
-        log.info("{}", response);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getType()).isEqualTo(InvoiceType.BOOKING);
-        assertThat(response.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
+        assertThat(invoice).isNotNull();
+        assertThat(invoice.getType()).isEqualTo(InvoiceType.BOOKING);
+        assertThat(invoice.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
     }
 }

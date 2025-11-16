@@ -20,6 +20,7 @@ public class EWUsage extends BaseEntity {
 
     private Integer electric;
     private Integer water;
+    private Boolean paid;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;

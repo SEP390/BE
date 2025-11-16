@@ -1,16 +1,24 @@
 package com.capstone.capstone;
 
-import com.capstone.capstone.entity.Dorm;
-import com.capstone.capstone.entity.Room;
+import com.capstone.capstone.dto.enums.GenderEnum;
+import com.capstone.capstone.dto.enums.RoleEnum;
+import com.capstone.capstone.entity.*;
+import com.capstone.capstone.repository.SurveyOptionRepository;
+import com.capstone.capstone.repository.SurveyQuestionRepository;
+import com.capstone.capstone.repository.SurveySelectRepository;
+import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.impl.DormService;
 import com.capstone.capstone.service.impl.RoomPricingService;
 import com.capstone.capstone.service.impl.SemesterService;
+import com.capstone.capstone.service.impl.SurveySelectService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Random;
 
 @SpringBootTest
@@ -22,6 +30,18 @@ class TestDataBuilder {
     RoomPricingService roomPricingService;
     @Autowired
     SemesterService semesterService;
+    @Autowired
+    SurveyQuestionRepository surveyQuestionRepository;
+    @Autowired
+    SurveyOptionRepository surveyOptionRepository;
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    SurveySelectService surveySelectService;
+    @Autowired
+    SurveySelectRepository surveySelectRepository;
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     Random random = new Random();
 
@@ -40,7 +60,8 @@ class TestDataBuilder {
         semesterService.create("SP25", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 31));
         semesterService.create("SU25", LocalDate.of(2025, 5, 1), LocalDate.of(2025, 7, 31));
         semesterService.create("FA25", LocalDate.of(2025, 9, 1), LocalDate.of(2025, 11, 30));
-        semesterService.create("SU26", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31));
+        semesterService.create("SP26", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31));
+        semesterService.create("SU26", LocalDate.of(2026, 5, 1), LocalDate.of(2026, 7, 31));
     }
 
     @Test
@@ -72,5 +93,59 @@ class TestDataBuilder {
             Dorm dorm = dormService.create(dormName, totalFloor);
             generateRoom(dorm);
         }
+    }
+
+    @Test
+    void generateSurvey() {
+        String[] questionContent = new String[] {
+                "Bạn có ngủ trước 11 giờ không?",
+                "Bạn có chơi game không?",
+                "Bạn có đọc tiểu thuyết không?",
+        };
+        for (String content : questionContent) {
+            SurveyQuestion question = new SurveyQuestion();
+            question.setQuestionContent(content);
+            question = surveyQuestionRepository.save(question);
+            SurveyOption opt1 = new SurveyOption();
+            opt1.setSurveyQuestion(question);
+            opt1.setOptionContent("Có");
+            SurveyOption opt2 = new SurveyOption();
+            opt2.setSurveyQuestion(question);
+            opt2.setOptionContent("Không");
+            surveyOptionRepository.save(opt1);
+            surveyOptionRepository.save(opt2);
+        }
+    }
+
+    @Test
+    void generateSurveySelect() {
+        List<SurveyQuestion> surveyQuestions = surveyQuestionRepository.findAll();
+        List<User> users = userRepository.findAll();
+        users.forEach(user -> {
+            surveyQuestions.forEach(question -> {
+                var opts = surveyOptionRepository.findAll((r,q,c) -> {
+                    return c.equal(r.get("surveyQuestion"), question);
+                });
+                SurveyQuetionSelected selected = new  SurveyQuetionSelected();
+                selected.setUser(user);
+                selected.setSurveyOption(opts.get(random.nextInt(opts.size())));
+                surveySelectRepository.save(selected);
+            });
+        });
+    }
+
+    @Test
+    void generateUser() {
+        User user = new User();
+        user.setRole(RoleEnum.RESIDENT);
+        user.setUsername("resident");
+        user.setPassword(passwordEncoder.encode("resident"));
+        user.setGender(GenderEnum.MALE);
+        user.setFullName("Resident");
+        user.setUserCode("HE123456");
+        user.setDob(LocalDate.now());
+        user.setPhoneNumber("0912345678");
+        user.setEmail("resident@gmail.com");
+        userRepository.save(user);
     }
 }

@@ -3,8 +3,8 @@ GET http://localhost:8080/api/slots
 Authorization: Bearer {{token}}
 
 > {%
-    client.global.set("slotid", response.body.data.content[0].id)
-    client.log("slotid =", client.global.get("slotid"))
+    client.global.set("slotId", response.body.data.content[0].id)
+    client.log("slotId =", client.global.get("slotId"))
 %}
 
 ### book slot

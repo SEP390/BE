@@ -14,22 +14,22 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class EWPrice extends BaseEntity {
     /**
-     * Giá điện nếu vượt quá maxElectric/user (đ/kw)
+     * Giá điện nếu vượt quá maxElectricIndex/user (đ/kw)
      */
     @Column(nullable = false)
-    private Long electric;
+    private Long electricPrice;
     /**
-     * Giá nước nếu vượt quá maxWater/user (đ/m3)
+     * Giá nước nếu vượt quá maxWaterIndex/user (đ/m3)
      */
     @Column(nullable = false)
-    private Long water;
+    private Long waterPrice;
     @Column(nullable = false)
-    private Long maxElectric;
+    private Long maxElectricIndex;
     @Column(nullable = false)
-    private Long maxWater;
+    private Long maxWaterIndex;
     /**
      * Thời gian bắt đầu có hiệu lực
      */
     @Column(nullable = false)
-    private LocalDateTime effectiveTime;
+    private LocalDateTime createTime;
 }

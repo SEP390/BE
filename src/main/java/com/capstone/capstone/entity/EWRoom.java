@@ -25,9 +25,4 @@ public class EWRoom extends BaseEntity {
     private Integer electric;
     private Integer water;
     private LocalDateTime createTime;
-
-    @PrePersist
-    public void prePersist() {
-        createTime = LocalDateTime.now();
-    }
 }

@@ -36,13 +36,6 @@ public class BookingService {
 
         if (nextSemester == null) throw new AppException("NEXT_SEMESTER_NOT_FOUND");
 
-        // chưa đến thời gian mở đặt phòng (15 ngày trước kỳ mới bắt đầu)
-        if (LocalDate.now().until(nextSemester.getStartDate()).getDays() >= 15)
-            throw new AppException("BOOKING_NOT_OPEN", Map.of(
-                    "startDate", nextSemester.getStartDate().minusDays(15),
-                    "endDate", nextSemester.getStartDate()
-            ));
-
         // không được đặt phòng nếu chưa làm survey
         if (!surveySelectRepository.exists((r, q, c) -> {
             return c.equal(r.get("user"), user);

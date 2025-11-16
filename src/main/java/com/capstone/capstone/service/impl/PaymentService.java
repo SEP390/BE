@@ -31,7 +31,7 @@ public class PaymentService {
     private final SlotService slotService;
     private final SlotRepository slotRepository;
 
-    public InvoiceResponse handle(VNPayResult res) {
+    public Invoice handle(VNPayResult res) {
         var invoiceId = res.getId();
         var vnPayStatus = res.getStatus();
         var invoice = invoiceRepository.findById(invoiceId).orElseThrow();
@@ -41,6 +41,10 @@ public class PaymentService {
                 slotInvoiceService.onPayment(invoice, invoice.getStatus());
             }
         }
+        return invoice;
+    }
+
+    public InvoiceResponse toResponse(Invoice invoice) {
         InvoiceResponse response = modelMapper.map(invoice, InvoiceResponse.class);
         if (invoice.getType() == InvoiceType.BOOKING) {
             response.setSlotInvoice(slotInvoiceService.toResponse(invoice.getSlotInvoice()));
@@ -51,7 +55,7 @@ public class PaymentService {
     @Transactional
     public InvoiceResponse handle(HttpServletRequest request) {
         var res = vnPayService.verify(request);
-        return handle(res);
+        return toResponse(handle(res));
     }
 
     @Transactional
