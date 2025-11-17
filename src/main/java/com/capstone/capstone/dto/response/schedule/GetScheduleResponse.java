@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -24,5 +25,6 @@ public class GetScheduleResponse {
     private String dormName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDate workDate;
     private String note;
 }

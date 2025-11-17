@@ -221,7 +221,9 @@ public class ScheduleService implements IScheduleService {
             resp.setCreatedAt(s.getCreatedAt());
             resp.setUpdatedAt(s.getUpdatedAt());
             resp.setNote(s.getNote());
+            resp.setWorkDate(s.getWorkDate());
             response.add(resp);
+
         }
         return response;
     }

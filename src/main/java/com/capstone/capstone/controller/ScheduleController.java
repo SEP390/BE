@@ -11,6 +11,7 @@ import com.capstone.capstone.dto.response.schedule.GetScheduleResponse;
 import com.capstone.capstone.dto.response.schedule.UpdateScheduleResponse;
 import com.capstone.capstone.entity.BaseEntity;
 import com.capstone.capstone.service.impl.ScheduleService;
+import com.capstone.capstone.service.interfaces.IScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,12 +31,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping(ApiConstant.SCHEDULE.SCHEDULE)
 public class ScheduleController {
-    private final ScheduleService scheduleService;
+    private final IScheduleService iScheduleService;
 
     @PostMapping
     public ResponseEntity<BaseResponse<List<CreateScheduleResponse>>> createSchedule(@RequestBody CreateScheduleRequest createScheduleRequest) {
         BaseResponse<List<CreateScheduleResponse>> response = new BaseResponse<>();
-        List<CreateScheduleResponse> schedules = scheduleService.createSchedule(createScheduleRequest);
+        List<CreateScheduleResponse> schedules = iScheduleService.createSchedule(createScheduleRequest);
         response.setData(schedules);
         response.setStatus(HttpStatus.CREATED.value());
         response.setMessage("Schedule created");
@@ -56,7 +57,7 @@ public class ScheduleController {
     @PutMapping(ApiConstant.SCHEDULE.GET_BY_ID)
     public ResponseEntity<BaseResponse<UpdateScheduleResponse>> updateSchedule(@RequestBody UpdateScheduleRequest updateScheduleRequest, @PathVariable UUID id) {
         BaseResponse<UpdateScheduleResponse> response = new BaseResponse<>();
-        UpdateScheduleResponse r = scheduleService.updateSchedule(updateScheduleRequest, id);
+        UpdateScheduleResponse r = iScheduleService.updateSchedule(updateScheduleRequest, id);
         response.setData(r);
         response.setStatus(HttpStatus.OK.value());
         response.setMessage("Schedule updated");
@@ -66,7 +67,7 @@ public class ScheduleController {
     @GetMapping
     public ResponseEntity<BaseResponse<List<GetScheduleResponse>>> getAllScheduleByDate(@RequestParam LocalDate from, @RequestParam LocalDate to) {
         BaseResponse<List<GetScheduleResponse>> response = new BaseResponse<>();
-        List<GetScheduleResponse> schedules = scheduleService.getAllScheduleByDate(from, to);
+        List<GetScheduleResponse> schedules = iScheduleService.getAllScheduleByDate(from, to);
         response.setData(schedules);
         response.setStatus(HttpStatus.OK.value());
         response.setMessage("Schedules found");
