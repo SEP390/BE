@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.UUID;
 
-public interface SurveySelectRepository extends JpaRepository<SurveyQuetionSelected, UUID> {
+public interface SurveySelectRepository extends JpaRepository<SurveyQuetionSelected, UUID>, JpaSpecificationExecutor<SurveyQuetionSelected> {
 
     @Query("""
         SELECT CASE WHEN COUNT(s) = (SELECT COUNT(q) FROM SurveyQuestion q)
