@@ -59,13 +59,13 @@ public class ReportService implements IReportService {
     public List<GetAllReportResponse> getAllReports() {
         UUID  userId = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-        Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
         List<Report> reports;
         if (user.getRole() == RoleEnum.MANAGER) {
             reports = reportRepository.findAll();
         } else if (user.getRole() == RoleEnum.TECHNICAL) {
             reports = reportRepository.findByReportType(ReportTypeEnum.MAINTENANCE_REQUEST);
         } else if  (user.getRole() == RoleEnum.GUARD ||  user.getRole() == RoleEnum.CLEANER) {
+            Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
             reports = reportRepository.findByEmployeeId(employee.getId());
         } else {
             throw new AccessDeniedException("Forbidden");
