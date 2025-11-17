@@ -1,0 +1,26 @@
+### get pricing
+GET http://localhost:8080/api/ew/price
+Authorization: Bearer {{token}}
+
+### create pricing
+POST http://localhost:8080/api/ew/price
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "waterPrice": 3000,
+  "electricPrice": 3500,
+  "maxElectricIndex": 50,
+  "maxWaterIndex": 3
+}
+
+### add index for room
+POST http://localhost:8080/api/ew/room
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "electricIndex": 123,
+  "waterIndex": 123,
+  "roomId": "{{roomId}}"
+}

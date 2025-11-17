@@ -7,6 +7,7 @@ import jakarta.persistence.ManyToOne;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -16,21 +17,21 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class SlotHistory extends BaseEntity {
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "semester_id")
     private Semester semester;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
+
     // clone slot information, nullable (for slot delete in room update)
     private UUID slotId;
-    private UUID roomId;
     private String slotName;
-    private String roomNumber;
-    private String dormName;
-    private Long price;
 
-    private LocalDate checkin;
-    private LocalDate checkout;
+    private LocalDateTime checkin;
+    private LocalDateTime checkout;
 }

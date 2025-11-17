@@ -1,0 +1,12 @@
+### all checkout
+GET http://localhost:8080/api/slots?status=UNAVAILABLE
+Authorization: Bearer {{token}}
+
+> {%
+    client.global.set("slotid", response.body.data.content[0].id)
+    client.log("slotid =", client.global.get("slotid"))
+%}
+
+### checkout
+POST http://localhost:8080/api/slots/checkout/{{slotId}}
+Authorization: Bearer {{token}}

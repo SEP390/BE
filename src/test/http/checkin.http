@@ -1,0 +1,12 @@
+### all checkin
+GET http://localhost:8080/api/slots?status=CHECKIN
+Authorization: Bearer {{token}}
+
+> {%
+    client.global.set("slotId", response.body.data.content[0].id)
+    client.log("slotId =", client.global.get("slotId"))
+%}
+
+### checkin
+POST http://localhost:8080/api/slots/checkin/{{slotId}}
+Authorization: Bearer {{token}}

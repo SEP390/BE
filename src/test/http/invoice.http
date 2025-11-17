@@ -1,0 +1,7 @@
+### list invoices
+GET http://localhost:8080/api/invoices
+Authorization: Bearer {{token}}
+
+### count
+GET http://localhost:8080/api/invoices/count
+Authorization: Bearer {{token}}

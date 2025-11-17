@@ -39,4 +39,12 @@ public interface RoomRepository extends JpaRepository<Room, UUID>, JpaSpecificat
     WHERE s.user = :user
 """)
     Room findByUser(User user);
+
+    @Query("""
+    SELECT COUNT(slots) = 0
+    FROM Room r
+    JOIN r.slots slots
+    WHERE r = :room AND slots.status = com.capstone.capstone.dto.enums.StatusSlotEnum.AVAILABLE
+    """)
+    boolean isFull(Room room);
 }

@@ -21,10 +21,10 @@ public class Slot extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private StatusSlotEnum status;
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
     @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
+    @JoinColumn(name = "room_id")
     @JsonIgnore
     private Room room;
 }

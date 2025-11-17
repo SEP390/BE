@@ -1,22 +1,12 @@
 package com.capstone.capstone.dto.response.room;
 
-import com.capstone.capstone.dto.enums.GenderEnum;
-import com.capstone.capstone.dto.enums.RoleEnum;
+import com.capstone.capstone.dto.response.slot.SlotResponse;
+import com.capstone.capstone.dto.response.user.CoreUserResponse;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class RoomUserResponse {
-    private UUID id;
-    private String username;
-    private String fullName;
-    private String password;
-    private String email;
-    private LocalDate dob;
-    private String userCode;
-    private String phoneNumber;
-    private GenderEnum gender;
-    private RoleEnum role;
+public class RoomUserResponse extends CoreUserResponse {
+    private SlotResponse slot;
 }

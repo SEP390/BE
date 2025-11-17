@@ -56,6 +56,7 @@ public class GoogleService {
             authResponse.setToken(jwtToken);
             return authResponse;
         } catch (GeneralSecurityException | IOException e) {
+            log.error(e.getMessage(), e);
             throw new AppException("INVALID_GOOGLE_TOKEN");
         }
     }

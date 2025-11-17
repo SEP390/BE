@@ -9,13 +9,16 @@ import com.capstone.capstone.repository.SemesterRepository;
 import com.capstone.capstone.util.SortUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -28,20 +31,21 @@ public class SemesterService {
         return semesterRepository.findNextSemester();
     }
 
-    public Semester getCurrent() {
-        return semesterRepository.findCurrent();
+    public Optional<Semester> getCurrent() {
+        return Optional.ofNullable(semesterRepository.findCurrent());
     }
 
     public SemesterResponse getCurrentResponse() {
         return modelMapper.map(semesterRepository.findCurrent(), SemesterResponse.class);
     }
 
-    public List<SemesterResponse> getAll(String name, Pageable pageable) {
+    public PagedModel<SemesterResponse> getAll(String name, Pageable pageable) {
         Sort sort = SortUtil.getSort(pageable, "startDate");
-        return semesterRepository.findAll(
+        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        return new PagedModel<>(semesterRepository.findAll(
                 (name != null && !name.isBlank()) ? (r,q,c) -> c.equal(r.get("name"), name) : Specification.unrestricted(),
-                sort
-        ).stream().map(semester -> modelMapper.map(semester, SemesterResponse.class)).toList();
+                validPageable
+        ).map(semester -> modelMapper.map(semester, SemesterResponse.class)));
     }
 
     public SemesterResponse getResponseById(UUID id) {
@@ -53,7 +57,7 @@ public class SemesterService {
     }
 
     public SemesterResponse create(CreateSemesterRequest request) {
-        Semester semester = semesterRepository.save(modelMapper.map(request,Semester.class));
+        Semester semester = modelMapper.map(request,Semester.class);
         semester = create(semester);
         // TODO: check overlapping date
         return modelMapper.map(semester, SemesterResponse.class);
@@ -80,11 +84,25 @@ public class SemesterService {
         return create(semester);
     }
 
-    public SemesterResponse update(UpdateSemesterRequest request) {
-        if (!semesterRepository.existsById(request.getId())) {
+    public SemesterResponse update(UUID id, UpdateSemesterRequest request) {
+        if (!semesterRepository.existsById(id)) {
             throw new AppException("SEMESTER_NOT_FOUND");
         }
+        Semester semester = modelMapper.map(request, Semester.class);
+        semester.setId(id);
         // TODO: check overlapping date
-        return modelMapper.map(semesterRepository.save(modelMapper.map(request,Semester.class)), SemesterResponse.class);
+        return modelMapper.map(semesterRepository.save(semester), SemesterResponse.class);
+    }
+
+    public SemesterResponse delete(UUID id) {
+        Semester semester = semesterRepository.findById(id).orElseThrow(() -> new AppException("SEMESTER_NOT_FOUND"));
+        semesterRepository.delete(semester);
+        return modelMapper.map(semester, SemesterResponse.class);
+    }
+
+    public SemesterResponse getNextResponse() {
+        var next = getNext();
+        if (next == null) throw new AppException("SEMESTER_NOT_FOUND");
+        return modelMapper.map(next, SemesterResponse.class);
     }
 }
