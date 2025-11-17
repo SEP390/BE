@@ -8,6 +8,7 @@ import com.capstone.capstone.dto.response.shift.CreateShiftResponse;
 import com.capstone.capstone.dto.response.shift.GetAllShiftResponse;
 import com.capstone.capstone.dto.response.shift.UpdateShiftResponse;
 import com.capstone.capstone.service.impl.ShiftService;
+import com.capstone.capstone.service.interfaces.IShiftService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping(ApiConstant.SHIFT.SHIFT)
 public class ShiftController {
-    private final ShiftService shiftService;
+    private final IShiftService shiftService;
 
     @PostMapping
     public ResponseEntity<BaseResponse<CreateShiftResponse>> createShift(@RequestBody CreateShiftRequest createShiftRequest) {
