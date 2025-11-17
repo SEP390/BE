@@ -3,7 +3,9 @@ package com.capstone.capstone.service.impl;
 import com.capstone.capstone.dto.enums.InvoiceType;
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.request.invoice.CreateInvoiceRequest;
+import com.capstone.capstone.dto.response.invoice.InvoiceCountResponse;
 import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
+import com.capstone.capstone.dto.response.invoice.InvoiceResponseJoinUser;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.Invoice;
 import com.capstone.capstone.entity.User;
@@ -49,10 +51,22 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
-    public PagedModel<InvoiceResponse> getAll(Pageable pageable) {
+    public PagedModel<InvoiceResponse> getAllByUser(Pageable pageable) {
         User user = SecurityUtils.getCurrentUser();
         return new PagedModel<>(invoiceRepository.findAll((r, q, c) -> {
             return c.equal(r.get("user"), user);
         }, pageable).map(invoice -> modelMapper.map(invoice, InvoiceResponse.class)));
+    }
+
+    public PagedModel<InvoiceResponseJoinUser> getAll(Pageable pageable) {
+        return new PagedModel<>(invoiceRepository.findAll(pageable).map(invoice -> modelMapper.map(invoice, InvoiceResponseJoinUser.class)));
+    }
+
+    public InvoiceCountResponse count() {
+        InvoiceCountResponse res = new InvoiceCountResponse();
+        res.setTotalCount(invoiceRepository.count());
+        res.setTotalSuccess(invoiceRepository.count((r, q, c) -> c.equal(r.get("status"), PaymentStatus.SUCCESS)));
+        res.setTotalPending(invoiceRepository.count((r, q, c) -> c.equal(r.get("status"), PaymentStatus.PENDING)));
+        return res;
     }
 }

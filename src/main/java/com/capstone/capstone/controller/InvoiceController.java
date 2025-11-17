@@ -3,6 +3,8 @@ package com.capstone.capstone.controller;
 import com.capstone.capstone.dto.request.invoice.CreateInvoiceRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
+import com.capstone.capstone.dto.response.invoice.InvoiceCountResponse;
+import com.capstone.capstone.dto.response.invoice.InvoiceResponseJoinUser;
 import com.capstone.capstone.service.impl.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -21,8 +23,18 @@ public class InvoiceController {
     private final InvoiceService invoiceService;
 
     @GetMapping("/api/invoices")
-    public BaseResponse<PagedModel<InvoiceResponse>> getAll(@PageableDefault Pageable pageable) {
+    public BaseResponse<PagedModel<InvoiceResponseJoinUser>> getAll(@PageableDefault Pageable pageable) {
         return new BaseResponse<>(invoiceService.getAll(pageable));
+    }
+
+    @GetMapping("/api/user/invoices")
+    public BaseResponse<PagedModel<InvoiceResponse>> getAllByUser(@PageableDefault Pageable pageable) {
+        return new BaseResponse<>(invoiceService.getAllByUser(pageable));
+    }
+
+    @GetMapping("/api/invoices/count")
+    public BaseResponse<InvoiceCountResponse> getCount() {
+        return new BaseResponse<>(invoiceService.count());
     }
 
     @PostMapping("/api/invoices")
