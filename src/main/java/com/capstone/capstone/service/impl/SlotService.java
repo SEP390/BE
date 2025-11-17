@@ -5,6 +5,7 @@ import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
 import com.capstone.capstone.entity.*;
+import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.RoomRepository;
 import com.capstone.capstone.repository.SlotHistoryRepository;
 import com.capstone.capstone.repository.SlotInvoiceRepository;
@@ -53,7 +54,7 @@ public class SlotService {
      */
     public SlotResponseJoinRoomAndDormAndPricing getCurrent() {
         User user = SecurityUtils.getCurrentUser();
-        Slot slot = getByUser(user).orElseThrow();
+        Slot slot = getByUser(user).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
         return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricing.class);
     }
 
