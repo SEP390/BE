@@ -72,7 +72,7 @@ public class RequestService implements IRequestService {
         Request currentRequest = requestRepository.findById(requestId).orElseThrow(() -> new NotFoundException("Request not found"));
         UUID userId = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-        if (user.getRole() == RoleEnum.GUARD) {
+        if (user.getRole() == RoleEnum.GUARD || user.getRole() == RoleEnum.TECHNICAL) {
             currentRequest.setResponseByEmployeeMessage(updateRequestRequest.getResponseMessage());
             currentRequest.setRequestStatus(updateRequestRequest.getRequestStatus());
         } else if(user.getRole() == RoleEnum.MANAGER) {
