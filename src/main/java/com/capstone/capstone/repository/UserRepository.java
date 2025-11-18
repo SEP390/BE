@@ -14,5 +14,4 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     Optional<User> findByUsername(String username);
 
     List<User> findUserByRole(RoleEnum role);
-
 }
