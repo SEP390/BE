@@ -1,6 +1,6 @@
 package com.capstone.capstone.service.impl;
 
-import com.capstone.capstone.dto.slotHistory.SlotHistoryResponse;
+import com.capstone.capstone.dto.response.slotHistory.SlotHistoryResponse;
 import com.capstone.capstone.repository.SlotHistoryRepository;
 import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.capstone.capstone.dto.slotHistory;
+package com.capstone.capstone.dto.response.slotHistory;
 
 import com.capstone.capstone.dto.response.room.RoomResponseJoinDorm;
 import com.capstone.capstone.dto.response.semester.SemesterResponse;
