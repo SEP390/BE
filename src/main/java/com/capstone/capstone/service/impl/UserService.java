@@ -81,7 +81,10 @@ public class UserService implements IUserService {
             getAllResidentResponse.setEmail(user.getEmail());
             getAllResidentResponse.setFullName(user.getFullName());
             getAllResidentResponse.setPhoneNumber(user.getPhoneNumber());
-            getAllResidentResponse.setSlotName(slotRepository.findByUser(user).getSlotName());
+            var slot = slotRepository.findByUser(user);
+            getAllResidentResponse.setSlotName(
+                    slot != null ? slot.getSlotName() : null
+            );
             responses.add(getAllResidentResponse);
         }
         return responses;

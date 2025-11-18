@@ -41,6 +41,9 @@ public class User extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<Request> requests;
 
+    @OneToMany(mappedBy = "user")
+    private List<WarehouseTransaction> warehouseItems;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
