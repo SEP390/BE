@@ -41,14 +41,6 @@ public class SlotController {
         return new BaseResponse<>(slotService.getAll(userCode, status, pageable));
     }
 
-    /**
-     * [Guard] checkin cho slot
-     * @param id id của slot
-     */
-    @PostMapping("/api/slots/checkin/{id}")
-    public BaseResponse<SlotResponseJoinRoomAndDormAndPricingAndUser> checkin(@PathVariable UUID id) {
-        return new BaseResponse<>(slotService.checkin(id));
-    }
 
     /**
      * [Guard] checkin cho slot

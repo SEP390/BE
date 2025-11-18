@@ -3,10 +3,7 @@ package com.capstone.capstone;
 import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.entity.*;
-import com.capstone.capstone.repository.SurveyOptionRepository;
-import com.capstone.capstone.repository.SurveyQuestionRepository;
-import com.capstone.capstone.repository.SurveySelectRepository;
-import com.capstone.capstone.repository.UserRepository;
+import com.capstone.capstone.repository.*;
 import com.capstone.capstone.service.impl.DormService;
 import com.capstone.capstone.service.impl.RoomPricingService;
 import com.capstone.capstone.service.impl.SemesterService;
@@ -44,6 +41,10 @@ class TestDataBuilder {
     PasswordEncoder passwordEncoder;
 
     Random random = new Random();
+    private EmployeeRepository employeeRepository;
+    private DormRepository dormRepository;
+    @Autowired
+    private ScheduleRepository scheduleRepository;
 
     @Test
     void generate() {
@@ -147,5 +148,29 @@ class TestDataBuilder {
         user.setPhoneNumber("0912345678");
         user.setEmail("resident@gmail.com");
         userRepository.save(user);
+    }
+
+    @Test
+    void generateGuard() {
+        User user = new User();
+        user.setRole(RoleEnum.GUARD);
+        user.setUsername("guard");
+        user.setPassword(passwordEncoder.encode("guard"));
+        user.setGender(GenderEnum.MALE);
+        user.setFullName("Guard");
+        user.setUserCode("HE223456");
+        user.setDob(LocalDate.now());
+        user.setPhoneNumber("0922345678");
+        user.setEmail("guard@gmail.com");
+        user = userRepository.save(user);
+        Employee employee = new Employee();
+        employee.setUser(user);
+        employee.setHireDate(LocalDate.now());
+        employee.setContractEndDate(LocalDate.now().plusDays(30));
+        employee = employeeRepository.save(employee);
+        Schedule schedule = new Schedule();
+        schedule.setEmployee(employee);
+        schedule.setDorm(dormRepository.findAll().getFirst());
+        scheduleRepository.save(schedule);
     }
 }

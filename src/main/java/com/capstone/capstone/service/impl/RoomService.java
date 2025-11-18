@@ -8,10 +8,7 @@ import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
-import com.capstone.capstone.repository.MatchingRepository;
-import com.capstone.capstone.repository.RoomRepository;
-import com.capstone.capstone.repository.SlotRepository;
-import com.capstone.capstone.repository.SurveyQuestionRepository;
+import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SortUtil;
 import lombok.AllArgsConstructor;
@@ -40,10 +37,12 @@ public class RoomService {
     private final SlotService slotService;
     private final SlotHistoryService slotHistoryService;
     private final SemesterService semesterService;
+    private final SurveySelectRepository surveySelectRepository;
 
     @Transactional
     public List<RoomMatchingResponse> getMatching() {
         User user = SecurityUtils.getCurrentUser();
+        if (!surveySelectRepository.hasCompletedSurvey(user)) throw new AppException("NO_SURVEY");
         final long totalQuestion = surveyQuestionRepository.count();
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
         final Map<UUID, Double> matching = matchingRepository.computeRoomMatching(user, rooms)
