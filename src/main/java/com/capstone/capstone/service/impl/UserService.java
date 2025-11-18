@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -81,7 +82,7 @@ public class UserService implements IUserService {
             getAllResidentResponse.setEmail(user.getEmail());
             getAllResidentResponse.setFullName(user.getFullName());
             getAllResidentResponse.setPhoneNumber(user.getPhoneNumber());
-            getAllResidentResponse.setSlotName(slotRepository.findByUser(user).getSlotName());
+            getAllResidentResponse.setSlotName(Optional.ofNullable(slotRepository.findByUser(user)).map(Slot::getSlotName).orElse(null));
             responses.add(getAllResidentResponse);
         }
         return responses;
