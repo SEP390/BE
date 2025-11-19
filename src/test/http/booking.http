@@ -15,7 +15,3 @@ Authorization: Bearer {{token}}
     client.global.set("paymentUrl", response.body.data)
     client.log("paymentUrl =", client.global.get("paymentUrl"))
  %}
-
-### latest payment url
-GET http://localhost:8080/api/payment/pending-booking
-Authorization: Bearer {{token}}
