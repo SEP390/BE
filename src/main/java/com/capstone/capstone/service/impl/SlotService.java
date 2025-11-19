@@ -121,7 +121,7 @@ public class SlotService {
         // chuyển trạng thái sang unavailable
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);
         slot = slotRepository.save(slot);
-        var his = slotHistoryRepository.getLatest(user, slot.getId()).orElse(null);
+        var his = slotHistoryRepository.findCurrent(user, slot.getId()).orElse(null);
         if (his != null) {
             his.setCheckin(LocalDateTime.now());
             his = slotHistoryRepository.save(his);
@@ -171,7 +171,7 @@ public class SlotService {
         // xóa user
         slot.setUser(null);
         slot = slotRepository.save(slot);
-        var his = slotHistoryRepository.getLatest(user, slot.getId()).orElse(null);
+        var his = slotHistoryRepository.findCurrent(user, slot.getId()).orElse(null);
         if (his != null) {
             his.setCheckout(LocalDateTime.now());
             his = slotHistoryRepository.save(his);

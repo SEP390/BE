@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,4 +29,7 @@ public class Invoice extends BaseEntity {
 
     @OneToOne(mappedBy = "invoice")
     private SlotInvoice slotInvoice;
+
+    @OneToMany(mappedBy = "invoice")
+    private List<Payment> payments;
 }

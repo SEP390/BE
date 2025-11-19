@@ -13,6 +13,7 @@ import com.capstone.capstone.entity.Invoice;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.InvoiceRepository;
+import com.capstone.capstone.repository.PaymentRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.util.SecurityUtils;
 import jakarta.validation.Valid;
@@ -29,6 +30,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
+    private final PaymentRepository paymentRepository;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
 
@@ -49,10 +51,9 @@ public class InvoiceService {
         return modelMapper.map(invoice, InvoiceResponse.class);
     }
 
-    public Invoice updateStatus(Invoice invoice, VNPayStatus status) {
-        if (status == VNPayStatus.SUCCESS) invoice.setStatus(PaymentStatus.SUCCESS);
-        else invoice.setStatus(PaymentStatus.CANCEL);
-        return invoiceRepository.save(invoice);
+    public Invoice getPendingBookingInvoice() {
+        User user = SecurityUtils.getCurrentUser();
+        return invoiceRepository.findByUserAndTypeAndStatus(user, InvoiceType.BOOKING, PaymentStatus.PENDING).orElseThrow(() -> new AppException("NO_INVOICE"));
     }
 
     public PagedModel<InvoiceResponse> getAllByUser(Pageable pageable) {
@@ -73,4 +74,12 @@ public class InvoiceService {
         res.setTotalPending(invoiceRepository.count((r, q, c) -> c.equal(r.get("status"), PaymentStatus.PENDING)));
         return res;
     }
+
+    public boolean authorize(UUID id) {
+        var user = SecurityUtils.getCurrentUser();
+        return invoiceRepository.exists((r, q, c) -> {
+            return c.and(c.equal(r.get("id"), id), c.equal(r.get("user"), user));
+        });
+    }
+
 }
