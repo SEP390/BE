@@ -1,15 +1,12 @@
-### Login
-POST http://localhost:8080/api/auth
-Content-Type: application/json
-
-{
-  "username": "resident",
-  "password": "resident"
-}
+### Resident: top 5 room matching
+GET http://localhost:8080/api/rooms-matching
+Authorization: Bearer {{token}}
 
 > {%
-    client.global.set("token", response.body.data.token)
-    console.log("Token =", client.global.get("token"));
+    client.global.set("roomId", response.body.data[0].id)
+    client.log("roomId =", client.global.get("roomId"))
+    client.global.set("slotId", response.body.data[0].slots[0].id)
+    client.log("slotId =", client.global.get("slotId"))
 %}
 
 ### Get all rooms
@@ -32,14 +29,6 @@ Content-Type: application/json
   "totalSlot": 4
 }
 
-### Get rooms-matching
-GET http://localhost:8080/api/rooms-matching
-Authorization: Bearer {{token}}
-
-> {%
- client.global.set("roomId", response.body.data[0].id)
- client.log("roomId =", client.global.get("roomId"))
- %}
 
 ### Get room detail
 GET http://localhost:8080/api/rooms/{{roomId}}
