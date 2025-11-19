@@ -40,6 +40,9 @@ public class PaymentService {
         if (invoice.getStatus() == PaymentStatus.SUCCESS) {
             throw new AppException("INVOICE_ALREADY_PAID");
         }
+        if (invoice.getStatus() == PaymentStatus.CANCEL) {
+            throw new AppException("INVOICE_CANCEL");
+        }
         var payment = paymentRepository.findLatestByInvoice(invoice).orElse(null);
 
         // booking invoice expire
