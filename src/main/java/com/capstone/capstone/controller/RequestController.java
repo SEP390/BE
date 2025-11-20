@@ -4,10 +4,7 @@ import com.capstone.capstone.constant.ApiConstant;
 import com.capstone.capstone.dto.request.request.CreateRequestRequest;
 import com.capstone.capstone.dto.request.request.UpdateRequestRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.request.CreateRequestResponse;
-import com.capstone.capstone.dto.response.request.GetAllRequestResponse;
-import com.capstone.capstone.dto.response.request.GetRequestByIdResponse;
-import com.capstone.capstone.dto.response.request.UpdateRequestResponse;
+import com.capstone.capstone.dto.response.request.*;
 import com.capstone.capstone.service.interfaces.IRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -58,6 +55,16 @@ public class RequestController {
     public ResponseEntity<BaseResponse<List<GetAllRequestResponse>>> getAllRequests(){
         List<GetAllRequestResponse> response = requestService.getAllRequest();
         BaseResponse<List<GetAllRequestResponse>> baseResponse = new BaseResponse<>();
+        baseResponse.setStatus(HttpStatus.OK.value());
+        baseResponse.setMessage("Get requests successfully");
+        baseResponse.setData(response);
+        return ResponseEntity.status(HttpStatus.OK).body(baseResponse);
+    }
+
+    @GetMapping(ApiConstant.REQUEST.ANONYMOUSE)
+    public ResponseEntity<BaseResponse<List<GetAllAnonymousRequestResponse>>>  getAllAnonymousRequests(){
+        List<GetAllAnonymousRequestResponse> response = requestService.getAllAnonymousRequest();
+        BaseResponse<List<GetAllAnonymousRequestResponse>> baseResponse = new BaseResponse<>();
         baseResponse.setStatus(HttpStatus.OK.value());
         baseResponse.setMessage("Get requests successfully");
         baseResponse.setData(response);

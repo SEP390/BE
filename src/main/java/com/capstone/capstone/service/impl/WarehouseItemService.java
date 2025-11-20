@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class WarehouseItemServiceService implements IWarehouseItemService {
+public class WarehouseItemService implements IWarehouseItemService {
 
     private final WarehouseItemRepository warehouseItemRepository;
 
