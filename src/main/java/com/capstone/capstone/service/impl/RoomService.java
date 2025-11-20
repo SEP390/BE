@@ -1,16 +1,16 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
-import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
-import com.capstone.capstone.dto.response.slot.SlotResponse;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
+import com.capstone.capstone.dto.response.slot.SlotResponse;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SortUtil;
+import com.capstone.capstone.util.SpecQuery;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
@@ -91,15 +91,12 @@ public class RoomService {
         int validPageSize = Math.min(pageable.getPageSize(), 100);
         Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), validPageSize, validSort);
-        return new PagedModel<>(roomRepository.findAll(
-                Specification.allOf(
-                        dormId != null ? (root, query, cb) -> cb.equal(root.get("dorm").get("id"), dormId) : Specification.unrestricted(),
-                        floor != null ? (root, query, cb) -> cb.equal(root.get("floor"), floor) : Specification.unrestricted(),
-                        totalSlot != null ? (root, query, cb) -> cb.equal(root.get("totalSlot"), totalSlot) : Specification.unrestricted(),
-                        roomNumber != null ? (root, query, cb) -> cb.like(root.get("roomNumber"), "%" + roomNumber + "%") : Specification.unrestricted()
-                ),
-                validPageable
-        ).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
+        var query = new SpecQuery<Room>();
+        query.equal(r -> r.get("dorm").get("id"), dormId);
+        query.equal("floor", floor);
+        query.equal("totalSlot", totalSlot);
+        query.like("roomNumber", roomNumber);
+        return new PagedModel<>(roomRepository.findAll(query.and(), validPageable).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
     }
 
     @Transactional
@@ -205,11 +202,8 @@ public class RoomService {
     @Transactional
     public List<RoomUserResponse> getUsersResponse(UUID id) {
         Room room = getById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        return room.getSlots().stream().map((slot) -> {
-            if (slot.getUser() == null) return null;
-            var res = modelMapper.map(slot.getUser(), RoomUserResponse.class);
-            res.setSlot(modelMapper.map(slot, SlotResponse.class));
-            return res;
+        return room.getSlots().stream().map(Slot::getUser).filter(Objects::nonNull).map((user) -> {
+            return modelMapper.map(user, RoomUserResponse.class);
         }).toList();
     }
 

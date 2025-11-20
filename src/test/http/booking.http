@@ -1,12 +1,3 @@
-### Get slot
-GET http://localhost:8080/api/slots
-Authorization: Bearer {{token}}
-
-> {%
-    client.global.set("slotId", response.body.data.content[0].id)
-    client.log("slotId =", client.global.get("slotId"))
-%}
-
 ### book slot
 POST http://localhost:8080/api/booking?slotId={{slotId}}
 Authorization: Bearer {{token}}
@@ -15,7 +6,3 @@ Authorization: Bearer {{token}}
     client.global.set("paymentUrl", response.body.data)
     client.log("paymentUrl =", client.global.get("paymentUrl"))
  %}
-
-### latest payment url
-GET http://localhost:8080/api/payment/pending-booking
-Authorization: Bearer {{token}}

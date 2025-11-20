@@ -2,6 +2,19 @@
 GET http://localhost:8080/api/invoices
 Authorization: Bearer {{token}}
 
+### list user invoices
+GET http://localhost:8080/api/user/invoices
+Authorization: Bearer {{token}}
+
+> {%
+ client.global.set("invoiceId", response.body.data.content[0].id)
+ client.log(client.global.get("invoiceId"))
+ %}
+
+### get invoice payment
+GET http://localhost:8080/api/invoices/{{invoiceId}}/payment
+Authorization: Bearer {{token}}
+
 ### count
 GET http://localhost:8080/api/invoices/count
 Authorization: Bearer {{token}}

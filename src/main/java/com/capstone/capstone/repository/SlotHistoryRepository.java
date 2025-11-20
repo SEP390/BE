@@ -16,5 +16,7 @@ public interface SlotHistoryRepository extends JpaRepository<SlotHistory, UUID>,
             ORDER BY sh.semester.startDate DESC
             LIMIT 1
             """)
-    Optional<SlotHistory> getLatest(User user, UUID slotId);
+    Optional<SlotHistory> findCurrent(User user, UUID slotId);
+
+    boolean existsByUser(User user);
 }

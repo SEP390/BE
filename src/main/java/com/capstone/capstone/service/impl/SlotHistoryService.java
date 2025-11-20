@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.response.slotHistory.SlotHistoryResponse;
+import com.capstone.capstone.entity.User;
 import com.capstone.capstone.repository.SlotHistoryRepository;
 import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
@@ -15,10 +16,14 @@ public class SlotHistoryService {
     private final SlotHistoryRepository slotHistoryRepository;
     private final ModelMapper modelMapper;
 
-    public PagedModel<SlotHistoryResponse> getByCurrentUser(Pageable pageable) {
+    public PagedModel<SlotHistoryResponse> getAllByCurrentUser(Pageable pageable) {
         var user = SecurityUtils.getCurrentUser();
         return new PagedModel<>(slotHistoryRepository.findAll((r, q, c) -> {
             return c.equal(r.get("user"), user);
         }, pageable).map(sh -> modelMapper.map(sh, SlotHistoryResponse.class)));
+    }
+
+    public boolean existsByUser(User user) {
+        return slotHistoryRepository.existsByUser(user);
     }
 }

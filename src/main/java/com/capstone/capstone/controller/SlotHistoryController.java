@@ -17,6 +17,6 @@ public class SlotHistoryController {
 
     @GetMapping("/api/slots/history")
     public BaseResponse<PagedModel<SlotHistoryResponse>> getByCurrentUser(@PageableDefault Pageable pageable) {
-        return new BaseResponse<>(slotHistoryService.getByCurrentUser(pageable));
+        return new BaseResponse<>(slotHistoryService.getAllByCurrentUser(pageable));
     }
 }
