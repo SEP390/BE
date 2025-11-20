@@ -202,11 +202,8 @@ public class RoomService {
     @Transactional
     public List<RoomUserResponse> getUsersResponse(UUID id) {
         Room room = getById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        return room.getSlots().stream().map((slot) -> {
-            if (slot.getUser() == null) return null;
-            var res = modelMapper.map(slot.getUser(), RoomUserResponse.class);
-            res.setSlot(modelMapper.map(slot, SlotResponse.class));
-            return res;
+        return room.getSlots().stream().map(Slot::getUser).filter(Objects::nonNull).map((user) -> {
+            return modelMapper.map(user, RoomUserResponse.class);
         }).toList();
     }
 

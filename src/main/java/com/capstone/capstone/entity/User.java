@@ -2,10 +2,7 @@ package com.capstone.capstone.entity;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.RoleEnum;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,6 +45,9 @@ public class User extends BaseEntity implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private List<WarehouseTransaction> warehouseItems;
+
+    @OneToOne(mappedBy = "user")
+    private Slot slot;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
