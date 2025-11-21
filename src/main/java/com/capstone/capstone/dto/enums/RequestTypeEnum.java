@@ -7,6 +7,6 @@ public enum RequestTypeEnum {
     TECHNICAL_ISSUE,                // Sự cố kỹ thuật (hỏng điện/nước/thiết bị)
     POLICY_VIOLATION_REPORT,
     CHANGEROOM,
-    ANONYMOUSE,// Báo cáo vi phạm quy định (report người khác)
+    ANONYMOUS,// Báo cáo vi phạm quy định (report người khác)
     OTHER                           // Khác
 }

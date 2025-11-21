@@ -132,6 +132,11 @@ public class RequestService implements IRequestService {
         }else {
             throw new AccessDeniedException("Access denied");
         }
+
+        requests = requests.stream()
+                .filter(req -> req.getRequestType() != RequestTypeEnum.ANONYMOUS)
+                .toList();
+
         List<GetAllRequestResponse> getAllRequestResponse = requests.stream().map(request -> {
             GetAllRequestResponse requestResponse = new GetAllRequestResponse();
             requestResponse.setRequestId(request.getId());
@@ -151,7 +156,7 @@ public class RequestService implements IRequestService {
 
     @Override
     public List<GetAllAnonymousRequestResponse> getAllAnonymousRequest() {
-        List<Request> requests = requestRepository.findRequestByRequestType(RequestTypeEnum.ANONYMOUSE);
+        List<Request> requests = requestRepository.findRequestByRequestType(RequestTypeEnum.ANONYMOUS);
         List<GetAllAnonymousRequestResponse> responses  = new ArrayList<>();
         for (Request request : requests) {
             GetAllAnonymousRequestResponse requestResponse = new GetAllAnonymousRequestResponse();
