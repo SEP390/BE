@@ -30,11 +30,13 @@ public class WarehouseTransaction extends BaseEntity {
     private TransactionTypeEnum type; // IMPORT / EXPORT
 
     @Column(nullable = false)
-    private Integer quantity; // Số lượng thay đổi
+    private int quantity; // Số lượng thay đổi
 
     private String note; // Note thêm
 
+    @Column(nullable = true)
     private UUID requestId; // Nếu phục vụ request
+    @Column(nullable = true)
     private UUID reportId;  // Nếu phục vụ report
 
     // Nếu BaseEntity đã có createdAt rồi thì xóa field này đi.

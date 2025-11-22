@@ -1,0 +1,62 @@
+package com.capstone.capstone.service.impl;
+
+import com.capstone.capstone.dto.enums.RoleEnum;
+import com.capstone.capstone.dto.request.warehouseTransaction.CreateWarehouseTransactionRequest;
+import com.capstone.capstone.dto.response.warehouseTransaction.CreateWarehouseTransactionResponse;
+import com.capstone.capstone.entity.Employee;
+import com.capstone.capstone.entity.User;
+import com.capstone.capstone.entity.WarehouseItem;
+import com.capstone.capstone.entity.WarehouseTransaction;
+import com.capstone.capstone.exception.NotFoundException;
+import com.capstone.capstone.repository.EmployeeRepository;
+import com.capstone.capstone.repository.UserRepository;
+import com.capstone.capstone.repository.WarehouseItemRepository;
+import com.capstone.capstone.repository.WarehouseTransactionRepository;
+import com.capstone.capstone.service.interfaces.IWareHouseTransactionService;
+import com.capstone.capstone.util.AuthenUtil;
+import jdk.jshell.execution.Util;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+@AllArgsConstructor
+public class WareHouseTransactionService implements IWareHouseTransactionService {
+    private final WarehouseTransactionRepository  warehouseTransactionRepository;
+    private final UserRepository userRepository;
+    private final WarehouseItemRepository warehouseItemRepository;
+    @Override
+    public CreateWarehouseTransactionResponse createWarehouseTransaction(CreateWarehouseTransactionRequest request) {
+        UUID userId = AuthenUtil.getCurrentUserId();
+        User user = userRepository.findById(userId).orElseThrow(()-> new RuntimeException("User not found"));
+        WarehouseItem item = warehouseItemRepository.findById(request.getItemId()).orElseThrow(()-> new RuntimeException("Item not found"));
+        WarehouseTransaction transaction = new WarehouseTransaction();
+        if(user.getRole() == RoleEnum.TECHNICAL){
+            transaction.setUser(user);
+        } else {
+            throw new RuntimeException("Role not allowed");
+        }
+        transaction.setItem(item);
+        transaction.setType(request.getTransactionType());
+        transaction.setQuantity(request.getTransactionQuantity());
+        transaction.setNote(request.getNote());
+        transaction.setReportId(request.getReportId());
+        transaction.setRequestId(request.getRequestId());
+        transaction.setCreatedAt(LocalDateTime.now());
+        item.setQuantity(item.getQuantity() + transaction.getQuantity());
+        warehouseTransactionRepository.save(transaction);
+        CreateWarehouseTransactionResponse response = new CreateWarehouseTransactionResponse();
+        response.setId(transaction.getId());
+        response.setRequestId(transaction.getRequestId());
+        response.setReportId(transaction.getReportId());
+        response.setActionById(transaction.getUser().getId());
+        response.setActionByName(transaction.getUser().getFullName());
+        response.setCreatedAt(transaction.getCreatedAt());
+        response.setTransactionType(transaction.getType());
+        response.setTransactionQuantity(transaction.getQuantity());
+        response.setNote(transaction.getNote());
+        return  response;
+    }
+}
