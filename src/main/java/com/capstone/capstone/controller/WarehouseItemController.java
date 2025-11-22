@@ -7,8 +7,6 @@ import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.warehouseItem.CreateWarehouseItemResponse;
 import com.capstone.capstone.dto.response.warehouseItem.GetAllWarehouseItemResponse;
 import com.capstone.capstone.dto.response.warehouseItem.UpdateWarehouseItemResponse;
-import com.capstone.capstone.entity.BaseEntity;
-import com.capstone.capstone.entity.WarehouseItem;
 import com.capstone.capstone.service.interfaces.IWarehouseItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +19,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(ApiConstant.WAREHOUSE_ITEM.WAREHOUSE_ITEM)
-public class WareHouseItemController {
+public class WarehouseItemController {
     private final IWarehouseItemService warehouseItemService;
 
     @PostMapping

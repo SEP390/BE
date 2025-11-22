@@ -67,8 +67,13 @@ public class ApiConstant {
         public static final String GET_BY_ID = "/{id}";
     }
 
-public static class WAREHOUSE_ITEM {
-    public static final String WAREHOUSE_ITEM = API + "/warehouse-items";
-    public static final String GET_BY_ID = "/{id}";
-}
+    public static class WAREHOUSE_ITEM {
+        public static final String WAREHOUSE_ITEM = API + "/warehouse-items";
+        public static final String GET_BY_ID = "/{id}";
+    }
+
+    public static class WAREHOUSE_TRANSACTION {
+        public static final String WAREHOUSE_TRANSACTION = API + "/warehouse_transactions";
+    }
+
 }
