@@ -7,8 +7,6 @@ import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.warehouseItem.CreateWarehouseItemResponse;
 import com.capstone.capstone.dto.response.warehouseItem.GetAllWarehouseItemResponse;
 import com.capstone.capstone.dto.response.warehouseItem.UpdateWarehouseItemResponse;
-import com.capstone.capstone.entity.BaseEntity;
-import com.capstone.capstone.entity.WarehouseItem;
 import com.capstone.capstone.service.interfaces.IWarehouseItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,11 +19,11 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(ApiConstant.WAREHOUSE_ITEM.WAREHOUSE_ITEM)
-public class WareHouseItemController {
+public class WarehouseItemController {
     private final IWarehouseItemService warehouseItemService;
 
     @PostMapping
-    public ResponseEntity<BaseResponse<CreateWarehouseItemResponse>> getWarehouseItem(@RequestBody CreateWarehouseItemRequest request){
+    public ResponseEntity<BaseResponse<CreateWarehouseItemResponse>> createWarehouseItem(@RequestBody CreateWarehouseItemRequest request){
         BaseResponse<CreateWarehouseItemResponse> baseResponse = new BaseResponse<>();
         baseResponse.setData(warehouseItemService.createWarehouseItem(request));
         baseResponse.setMessage("Warehouse Item Created");
@@ -43,7 +41,7 @@ public class WareHouseItemController {
     }
 
     @PutMapping(ApiConstant.WAREHOUSE_ITEM.GET_BY_ID)
-    public ResponseEntity<BaseResponse<UpdateWarehouseItemResponse>> getWarehouseItem(@PathVariable UUID id , @RequestBody UpdateWarehouseItemRequest request){
+    public ResponseEntity<BaseResponse<UpdateWarehouseItemResponse>> updateWarehouseItem(@PathVariable UUID id , @RequestBody UpdateWarehouseItemRequest request){
         UpdateWarehouseItemResponse updateWarehouseItemResponse = warehouseItemService.updateWarehouseItem(id, request);
         BaseResponse<UpdateWarehouseItemResponse> baseResponse = new BaseResponse<>();
         baseResponse.setData(updateWarehouseItemResponse);

@@ -5,10 +5,7 @@ import com.capstone.capstone.dto.enums.RequestTypeEnum;
 import com.capstone.capstone.dto.enums.RoleEnum;
 import com.capstone.capstone.dto.request.request.CreateRequestRequest;
 import com.capstone.capstone.dto.request.request.UpdateRequestRequest;
-import com.capstone.capstone.dto.response.request.CreateRequestResponse;
-import com.capstone.capstone.dto.response.request.GetAllRequestResponse;
-import com.capstone.capstone.dto.response.request.GetRequestByIdResponse;
-import com.capstone.capstone.dto.response.request.UpdateRequestResponse;
+import com.capstone.capstone.dto.response.request.*;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.*;
@@ -20,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -134,6 +132,11 @@ public class RequestService implements IRequestService {
         }else {
             throw new AccessDeniedException("Access denied");
         }
+
+        requests = requests.stream()
+                .filter(req -> req.getRequestType() != RequestTypeEnum.ANONYMOUS)
+                .toList();
+
         List<GetAllRequestResponse> getAllRequestResponse = requests.stream().map(request -> {
             GetAllRequestResponse requestResponse = new GetAllRequestResponse();
             requestResponse.setRequestId(request.getId());
@@ -149,5 +152,20 @@ public class RequestService implements IRequestService {
             return  requestResponse;
         }).collect(Collectors.toList());
         return getAllRequestResponse;
+    }
+
+    @Override
+    public List<GetAllAnonymousRequestResponse> getAllAnonymousRequest() {
+        List<Request> requests = requestRepository.findRequestByRequestType(RequestTypeEnum.ANONYMOUS);
+        List<GetAllAnonymousRequestResponse> responses  = new ArrayList<>();
+        for (Request request : requests) {
+            GetAllAnonymousRequestResponse requestResponse = new GetAllAnonymousRequestResponse();
+            requestResponse.setRequestId(request.getId());
+            requestResponse.setCreateTime(request.getCreateTime());
+            requestResponse.setSemesterName(request.getSemester().getName());
+            requestResponse.setContent(request.getContent());
+            responses.add(requestResponse);
+        }
+        return responses;
     }
 }
