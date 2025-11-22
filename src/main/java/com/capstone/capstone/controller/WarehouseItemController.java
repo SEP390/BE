@@ -23,7 +23,7 @@ public class WarehouseItemController {
     private final IWarehouseItemService warehouseItemService;
 
     @PostMapping
-    public ResponseEntity<BaseResponse<CreateWarehouseItemResponse>> getWarehouseItem(@RequestBody CreateWarehouseItemRequest request){
+    public ResponseEntity<BaseResponse<CreateWarehouseItemResponse>> createWarehouseItem(@RequestBody CreateWarehouseItemRequest request){
         BaseResponse<CreateWarehouseItemResponse> baseResponse = new BaseResponse<>();
         baseResponse.setData(warehouseItemService.createWarehouseItem(request));
         baseResponse.setMessage("Warehouse Item Created");
@@ -41,7 +41,7 @@ public class WarehouseItemController {
     }
 
     @PutMapping(ApiConstant.WAREHOUSE_ITEM.GET_BY_ID)
-    public ResponseEntity<BaseResponse<UpdateWarehouseItemResponse>> getWarehouseItem(@PathVariable UUID id , @RequestBody UpdateWarehouseItemRequest request){
+    public ResponseEntity<BaseResponse<UpdateWarehouseItemResponse>> updateWarehouseItem(@PathVariable UUID id , @RequestBody UpdateWarehouseItemRequest request){
         UpdateWarehouseItemResponse updateWarehouseItemResponse = warehouseItemService.updateWarehouseItem(id, request);
         BaseResponse<UpdateWarehouseItemResponse> baseResponse = new BaseResponse<>();
         baseResponse.setData(updateWarehouseItemResponse);
