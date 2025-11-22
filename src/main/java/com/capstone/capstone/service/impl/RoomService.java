@@ -87,15 +87,16 @@ public class RoomService {
         roomRepository.save(room);
     }
 
-    public PagedModel<RoomResponseJoinPricingAndDormAndSlot> get(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
+    public PagedModel<RoomResponseJoinPricingAndDormAndSlot> get(Map<String, Object> filter, Pageable pageable) {
         int validPageSize = Math.min(pageable.getPageSize(), 100);
         Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), validPageSize, validSort);
         var query = new SpecQuery<Room>();
-        query.equal(r -> r.get("dorm").get("id"), dormId);
-        query.equal("floor", floor);
-        query.equal("totalSlot", totalSlot);
-        query.like("roomNumber", roomNumber);
+        query.equal(r -> r.get("dorm").get("id"), filter.get("dormId"));
+        query.equal(filter, "id");
+        query.equal(filter, "floor");
+        query.equal(filter, "totalSlot");
+        query.like(filter, "roomNumber");
         return new PagedModel<>(roomRepository.findAll(query.and(), validPageable).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
     }
 

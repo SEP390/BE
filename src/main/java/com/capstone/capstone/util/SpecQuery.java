@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 @NoArgsConstructor
@@ -19,6 +20,14 @@ public class SpecQuery<T> {
             return c.like(r.get(prop), "%" + value.replaceAll("%", "") + "%");
         }));
     }
+
+    public void like(Map<String, Object> source, String prop) {
+        if (source.get(prop) == null) return;
+        specs.add(((r, q, c) -> {
+            return c.like(r.get(prop), "%" + String.valueOf(source.get(prop)).replaceAll("%", "") + "%");
+        }));
+    }
+
     public void like(Function<Root<T>, Expression<String>> selector, String value) {
         if (value == null || value.isBlank()) return;
         specs.add(((r, q, c) -> {
@@ -37,6 +46,13 @@ public class SpecQuery<T> {
         if (value == null) return;
         specs.add((r, q, c) -> {
             return c.equal(r.get(prop), value);
+        });
+    }
+
+    public void equal(Map<String, Object> source, String prop) {
+        if (source.get(prop) == null) return;
+        specs.add((r, q, c) -> {
+            return c.equal(r.get(prop), source.get(prop));
         });
     }
 

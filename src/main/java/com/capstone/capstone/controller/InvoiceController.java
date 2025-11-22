@@ -1,5 +1,6 @@
 package com.capstone.capstone.controller;
 
+import com.capstone.capstone.dto.enums.InvoiceType;
 import com.capstone.capstone.dto.request.invoice.CreateInvoiceRequest;
 import com.capstone.capstone.dto.request.invoice.UpdateInvoiceRequest;
 import com.capstone.capstone.dto.response.BaseResponse;

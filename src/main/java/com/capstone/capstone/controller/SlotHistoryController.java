@@ -10,13 +10,24 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @AllArgsConstructor
 public class SlotHistoryController {
     private final SlotHistoryService slotHistoryService;
 
-    @GetMapping("/api/slots/history")
+    @GetMapping("/api/user/slot-history")
     public BaseResponse<PagedModel<SlotHistoryResponse>> getByCurrentUser(@PageableDefault Pageable pageable) {
         return new BaseResponse<>(slotHistoryService.getAllByCurrentUser(pageable));
+    }
+
+    @GetMapping("/api/slot-history")
+    public BaseResponse<PagedModel<SlotHistoryResponse>> getAll(
+            @PageableDefault Pageable pageable
+    ) {
+        Map<String, Object> filter = new HashMap<>();
+        return new BaseResponse<>(slotHistoryService.getAll(filter, pageable));
     }
 }

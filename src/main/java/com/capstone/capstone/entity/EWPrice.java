@@ -2,6 +2,7 @@ package com.capstone.capstone.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "ew_price")
 public class EWPrice extends BaseEntity {
     /**
      * Giá điện nếu vượt quá maxElectricIndex/user (đ/kw)

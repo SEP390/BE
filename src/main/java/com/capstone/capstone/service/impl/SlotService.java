@@ -11,6 +11,7 @@ import com.capstone.capstone.repository.SlotHistoryRepository;
 import com.capstone.capstone.repository.SlotInvoiceRepository;
 import com.capstone.capstone.repository.SlotRepository;
 import com.capstone.capstone.util.SecurityUtils;
+import com.capstone.capstone.util.SpecQuery;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -20,10 +21,7 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -101,12 +99,12 @@ public class SlotService {
      * @param pageable page, size
      * @return
      */
-    public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAll(String userCode, StatusSlotEnum status, Pageable pageable) {
-        return new PagedModel<>(slotRepository.findAll(Specification.allOf(userCode != null ? (r, q, c) -> {
-            return c.like(r.get("user").get("userCode"), "%" + userCode + "%");
-        } : Specification.unrestricted(), status != null ? (r,q,c) -> {
-            return c.equal(r.get("status"), status);
-        } : Specification.unrestricted()), pageable).map(s -> modelMapper.map(s, SlotResponseJoinRoomAndDormAndPricingAndUser.class)));
+    public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAll(Map<String, Object> filter, Pageable pageable) {
+        SpecQuery<Slot> query = new SpecQuery<>();
+        query.like("userCode", (String) filter.get("userCode"));
+        query.equal("userId", filter.get("userId"));
+        query.equal("status", filter.get("status"));
+        return new PagedModel<>(slotRepository.findAll(query.and(), pageable).map(s -> modelMapper.map(s, SlotResponseJoinRoomAndDormAndPricingAndUser.class)));
     }
 
     /**

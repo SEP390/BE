@@ -2,6 +2,7 @@ package com.capstone.capstone.repository;
 
 import com.capstone.capstone.entity.EWRoom;
 import com.capstone.capstone.entity.Room;
+import com.capstone.capstone.entity.Semester;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,9 +17,9 @@ import java.util.UUID;
 public interface EWRoomRepository extends JpaRepository<EWRoom, UUID>, JpaSpecificationExecutor<EWRoom> {
     @Query("""
             FROM EWRoom r
-            WHERE r.room = :room
-            ORDER BY r.createTime DESC
+            WHERE r.room = :room AND r.semester = :semester
+            ORDER BY r.createDate DESC
             LIMIT 1
             """)
-    Optional<EWRoom> findLatest(Room room);
+    Optional<EWRoom> findRecent(Room room, Semester semester);
 }
