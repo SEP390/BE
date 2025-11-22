@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.RoleEnum;
+import com.capstone.capstone.dto.enums.TransactionTypeEnum;
 import com.capstone.capstone.dto.request.warehouseTransaction.CreateWarehouseTransactionRequest;
 import com.capstone.capstone.dto.response.warehouseTransaction.CreateWarehouseTransactionResponse;
 import com.capstone.capstone.entity.Employee;
@@ -45,7 +46,11 @@ public class WareHouseTransactionService implements IWareHouseTransactionService
         transaction.setReportId(request.getReportId());
         transaction.setRequestId(request.getRequestId());
         transaction.setCreatedAt(LocalDateTime.now());
-        item.setQuantity(item.getQuantity() + transaction.getQuantity());
+        if(request.getTransactionType() == TransactionTypeEnum.IMPORT){
+            item.setQuantity(item.getQuantity() + transaction.getQuantity());
+        } else if (request.getTransactionType() == TransactionTypeEnum.EXPORT) {
+            item.setQuantity(item.getQuantity() - transaction.getQuantity());
+        }
         warehouseTransactionRepository.save(transaction);
         CreateWarehouseTransactionResponse response = new CreateWarehouseTransactionResponse();
         response.setId(transaction.getId());
