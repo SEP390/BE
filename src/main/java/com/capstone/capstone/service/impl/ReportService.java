@@ -81,6 +81,7 @@ public class ReportService implements IReportService {
             response.setCreatedDate(report.getCreatedAt());
             response.setUserCode(report.getUserCode());
             response.setEmployeeName(report.getEmployee().getUser().getFullName());
+            response.setReportType(report.getReportType());
             responses.add(response);
         }
         return responses;
