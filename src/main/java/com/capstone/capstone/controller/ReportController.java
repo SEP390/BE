@@ -6,6 +6,7 @@ import com.capstone.capstone.dto.request.report.UpdateReportRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.report.CreateReportResponse;
 import com.capstone.capstone.dto.response.report.GetAllReportResponse;
+import com.capstone.capstone.dto.response.report.GetReportByIdResponse;
 import com.capstone.capstone.dto.response.report.UpdateReportResponse;
 import com.capstone.capstone.dto.response.request.CreateRequestResponse;
 import com.capstone.capstone.dto.response.request.GetAllRequestResponse;
@@ -52,6 +53,16 @@ public class ReportController {
         BaseResponse<UpdateReportResponse> methodResponse = new BaseResponse<>();
         methodResponse.setStatus(HttpStatus.OK.value());
         methodResponse.setMessage("Report updated successfully");
+        methodResponse.setData(response);
+        return ResponseEntity.status(HttpStatus.OK).body(methodResponse);
+    }
+
+    @GetMapping(ApiConstant.REPORTS.GET_BY_ID)
+    public ResponseEntity<BaseResponse<GetReportByIdResponse>>  getReportById(@PathVariable UUID id) {
+        GetReportByIdResponse response = iReportService.getReportById(id);
+        BaseResponse<GetReportByIdResponse> methodResponse = new BaseResponse<>();
+        methodResponse.setStatus(HttpStatus.OK.value());
+        methodResponse.setMessage("Report read successfully");
         methodResponse.setData(response);
         return ResponseEntity.status(HttpStatus.OK).body(methodResponse);
     }
