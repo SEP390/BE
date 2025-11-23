@@ -7,6 +7,7 @@ import com.capstone.capstone.dto.request.report.CreateReportRequest;
 import com.capstone.capstone.dto.request.report.UpdateReportRequest;
 import com.capstone.capstone.dto.response.report.CreateReportResponse;
 import com.capstone.capstone.dto.response.report.GetAllReportResponse;
+import com.capstone.capstone.dto.response.report.GetReportByIdResponse;
 import com.capstone.capstone.dto.response.report.UpdateReportResponse;
 import com.capstone.capstone.entity.Employee;
 import com.capstone.capstone.entity.Report;
@@ -101,6 +102,22 @@ public class ReportService implements IReportService {
         response.setCreatedDate(report.getCreatedAt());
         response.setUserCode(report.getUserCode());
         response.setResponseMessage(report.getResponseMessage());
+        return response;
+    }
+
+    @Override
+    public GetReportByIdResponse getReportById(UUID reportId) {
+        Report report = reportRepository.findById(reportId).orElseThrow(() -> new NotFoundException("Report not found"));
+        GetReportByIdResponse response = new GetReportByIdResponse();
+        response.setReportId(report.getId());
+        response.setEmployeeId(report.getEmployee().getId());
+        response.setEmployeeName(report.getEmployee().getUser().getFullName());
+        response.setContent(report.getContent());
+        response.setResponseMessage(report.getResponseMessage());
+        response.setCreatedDate(report.getCreatedAt());
+        response.setReportStatus(report.getReportStatus());
+        response.setReportType(report.getReportType());
+        response.setUserCode(report.getUserCode());
         return response;
     }
 
