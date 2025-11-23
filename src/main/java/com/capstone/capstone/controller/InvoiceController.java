@@ -53,7 +53,7 @@ public class InvoiceController {
 
     @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/api/invoices")
-    public BaseResponse<InvoiceResponse> create(@Valid @RequestBody CreateInvoiceRequest request) {
+    public BaseResponse<?> create(@Valid @RequestBody CreateInvoiceRequest request) {
         return new BaseResponse<>(invoiceService.create(request));
     }
 
