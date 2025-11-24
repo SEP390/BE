@@ -21,6 +21,10 @@ public class EWUsage extends BaseEntity {
     User user;
 
     @ManyToOne
+    @JoinColumn(name = "semester_id")
+    private Semester semester;
+
+    @ManyToOne
     @JoinColumn(name = "ew_room_id")
     private EWRoom ewRoom;
 

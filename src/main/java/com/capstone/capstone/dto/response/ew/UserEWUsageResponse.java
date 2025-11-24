@@ -1,9 +1,6 @@
 package com.capstone.capstone.dto.response.ew;
 
-import com.capstone.capstone.entity.EWRoom;
-import com.capstone.capstone.entity.User;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.capstone.capstone.dto.response.semester.SemesterResponse;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -15,4 +12,5 @@ public class UserEWUsageResponse {
     private Boolean paid;
     private LocalDate startDate;
     private LocalDate endDate;
+    private SemesterResponse semester;
 }

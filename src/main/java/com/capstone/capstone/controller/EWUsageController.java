@@ -19,4 +19,9 @@ public class EWUsageController {
         Map<String, Object> filter = new HashMap<>();
         return new BaseResponse<>(ewUsageService.getUserUsages(filter, pageable));
     }
+
+    @GetMapping("/api/user/ew/count")
+    public BaseResponse<?> getUserEWUsageCount() {
+        return new BaseResponse<>(ewUsageService.getUserUsagesCount());
+    }
 }

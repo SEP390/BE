@@ -85,6 +85,7 @@ public class EWRoomService {
             EWUsage ewUsage = new EWUsage();
             ewUsage.setEwRoom(ewRoom);
             ewUsage.setUser(user);
+            ewUsage.setSemester(semester);
             ewUsage.setElectric(electricUsed);
             ewUsage.setWater(waterUsed);
             ewUsage.setStartDate(startDate);
