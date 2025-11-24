@@ -1,13 +1,11 @@
 package com.capstone.capstone.controller;
 
-import com.capstone.capstone.dto.enums.InvoiceType;
 import com.capstone.capstone.dto.request.invoice.CreateInvoiceRequest;
 import com.capstone.capstone.dto.request.invoice.UpdateInvoiceRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
 import com.capstone.capstone.dto.response.invoice.InvoiceCountResponse;
+import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
 import com.capstone.capstone.dto.response.invoice.InvoiceResponseJoinUser;
-import com.capstone.capstone.dto.response.vnpay.VNPayResult;
 import com.capstone.capstone.service.impl.InvoiceChangeService;
 import com.capstone.capstone.service.impl.InvoiceService;
 import com.capstone.capstone.service.impl.PaymentService;
@@ -43,6 +41,11 @@ public class InvoiceController {
     @GetMapping("/api/user/invoices")
     public BaseResponse<PagedModel<InvoiceResponse>> getAllByUser(@PageableDefault Pageable pageable) {
         return new BaseResponse<>(invoiceService.getAllByUser(pageable));
+    }
+
+    @GetMapping("/api/user/invoices/count")
+    public BaseResponse<InvoiceCountResponse> getUserCount() {
+        return new BaseResponse<>(invoiceService.userCount());
     }
 
     @PreAuthorize("hasRole('MANAGER')")

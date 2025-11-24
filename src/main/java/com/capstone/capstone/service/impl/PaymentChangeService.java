@@ -30,6 +30,7 @@ public class PaymentChangeService {
         // chỉ cập nhật nếu đang PENDING (double render problem)
         if (invoice.getStatus() == PaymentStatus.PENDING) {
             if (vnPayStatus == VNPayStatus.SUCCESS) {
+                // thanh toán thành công
                 invoice = invoiceChangeService.update(invoice, PaymentStatus.SUCCESS);
             } else {
                 invoice = invoiceChangeService.update(invoice, PaymentStatus.CANCEL);

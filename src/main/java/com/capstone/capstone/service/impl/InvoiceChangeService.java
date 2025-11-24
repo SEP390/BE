@@ -40,6 +40,7 @@ public class InvoiceChangeService {
 
     public Invoice update(Invoice invoice, PaymentStatus status) {
         if (invoice.getStatus() == PaymentStatus.PENDING) {
+            // lần thanh toán cuối cùng
             Payment payment = paymentRepository.findLatestByInvoice(invoice).orElse(null);
             if (status == PaymentStatus.SUCCESS) {
                 invoice.setStatus(PaymentStatus.SUCCESS);

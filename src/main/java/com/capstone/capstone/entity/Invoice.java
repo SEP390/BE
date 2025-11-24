@@ -24,6 +24,7 @@ public class Invoice extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private InvoiceType type;
     private LocalDateTime createTime;
+    private LocalDateTime expireTime;
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 

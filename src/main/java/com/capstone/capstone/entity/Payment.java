@@ -2,9 +2,7 @@ package com.capstone.capstone.entity;
 
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,8 +16,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Payment extends BaseEntity {
+    @Enumerated(EnumType.STRING)
     private PaymentStatus status;
     private LocalDateTime createTime;
+    private LocalDateTime expireTime;
     private Long price;
 
     @ManyToOne

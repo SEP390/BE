@@ -1,24 +1,22 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
-import com.capstone.capstone.repository.RoomRepository;
-import com.capstone.capstone.repository.SlotHistoryRepository;
-import com.capstone.capstone.repository.SlotInvoiceRepository;
-import com.capstone.capstone.repository.SlotRepository;
+import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SpecQuery;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,6 +30,8 @@ public class SlotService {
     private final ModelMapper modelMapper;
     private final SlotHistoryRepository slotHistoryRepository;
     private final SlotInvoiceRepository slotInvoiceRepository;
+    private final PaymentRepository paymentRepository;
+    private final InvoiceRepository invoiceRepository;
 
     public Slot save(Slot slot) {
         return slotRepository.save(slot);
@@ -50,9 +50,43 @@ public class SlotService {
     /**
      * Get slot by current user in it
      */
+    @Transactional
     public SlotResponseJoinRoomAndDormAndPricing getCurrent() {
         User user = SecurityUtils.getCurrentUser();
-        Slot slot = getByUser(user).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
+        Slot slot = getByUser(user).orElse(null);
+        if (slot == null) return null;
+        final UUID slotId = slot.getId();
+        if (slot.getStatus() == StatusSlotEnum.LOCK) {
+            Invoice invoice = invoiceRepository.findLatestBookingInvoice(user).orElse(null);
+            Payment payment = paymentRepository.findLatestByInvoice(invoice).orElse(null);
+            // ko có payment
+            if (payment == null || invoice == null) {
+                slot.setStatus(StatusSlotEnum.AVAILABLE);
+                slot.setUser(null);
+                slot = slotRepository.save(slot);
+                return null;
+            } else {
+                // có payment hoặc invoice những đã hủy
+                if (payment.getStatus() == PaymentStatus.CANCEL || payment.getInvoice().getStatus() == PaymentStatus.CANCEL) {
+                    slot.setStatus(StatusSlotEnum.AVAILABLE);
+                    slot.setUser(null);
+                    slot = slotRepository.save(slot);
+                    return null;
+                }
+                // invoice pending nhưng hết hạn
+                if (payment.getInvoice().getStatus() == PaymentStatus.PENDING
+                        && payment.getInvoice().getExpireTime().isBefore(LocalDateTime.now())) {
+                    payment.setStatus(PaymentStatus.CANCEL);
+                    payment = paymentRepository.save(payment);
+                    invoice.setStatus(PaymentStatus.CANCEL);
+                    invoice = invoiceRepository.save(invoice);
+                    slot.setStatus(StatusSlotEnum.AVAILABLE);
+                    slot.setUser(null);
+                    slot = slotRepository.save(slot);
+                    return null;
+                }
+            }
+        }
         return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricing.class);
     }
 
@@ -95,6 +129,7 @@ public class SlotService {
 
     /**
      * Danh sách các slot đang chờ checkin
+     *
      * @param userCode mã sinh viên
      * @param pageable page, size
      * @return

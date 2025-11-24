@@ -30,6 +30,7 @@ public class TimeConfigService {
     public TimeConfigResponse create(CreateTimeConfigRequest request) {
         TimeConfig timeConfig = modelMapper.map(request, TimeConfig.class);
         timeConfig.setCreateTime(LocalDateTime.now());
+        timeConfig = timeConfigRepository.save(timeConfig);
         return modelMapper.map(timeConfig, TimeConfigResponse.class);
     }
 }

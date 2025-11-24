@@ -14,13 +14,16 @@ import com.capstone.capstone.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -33,6 +36,7 @@ public class InvoiceService {
     private final EWUsageRepository ewUsageRepository;
     private final EWPriceRepository eWPriceRepository;
     private final RoomRepository roomRepository;
+    private final SlotInvoiceRepository slotInvoiceRepository;
 
     public Invoice create(User user, long price, String reason, InvoiceType type) {
         Invoice invoice = new Invoice();
@@ -120,4 +124,41 @@ public class InvoiceService {
         });
     }
 
+    @Transactional
+    public Invoice create(User user, Slot slot, Semester nextSemester) {
+        long price = Optional.ofNullable(slot.getRoom()).map(Room::getPricing).map(RoomPricing::getPrice).orElseThrow(() -> new AppException("PRICE_NOT_FOUND"));
+        Invoice invoice = new Invoice();
+        invoice.setUser(user);
+        invoice.setPrice(price);
+        invoice.setType(InvoiceType.BOOKING);
+        invoice.setReason("Đặt phòng %s".formatted(slot.getRoom().getRoomNumber()));
+        invoice.setStatus(PaymentStatus.PENDING);
+        var now = LocalDateTime.now();
+        invoice.setCreateTime(now);
+        // thời gian hết hạn
+        invoice.setExpireTime(now.plusMinutes(10));
+        invoice = invoiceRepository.save(invoice);
+        // thông tin bổ sung
+        SlotInvoice slotInvoice = new SlotInvoice();
+        slotInvoice.setUser(user);
+        slotInvoice.setSlotId(slot.getId());
+        slotInvoice.setSlotName(slot.getSlotName());
+        slotInvoice.setRoom(slot.getRoom());
+        slotInvoice.setPrice(price);
+        slotInvoice.setSemester(nextSemester);
+        slotInvoice.setInvoice(invoice);
+        slotInvoice = slotInvoiceRepository.save(slotInvoice);
+        return invoice;
+    }
+
+    public InvoiceCountResponse userCount() {
+        User user = SecurityUtils.getCurrentUser();
+        InvoiceCountResponse res = new InvoiceCountResponse();
+        res.setTotalCount(invoiceRepository.count((r, q, c) -> {
+            return c.equal(r.get("user"), user);
+        }));
+        res.setTotalSuccess(invoiceRepository.count((r, q, c) -> c.and(c.equal(r.get("user"), user), c.equal(r.get("status"), PaymentStatus.SUCCESS))));
+        res.setTotalPending(invoiceRepository.count((r, q, c) -> c.and(c.equal(r.get("user"), user), c.equal(r.get("status"), PaymentStatus.PENDING))));
+        return res;
+    }
 }
