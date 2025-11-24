@@ -28,4 +28,5 @@ public class GetUserByIdResponse {
     private GenderEnum gender;
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
+    private String image;
 }

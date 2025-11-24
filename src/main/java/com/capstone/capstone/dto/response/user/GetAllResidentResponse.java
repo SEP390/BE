@@ -18,4 +18,5 @@ public class GetAllResidentResponse {
     private String fullName;
     private String phoneNumber;
     private String slotName;
+    private String image;
 }
