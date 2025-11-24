@@ -2,6 +2,7 @@ package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.slotHistory.SlotHistoryResponse;
+import com.capstone.capstone.dto.response.slotHistory.SlotHistoryResponseJoinUser;
 import com.capstone.capstone.service.impl.SlotHistoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,7 @@ public class SlotHistoryController {
     }
 
     @GetMapping("/api/slot-history")
-    public BaseResponse<PagedModel<SlotHistoryResponse>> getAll(
+    public BaseResponse<PagedModel<SlotHistoryResponseJoinUser>> getAll(
             @PageableDefault Pageable pageable
     ) {
         Map<String, Object> filter = new HashMap<>();

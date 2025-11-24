@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.response.slotHistory.SlotHistoryResponse;
+import com.capstone.capstone.dto.response.slotHistory.SlotHistoryResponseJoinUser;
 import com.capstone.capstone.entity.SlotHistory;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.repository.SlotHistoryRepository;
@@ -31,10 +32,10 @@ public class SlotHistoryService {
         return slotHistoryRepository.existsByUser(user);
     }
 
-    public PagedModel<SlotHistoryResponse> getAll(Map<String, Object> filter, Pageable pageable) {
+    public PagedModel<SlotHistoryResponseJoinUser> getAll(Map<String, Object> filter, Pageable pageable) {
         SpecQuery<SlotHistory> query = new SpecQuery<>();
-        query.equal(filter, "userId");
+        query.equal(filter, r -> r.get("user").get("id"), "userId");
         query.equal(filter, "roomId");
-        return new PagedModel<>(slotHistoryRepository.findAll(query.and(), pageable).map(sh -> modelMapper.map(sh, SlotHistoryResponse.class)));
+        return new PagedModel<>(slotHistoryRepository.findAll(query.and(), pageable).map(sh -> modelMapper.map(sh, SlotHistoryResponseJoinUser.class)));
     }
 }
