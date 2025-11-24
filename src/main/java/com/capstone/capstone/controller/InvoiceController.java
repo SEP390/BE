@@ -3,10 +3,9 @@ package com.capstone.capstone.controller;
 import com.capstone.capstone.dto.request.invoice.CreateInvoiceRequest;
 import com.capstone.capstone.dto.request.invoice.UpdateInvoiceRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
-import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
 import com.capstone.capstone.dto.response.invoice.InvoiceCountResponse;
+import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
 import com.capstone.capstone.dto.response.invoice.InvoiceResponseJoinUser;
-import com.capstone.capstone.dto.response.vnpay.VNPayResult;
 import com.capstone.capstone.service.impl.InvoiceChangeService;
 import com.capstone.capstone.service.impl.InvoiceService;
 import com.capstone.capstone.service.impl.PaymentService;
@@ -44,6 +43,11 @@ public class InvoiceController {
         return new BaseResponse<>(invoiceService.getAllByUser(pageable));
     }
 
+    @GetMapping("/api/user/invoices/count")
+    public BaseResponse<InvoiceCountResponse> getUserCount() {
+        return new BaseResponse<>(invoiceService.userCount());
+    }
+
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/api/invoices/count")
     public BaseResponse<InvoiceCountResponse> getCount() {
@@ -52,7 +56,7 @@ public class InvoiceController {
 
     @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/api/invoices")
-    public BaseResponse<InvoiceResponse> create(@Valid @RequestBody CreateInvoiceRequest request) {
+    public BaseResponse<?> create(@Valid @RequestBody CreateInvoiceRequest request) {
         return new BaseResponse<>(invoiceService.create(request));
     }
 

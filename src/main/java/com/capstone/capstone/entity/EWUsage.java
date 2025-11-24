@@ -3,9 +3,10 @@ package com.capstone.capstone.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -13,15 +14,24 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "ew_usage")
 public class EWUsage extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     User user;
 
+    @ManyToOne
+    @JoinColumn(name = "semester_id")
+    private Semester semester;
+
+    @ManyToOne
+    @JoinColumn(name = "ew_room_id")
+    private EWRoom ewRoom;
+
     private Integer electric;
     private Integer water;
     private Boolean paid;
 
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

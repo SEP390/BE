@@ -13,7 +13,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -34,11 +36,18 @@ public class RoomController {
     @GetMapping("/api/rooms")
     public BaseResponse<PagedModel<RoomResponseJoinPricingAndDormAndSlot>> get(
             @RequestParam(required = false) UUID dormId,
+            @RequestParam(required = false) UUID id,
             @RequestParam(required = false) Integer floor,
             @RequestParam(required = false) Integer totalSlot,
             @RequestParam(required = false) String roomNumber,
             @PageableDefault Pageable pageable) {
-        return new BaseResponse<>(roomService.get(dormId, floor, totalSlot, roomNumber, pageable));
+        Map<String, Object> filter = new HashMap<>();
+        filter.put("dormId", dormId);
+        filter.put("id", id);
+        filter.put("floor", floor);
+        filter.put("totalSlot", totalSlot);
+        filter.put("roomNumber", roomNumber);
+        return new BaseResponse<>(roomService.get(filter, pageable));
     }
 
     @GetMapping("/api/rooms/booking")

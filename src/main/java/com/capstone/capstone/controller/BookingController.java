@@ -21,4 +21,14 @@ public class BookingController {
     public BaseResponse<String> create(@RequestParam UUID slotId) {
         return new BaseResponse<>(bookingService.create(slotId));
     }
+
+    @PostMapping("/api/booking/cancel")
+    public BaseResponse<String> cancelBooking() {
+        return new BaseResponse<>(bookingService.cancel());
+    }
+
+    @PostMapping("/api/booking/payment")
+    public BaseResponse<String> paymentBooking() {
+        return new BaseResponse<>(bookingService.payment());
+    }
 }

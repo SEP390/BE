@@ -11,6 +11,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -36,9 +38,14 @@ public class SlotController {
     @GetMapping("/api/slots")
     public BaseResponse<PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser>> getAll(
             @RequestParam(required = false) String userCode,
+            @RequestParam(required = false) UUID userId,
             @RequestParam(required = false) StatusSlotEnum status,
             @PageableDefault Pageable pageable) {
-        return new BaseResponse<>(slotService.getAll(userCode, status, pageable));
+        Map<String, Object> filter = new HashMap<>();
+        filter.put("userCode", userCode);
+        filter.put("userId", userId);
+        filter.put("status", status);
+        return new BaseResponse<>(slotService.getAll(filter, pageable));
     }
 
 

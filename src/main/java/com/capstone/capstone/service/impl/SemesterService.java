@@ -17,7 +17,6 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,7 +42,7 @@ public class SemesterService {
         Sort sort = SortUtil.getSort(pageable, "startDate");
         Pageable validPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
         return new PagedModel<>(semesterRepository.findAll(
-                (name != null && !name.isBlank()) ? (r,q,c) -> c.equal(r.get("name"), name) : Specification.unrestricted(),
+                (name != null && !name.isBlank()) ? (r, q, c) -> c.equal(r.get("name"), name) : Specification.unrestricted(),
                 validPageable
         ).map(semester -> modelMapper.map(semester, SemesterResponse.class)));
     }
@@ -57,7 +56,7 @@ public class SemesterService {
     }
 
     public SemesterResponse create(CreateSemesterRequest request) {
-        Semester semester = modelMapper.map(request,Semester.class);
+        Semester semester = modelMapper.map(request, Semester.class);
         semester = create(semester);
         // TODO: check overlapping date
         return modelMapper.map(semester, SemesterResponse.class);
@@ -67,7 +66,7 @@ public class SemesterService {
         if (semesterRepository.exists((root, query, cb) -> cb.equal(root.get("name"), semester.getName()))) {
             throw new AppException("SEMESTER_NAME_EXISTED");
         }
-        if (semesterRepository.exists((r,q,c) -> {
+        if (semesterRepository.exists((r, q, c) -> {
             return c.or(
                     c.between(r.get("startDate"), semester.getStartDate(), semester.getEndDate()),
                     c.between(r.get("endDate"), semester.getStartDate(), semester.getEndDate())

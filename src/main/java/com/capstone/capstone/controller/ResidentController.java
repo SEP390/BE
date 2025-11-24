@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
@@ -27,6 +28,8 @@ public class ResidentController {
     @GetMapping("/api/residents/search")
     public BaseResponse<PagedModel<CoreUserResponse>> search(
             @RequestParam(required = false) String username,
+            @RequestParam(required = false) UUID id,
+            @RequestParam(required = false) UUID roomId,
             @RequestParam(required = false) String fullName,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) LocalDate dob,
@@ -37,6 +40,8 @@ public class ResidentController {
     ) {
         var builder = new SpecQuery<User>();
         builder.like("username", username);
+        builder.equal("id", id);
+        builder.equal(r -> r.get("slot").get("room").get("id"), roomId);
         builder.like("fullName", fullName);
         builder.like("userCode", userCode);
         builder.like("phoneNumber", phoneNumber);
