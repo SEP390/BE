@@ -20,4 +20,5 @@ public class GetUserInformationResponse {
     private String StudentId;
     private GenderEnum gender;
     private String slotName;
+    private String image;
 }

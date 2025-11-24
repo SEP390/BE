@@ -29,6 +29,9 @@ public class User extends BaseEntity implements UserDetails {
     private String userCode;
     private String phoneNumber;
 
+    @Column(name = "image", columnDefinition = "TEXT")
+    private String image;
+
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
 
