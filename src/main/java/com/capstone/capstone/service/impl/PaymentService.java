@@ -5,6 +5,7 @@ import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
 import com.capstone.capstone.dto.response.invoice.PaymentResponse;
+import com.capstone.capstone.dto.response.vnpay.VNPayResult;
 import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
@@ -35,15 +36,8 @@ public class PaymentService {
     private final EWUsageRepository ewUsageRepository;
     private final SemesterRepository semesterRepository;
 
-    /**
-     * Thanh toán
-     *
-     * @param request request
-     * @return
-     */
     @Transactional
-    public PaymentResponse handle(HttpServletRequest request) {
-        var res = vnPayService.verify(request);
+    public PaymentResponse handle(VNPayResult res) {
         var paymentId = res.getId();
         var payment = paymentRepository.findById(paymentId).orElseThrow();
         var invoice = payment.getInvoice();
@@ -93,6 +87,12 @@ public class PaymentService {
             }
         }
         return modelMapper.map(payment, PaymentResponse.class);
+    }
+
+    @Transactional
+    public PaymentResponse handle(HttpServletRequest request) {
+        var res = vnPayService.verify(request);
+        return handle(res);
     }
 
     public Payment create(Invoice invoice) {

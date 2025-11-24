@@ -1,11 +1,17 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.InvoiceType;
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.checkin.GuardCheckinRequest;
+import com.capstone.capstone.dto.request.slot.SwapSlotRequest;
+import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
+import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDorm;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
+import com.capstone.capstone.dto.response.slot.SwapSlotResponse;
+import com.capstone.capstone.dto.response.slotHistory.SlotHistoryResponse;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
@@ -33,6 +39,8 @@ public class SlotService {
     private final SlotInvoiceRepository slotInvoiceRepository;
     private final PaymentRepository paymentRepository;
     private final InvoiceRepository invoiceRepository;
+    private final UserRepository userRepository;
+    private final SemesterService semesterService;
 
     public Slot save(Slot slot) {
         return slotRepository.save(slot);
@@ -196,7 +204,7 @@ public class SlotService {
 
     public SlotResponseJoinRoomAndDormAndPricingAndUser checkout(UUID id) {
         Slot slot = slotRepository.findById(id).orElseThrow();
-        User user = Optional.ofNullable(slot.getUser()).orElseThrow();
+        User user = Optional.ofNullable(slot.getUser()).orElseThrow(() -> new AppException("SLOT_EMPTY"));
         // chuyển trạng thái sang available
         slot.setStatus(StatusSlotEnum.AVAILABLE);
         // xóa user
@@ -208,5 +216,53 @@ public class SlotService {
             his = slotHistoryRepository.save(his);
         }
         return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);
+    }
+
+    @Transactional
+    public SwapSlotResponse swap(SwapSlotRequest request) {
+        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new AppException("USER_NOT_FOUND"));
+        Slot currentSlot = Optional.ofNullable(user.getSlot()).orElseThrow(() -> new AppException("CURRENT_SLOT_NOT_FOUND"));
+        Slot newSlot = slotRepository.findById(request.getSlotId()).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
+        RoomPricing currentPricing = newSlot.getRoom().getPricing();
+        RoomPricing newPricing = currentSlot.getRoom().getPricing();
+        if (newPricing.getTotalSlot() < currentPricing.getTotalSlot())
+            throw new AppException("SLOT_LOWER_PRICE");
+        if (currentSlot.getId().equals(newSlot.getId())) throw new AppException("SAME_SLOT");
+
+        SwapSlotResponse response = new SwapSlotResponse();
+        if (newPricing.getTotalSlot() > currentPricing.getTotalSlot()) {
+            Invoice invoice = new Invoice();
+            invoice.setStatus(PaymentStatus.PENDING);
+            invoice.setUser(user);
+            invoice.setType(InvoiceType.SWAP);
+            invoice.setReason("Tiền đổi phòng %s sang %s".formatted(currentSlot.getRoom().getRoomNumber(), newSlot.getRoom().getRoomNumber()));
+            invoice.setCreateTime(LocalDateTime.now());
+            invoice = invoiceRepository.save(invoice);
+            response.setInvoice(modelMapper.map(invoice, InvoiceResponse.class));
+        }
+        Semester semester = semesterService.getCurrent().orElseThrow(() -> new AppException("SEMESTER_NOT_FOUND"));
+        currentSlot.setUser(null);
+        currentSlot.setStatus(StatusSlotEnum.AVAILABLE);
+        currentSlot = slotRepository.save(currentSlot);
+        var his = slotHistoryRepository.findCurrent(user, currentSlot.getId()).orElse(null);
+        if (his != null) {
+            his.setCheckout(LocalDateTime.now());
+            his = slotHistoryRepository.save(his);
+        }
+        newSlot.setUser(user);
+        newSlot.setStatus(StatusSlotEnum.UNAVAILABLE);
+        newSlot = slotRepository.save(newSlot);
+        SlotHistory slotHistory = new SlotHistory();
+        slotHistory.setCheckin(LocalDateTime.now());
+        slotHistory.setSlotId(newSlot.getId());
+        slotHistory.setSlotName(newSlot.getSlotName());
+        slotHistory.setRoom(newSlot.getRoom());
+        slotHistory.setUser(user);
+        slotHistory.setSemester(semester);
+        slotHistory = slotHistoryRepository.save(slotHistory);
+        response.setOldSlot(modelMapper.map(currentSlot, SlotResponseJoinRoomAndDorm.class));
+        response.setNewSlot(modelMapper.map(newSlot, SlotResponseJoinRoomAndDorm.class));
+        response.setSlotHistory(modelMapper.map(slotHistory, SlotHistoryResponse.class));
+        return response;
     }
 }

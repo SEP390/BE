@@ -62,7 +62,7 @@ public class InvoiceController {
 
     @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/api/invoices/{id}")
-    public BaseResponse<InvoiceResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateInvoiceRequest request) {
+    public BaseResponse<String> update(@PathVariable UUID id, @Valid @RequestBody UpdateInvoiceRequest request) {
         return new BaseResponse<>(invoiceChangeService.update(id, request));
     }
 }

@@ -1,14 +1,17 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
+import com.capstone.capstone.dto.request.slot.SwapSlotRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
+import com.capstone.capstone.dto.response.slot.SwapSlotResponse;
 import com.capstone.capstone.service.impl.SlotService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -48,13 +51,15 @@ public class SlotController {
         return new BaseResponse<>(slotService.getAll(filter, pageable));
     }
 
-
-    /**
-     * [Guard] checkin cho slot
-     * @param id id của slot
-     */
+    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/api/slots/checkout/{id}")
     public BaseResponse<SlotResponseJoinRoomAndDormAndPricingAndUser> checkout(@PathVariable UUID id) {
         return new BaseResponse<>(slotService.checkout(id));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @PostMapping("/api/slots/swap")
+    public BaseResponse<SwapSlotResponse> swap(@RequestBody SwapSlotRequest request) {
+        return new BaseResponse<>(slotService.swap(request));
     }
 }
