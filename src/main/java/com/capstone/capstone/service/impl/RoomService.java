@@ -86,9 +86,10 @@ public class RoomService {
     }
 
     @Transactional
-    public List<RoommateResponse> getRoommates(UUID id) {
+    public List<RoommateResponse> getRoommates() {
         User user = SecurityUtils.getCurrentUser();
-        Room room = roomRepository.getReferenceById(id);
+        Slot slot = Optional.ofNullable(user.getSlot()).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
+        Room room = slot.getRoom();
         long totalQuestion = surveyQuestionRepository.count();
         List<User> users = roomRepository.findUsers(room).stream().filter(u -> !u.getId().equals(user.getId())).collect(Collectors.toList());
         Map<UUID, Double> matching = matchingRepository.computeUserMatching(user, users).stream().collect(Collectors.toMap(UserMatching::getId, m -> m.getSameOptionCount() / totalQuestion * 100));

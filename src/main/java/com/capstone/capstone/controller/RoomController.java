@@ -65,9 +65,9 @@ public class RoomController {
         return new BaseResponse<>(roomService.current());
     }
 
-    @GetMapping("/api/rooms/{id}/roommates")
-    public BaseResponse<List<RoommateResponse>> getRoommates(@PathVariable UUID id) {
-        return new BaseResponse<>(roomService.getRoommates(id));
+    @GetMapping("/api/user/roommates")
+    public BaseResponse<List<RoommateResponse>> getRoommates() {
+        return new BaseResponse<>(roomService.getRoommates());
     }
 
     @GetMapping("/api/rooms/{id}/users")
