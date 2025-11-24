@@ -56,6 +56,13 @@ public class SpecQuery<T> {
         });
     }
 
+    public void equal(Map<String, Object> source, Function<Root<T>, Expression<String>> selector, String prop) {
+        if (source.get(prop) == null) return;
+        specs.add((r, q, c) -> {
+            return c.equal(selector.apply(r), source.get(prop));
+        });
+    }
+
     public Specification<T> and() {
         return Specification.allOf(specs);
     }

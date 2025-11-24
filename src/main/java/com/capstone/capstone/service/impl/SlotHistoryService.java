@@ -20,11 +20,11 @@ public class SlotHistoryService {
     private final SlotHistoryRepository slotHistoryRepository;
     private final ModelMapper modelMapper;
 
-    public PagedModel<SlotHistoryResponse> getAllByCurrentUser(Pageable pageable) {
+    public PagedModel<SlotHistoryResponse> getAllByCurrentUser(Map<String, Object> filter, Pageable pageable) {
         var user = SecurityUtils.getCurrentUser();
-        return new PagedModel<>(slotHistoryRepository.findAll((r, q, c) -> {
-            return c.equal(r.get("user"), user);
-        }, pageable).map(sh -> modelMapper.map(sh, SlotHistoryResponse.class)));
+        SpecQuery<SlotHistory> query = new SpecQuery<>();
+        query.equal("user", user);
+        return new PagedModel<>(slotHistoryRepository.findAll(query.and(), pageable).map(sh -> modelMapper.map(sh, SlotHistoryResponse.class)));
     }
 
     public boolean existsByUser(User user) {

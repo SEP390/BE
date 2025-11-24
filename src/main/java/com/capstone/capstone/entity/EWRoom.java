@@ -1,12 +1,10 @@
 package com.capstone.capstone.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Chỉ số điện nước của phòng
@@ -27,7 +25,12 @@ public class EWRoom extends BaseEntity {
     @JoinColumn(name = "semester_id")
     private Semester semester;
 
+    @OneToMany(mappedBy = "ewRoom")
+    private List<EWUsage> usages;
+
     private Integer electric;
     private Integer water;
+    private Integer electricUsed;
+    private Integer waterUsed;
     private LocalDate createDate;
 }

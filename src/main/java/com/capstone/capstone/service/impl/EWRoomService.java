@@ -8,6 +8,7 @@ import com.capstone.capstone.repository.EWRoomRepository;
 import com.capstone.capstone.repository.EWUsageRepository;
 import com.capstone.capstone.repository.RoomRepository;
 import com.capstone.capstone.repository.SemesterRepository;
+import com.capstone.capstone.util.SpecQuery;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -31,17 +33,9 @@ public class EWRoomService {
     private final SemesterService semesterService;
     private final SemesterRepository semesterRepository;
 
-    public PagedModel<EWRoomResponse> getResponseByRoom(UUID roomId, Pageable pageable) {
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "createTime"));
-        return new PagedModel<>(ewRoomRepository.findAll((r, q, c) -> {
-            return c.equal(r.get("room"), room);
-        }, pageRequest).map(ewRoom -> modelMapper.map(ewRoom, EWRoomResponse.class)));
-    }
-
     @Transactional
-    public EWRoomResponse create(UUID roomId, CreateEWRoomRequest request) {
-        Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
+    public EWRoomResponse create(CreateEWRoomRequest request) {
+        Room room = roomRepository.findById(request.getRoomId()).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
         EWRoom ewRoom = new EWRoom();
         ewRoom.setRoom(room);
         ewRoom.setElectric(request.getElectric());
@@ -53,6 +47,9 @@ public class EWRoomService {
         Semester previousSemester = semesterRepository.findPrevious().orElseThrow(() -> new AppException("PREVIOUS_SEMESTER_NOT_FOUND"));
         var recentInCurrentSemester = ewRoomRepository.findRecent(room, semester).orElse(null);
         var recentInPreviousSemester = ewRoomRepository.findRecent(room, previousSemester).orElse(null);
+
+        if (recentInCurrentSemester != null && recentInCurrentSemester.getCreateDate().equals(LocalDate.now()))
+            throw new AppException("ALREADY_CREATE");
 
         List<User> users = roomRepository.findUsers(room);
 
@@ -80,9 +77,13 @@ public class EWRoomService {
         }
         if (electricUsed < 0) throw new AppException("ELECTRIC_USED_NEGATIVE");
         if (waterUsed < 0) throw new AppException("WATER_USED_NEGATIVE");
+        ewRoom.setElectricUsed(electricUsed);
+        ewRoom.setWaterUsed(waterUsed);
+        ewRoom.setSemester(semester);
         ewRoom = ewRoomRepository.save(ewRoom);
         for (User user : users) {
             EWUsage ewUsage = new EWUsage();
+            ewUsage.setEwRoom(ewRoom);
             ewUsage.setUser(user);
             ewUsage.setElectric(electricUsed);
             ewUsage.setWater(waterUsed);
@@ -92,5 +93,11 @@ public class EWRoomService {
             ewUsageRepository.save(ewUsage);
         }
         return modelMapper.map(ewRoom, EWRoomResponse.class);
+    }
+
+    public PagedModel<EWRoomResponse> getAll(Map<String, Object> filter, Pageable pageable) {
+        SpecQuery<EWRoom> query = new SpecQuery<>();
+        query.equal(filter, r -> r.get("room").get("id"), "roomId");
+        return new PagedModel<>(ewRoomRepository.findAll(query.and() , pageable).map(ewRoom -> modelMapper.map(ewRoom, EWRoomResponse.class)));
     }
 }

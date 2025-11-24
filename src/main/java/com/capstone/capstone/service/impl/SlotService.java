@@ -3,6 +3,7 @@ package com.capstone.capstone.service.impl;
 import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
+import com.capstone.capstone.dto.request.checkin.GuardCheckinRequest;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
 import com.capstone.capstone.entity.*;
@@ -144,12 +145,9 @@ public class SlotService {
 
     /**
      * [Guard] checkin slot cho sinh viên
-     *
-     * @param id id của slot
-     * @return slot
      */
-    public SlotResponseJoinRoomAndDormAndPricingAndUser checkin(UUID id) {
-        Slot slot = slotRepository.findById(id).orElseThrow();
+    public SlotResponseJoinRoomAndDormAndPricingAndUser checkin(GuardCheckinRequest request) {
+        Slot slot = slotRepository.findById(request.getSlotId()).orElseThrow();
         User user = Optional.ofNullable(slot.getUser()).orElseThrow();
         // chuyển trạng thái sang unavailable
         slot.setStatus(StatusSlotEnum.UNAVAILABLE);

@@ -20,6 +20,10 @@ public class EWUsage extends BaseEntity {
     @JoinColumn(name = "user_id")
     User user;
 
+    @ManyToOne
+    @JoinColumn(name = "ew_room_id")
+    private EWRoom ewRoom;
+
     private Integer electric;
     private Integer water;
     private Boolean paid;
