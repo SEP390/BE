@@ -13,12 +13,15 @@ import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.EmployeeRepository;
 import com.capstone.capstone.repository.SlotRepository;
 import com.capstone.capstone.repository.UserRepository;
+import com.capstone.capstone.service.interfaces.IUploadService;
 import com.capstone.capstone.service.interfaces.IUserService;
 import com.capstone.capstone.util.AuthenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,10 +33,10 @@ public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final SlotRepository  slotRepository;
-    private final EmployeeRepository employeeRepository;
+    private final IUploadService uploadService;
 
     @Override
-    public CreateAccountResponse createAccount(CreateUserRequest createUserRequest) {
+    public CreateAccountResponse createAccount(CreateUserRequest createUserRequest){
         List<User> users = userRepository.findAll();
         if (users.stream().anyMatch(user -> user.getUsername().equals(createUserRequest.getUsername()))) {
             throw new BadHttpRequestException("Username is already taken");
@@ -48,6 +51,7 @@ public class UserService implements IUserService {
         user.setEmail(createUserRequest.getEmail());
         user.setGender(createUserRequest.getGender());
         user.setDob(createUserRequest.getDob());
+        user.setImage("https://cloud.appwrite.io/v1/storage/buckets/69233efb000b703c9ce8/files/6923737b558f8b5da94d/view?project=69233e8f00382d7ebe1d");
         userRepository.save(user);
         CreateAccountResponse createAccountResponse = new CreateAccountResponse();
         createAccountResponse.setUsername(user.getUsername());
@@ -68,6 +72,7 @@ public class UserService implements IUserService {
         getUserInformationResponse.setGender(user.getGender());
         getUserInformationResponse.setStudentId(user.getUserCode());
         getUserInformationResponse.setSlotName(slot == null ? null : slot.getSlotName());
+        getUserInformationResponse.setImage(user.getImage());
         return getUserInformationResponse;
     }
 
@@ -82,6 +87,7 @@ public class UserService implements IUserService {
             getAllResidentResponse.setEmail(user.getEmail());
             getAllResidentResponse.setFullName(user.getFullName());
             getAllResidentResponse.setPhoneNumber(user.getPhoneNumber());
+            getAllResidentResponse.setImage(user.getImage());
             var slot = slotRepository.findByUser(user);
             getAllResidentResponse.setSlotName(
                     slot != null ? slot.getSlotName() : null
@@ -104,6 +110,7 @@ public class UserService implements IUserService {
         getUserByIdResponse.setPhoneNumber(responseUser.getPhoneNumber());
         getUserByIdResponse.setGender(responseUser.getGender());
         getUserByIdResponse.setRole(responseUser.getRole());
+        getUserByIdResponse.setImage(responseUser.getImage());
         return getUserByIdResponse;
     }
 }

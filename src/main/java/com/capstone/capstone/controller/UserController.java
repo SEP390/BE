@@ -22,13 +22,13 @@ import java.util.UUID;
 public class UserController {
     private final IUserService userService;
 
-    @PostMapping("/register")
-    public ResponseEntity<BaseResponse<CreateAccountResponse>> RegisterUser(@RequestBody CreateUserRequest createUserRequest) {
+    @PostMapping()
+    public ResponseEntity<BaseResponse<CreateAccountResponse>> CreateAccount(@RequestBody CreateUserRequest createUserRequest) {
         CreateAccountResponse createAccountResponse = userService.createAccount(createUserRequest);
         BaseResponse<CreateAccountResponse> baseResponse = new BaseResponse<>();
         baseResponse.setData(createAccountResponse);
         baseResponse.setStatus(HttpStatus.CREATED.value());
-        baseResponse.setMessage("Register Successfully");
+        baseResponse.setMessage("Create Successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(baseResponse);
     }
     @GetMapping(ApiConstant.USER.PROFILE)
