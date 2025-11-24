@@ -11,6 +11,7 @@ import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.SecurityUtils;
+import com.capstone.capstone.util.SpecQuery;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
@@ -50,6 +51,12 @@ public class InvoiceService {
     }
 
     public void createElectricInvoice(User user, Semester semester, EWPrice price) {
+        var query = new SpecQuery<Invoice>();
+        query.equal("user", user);
+        query.equal("type", InvoiceType.EW);
+        query.equal("status", PaymentStatus.PENDING);
+        // đang có hóa đơn chưa trả, ko tạo
+        if (invoiceRepository.exists(query.and())) return;
         boolean containPaid = ewUsageRepository.containsPaid(user, semester.getStartDate(), semester.getEndDate());
         List<EWUsage> usages = ewUsageRepository.findAllUnpaid(user, semester.getStartDate(), semester.getEndDate());
         usages.sort(Comparator.comparing(EWUsage::getStartDate));
@@ -61,10 +68,10 @@ public class InvoiceService {
             priceToPay = totalElectricUsed * price.getElectricPrice() + totalWaterUsed * price.getWaterPrice();
         } else {
             if (totalElectricUsed > price.getMaxElectricIndex()) {
-                priceToPay += (totalElectricUsed - price.getMaxElectricIndex()) * price.getMaxElectricIndex();
+                priceToPay += (totalElectricUsed - price.getMaxElectricIndex()) * price.getElectricPrice();
             }
             if (totalWaterUsed > price.getMaxWaterIndex()) {
-                priceToPay += (totalWaterUsed - price.getMaxWaterIndex()) * price.getMaxWaterIndex();
+                priceToPay += (totalWaterUsed - price.getMaxWaterIndex()) * price.getWaterPrice();
             }
         }
         if (priceToPay > 0) {
@@ -83,7 +90,7 @@ public class InvoiceService {
             Room room = roomRepository.findById(request.getRoomId()).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
             users = roomRepository.findUsers(room);
         } else if (request.getSubject() == CreateInvoiceSubject.USER) {
-            users = request.getUsers().stream().map(id -> userRepository.findById(id).orElseThrow(() -> new AppException("USER_NOT_FOUND", id))).toList();
+            users = request.getUsers().stream().map(id -> userRepository.findById(id.getUserId()).orElseThrow(() -> new AppException("USER_NOT_FOUND", id))).toList();
         } else throw new AppException("NO_SUBJECT");
         if (request.getType() == InvoiceType.EW) {
             EWPrice price = eWPriceRepository.getCurrent().orElseThrow(() -> new AppException("EW_PRICE_NOT_FOUND"));

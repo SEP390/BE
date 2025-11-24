@@ -12,6 +12,11 @@ public class CreateInvoiceRequest {
     private String reason;
     private Long price;
     private UUID roomId;
-    private List<UUID> users;
+    private List<UserId> users;
     private InvoiceType type;
+
+    @Data
+    public static class UserId {
+        private UUID userId;
+    }
 }

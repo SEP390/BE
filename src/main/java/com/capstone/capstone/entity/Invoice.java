@@ -31,6 +31,9 @@ public class Invoice extends BaseEntity {
     @OneToOne(mappedBy = "invoice")
     private SlotInvoice slotInvoice;
 
+    @OneToOne(mappedBy = "invoice")
+    private EWInvoice ewInvoice;
+
     @OneToMany(mappedBy = "invoice")
     private List<Payment> payments;
 }

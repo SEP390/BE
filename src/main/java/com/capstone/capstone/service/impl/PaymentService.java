@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,6 +32,8 @@ public class PaymentService {
     private final SlotHistoryRepository slotHistoryRepository;
     private final RoomRepository roomRepository;
     private final ModelMapper modelMapper;
+    private final EWUsageRepository ewUsageRepository;
+    private final SemesterRepository semesterRepository;
 
     /**
      * Thanh toán
@@ -67,6 +70,13 @@ public class PaymentService {
                     slotHistory.setUser(slot.getUser());
                     slotHistory.setSemester(invoice.getSlotInvoice().getSemester());
                     slotHistoryRepository.save(slotHistory);
+                } else if (invoice.getType() == InvoiceType.EW) {
+                    Semester semester = semesterRepository.findCurrent();
+                    List<EWUsage> usages = ewUsageRepository.findAllUnpaid(invoice.getUser(), semester.getStartDate(), semester.getEndDate());
+                    for (EWUsage usage : usages) {
+                        usage.setPaid(true);
+                    }
+                    ewUsageRepository.saveAll(usages);
                 }
             } else {
                 payment.setStatus(PaymentStatus.CANCEL);
