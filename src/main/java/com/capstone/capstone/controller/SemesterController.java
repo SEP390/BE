@@ -25,36 +25,36 @@ public class SemesterController {
     public BaseResponse<PagedModel<SemesterResponse>> getAll(
             @RequestParam(required = false) String name,
             @PageableDefault Pageable pageable) {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getAll(name, pageable));
+        return new BaseResponse<>(semesterService.getAll(name, pageable));
     }
 
     @GetMapping("/api/semesters/current")
     public BaseResponse<SemesterResponse> getCurrent() {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getCurrentResponse());
+        return new BaseResponse<>(semesterService.getCurrentResponse());
     }
 
     @GetMapping("/api/semesters/next")
     public BaseResponse<SemesterResponse> getNext() {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getNextResponse());
+        return new BaseResponse<>(semesterService.getNextResponse());
     }
 
     @GetMapping("/api/semesters/{id}")
     public BaseResponse<SemesterResponse> getByName(@PathVariable UUID id) {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.getResponseById(id));
+        return new BaseResponse<>(semesterService.getResponseById(id));
     }
 
     @PostMapping("/api/semesters")
     public BaseResponse<SemesterResponse> create(@RequestBody CreateSemesterRequest request) {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.create(request));
+        return new BaseResponse<>(semesterService.create(request));
     }
 
     @PostMapping("/api/semesters/{id}")
     public BaseResponse<SemesterResponse> update(@PathVariable UUID id, @RequestBody @Valid UpdateSemesterRequest request) {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.update(id, request));
+        return new BaseResponse<>(semesterService.update(id, request));
     }
 
     @DeleteMapping("/api/semesters/{id}")
     public BaseResponse<SemesterResponse> delete(@PathVariable UUID id) {
-        return new BaseResponse<>(HttpStatus.OK.value(), "success", semesterService.delete(id));
+        return new BaseResponse<>(semesterService.delete(id));
     }
 }

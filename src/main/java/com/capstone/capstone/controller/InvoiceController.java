@@ -1,5 +1,7 @@
 package com.capstone.capstone.controller;
 
+import com.capstone.capstone.dto.enums.InvoiceType;
+import com.capstone.capstone.dto.enums.PaymentStatus;
 import com.capstone.capstone.dto.request.invoice.CreateInvoiceRequest;
 import com.capstone.capstone.dto.request.invoice.UpdateInvoiceRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
@@ -17,6 +19,9 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -28,8 +33,20 @@ public class InvoiceController {
 
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/api/invoices")
-    public BaseResponse<PagedModel<InvoiceResponseJoinUser>> getAll(@PageableDefault Pageable pageable) {
-        return new BaseResponse<>(invoiceService.getAll(pageable));
+    public BaseResponse<PagedModel<InvoiceResponseJoinUser>> getAll(
+            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) InvoiceType type,
+            @RequestParam(required = false) PaymentStatus status,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @PageableDefault Pageable pageable) {
+        Map<String, Object> filter = new HashMap<>();
+        filter.put("userId", userId);
+        filter.put("type", type);
+        filter.put("status", status);
+        filter.put("startDate", startDate);
+        filter.put("endDate", endDate);
+        return new BaseResponse<>(invoiceService.getAll(filter, pageable));
     }
 
     @PreAuthorize("hasRole('MANAGER') or @invoiceService.authorize(#id)")
@@ -39,8 +56,18 @@ public class InvoiceController {
     }
 
     @GetMapping("/api/user/invoices")
-    public BaseResponse<PagedModel<InvoiceResponse>> getAllByUser(@PageableDefault Pageable pageable) {
-        return new BaseResponse<>(invoiceService.getAllByUser(pageable));
+    public BaseResponse<PagedModel<InvoiceResponse>> getAllByUser(
+            @RequestParam(required = false) InvoiceType type,
+            @RequestParam(required = false) PaymentStatus status,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @PageableDefault Pageable pageable) {
+        Map<String, Object> filter = new HashMap<>();
+        filter.put("type", type);
+        filter.put("status", status);
+        filter.put("startDate", startDate);
+        filter.put("endDate", endDate);
+        return new BaseResponse<>(invoiceService.getAllByUser(filter, pageable));
     }
 
     @GetMapping("/api/user/invoices/count")
@@ -62,7 +89,7 @@ public class InvoiceController {
 
     @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/api/invoices/{id}")
-    public BaseResponse<String> update(@PathVariable UUID id, @Valid @RequestBody UpdateInvoiceRequest request) {
+    public BaseResponse<InvoiceResponseJoinUser> update(@PathVariable UUID id, @Valid @RequestBody UpdateInvoiceRequest request) {
         return new BaseResponse<>(invoiceChangeService.update(id, request));
     }
 }

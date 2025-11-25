@@ -99,6 +99,8 @@ public class EWRoomService {
     public PagedModel<EWRoomResponse> getAll(Map<String, Object> filter, Pageable pageable) {
         SpecQuery<EWRoom> query = new SpecQuery<>();
         query.equal(filter, r -> r.get("room").get("id"), "roomId");
+        query.equal(filter, r -> r.get("semester").get("id"), "semesterId");
+        query.betweenDate(filter, "createDate", "startDate", "endDate");
         return new PagedModel<>(ewRoomRepository.findAll(query.and() , pageable).map(ewRoom -> modelMapper.map(ewRoom, EWRoomResponse.class)));
     }
 }

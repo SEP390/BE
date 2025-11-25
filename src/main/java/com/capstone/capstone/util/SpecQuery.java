@@ -5,6 +5,8 @@ import jakarta.persistence.criteria.Root;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +65,29 @@ public class SpecQuery<T> {
         });
     }
 
+    public void addSpec(Specification<T> spec) {
+        specs.add(spec);
+    }
+
     public Specification<T> and() {
         return Specification.allOf(specs);
+    }
+
+    public void timeBetweenDate(Map<String, Object> source, String time, String dateA, String dateB) {
+        if (source.get(dateA) == null) return;
+        if (source.get(dateB) == null) return;
+        LocalDateTime aStart = ((LocalDate) source.get(dateA)).atStartOfDay();
+        LocalDateTime bEnd = ((LocalDate) source.get(dateB)).plusDays(1).atStartOfDay();
+        specs.add((r,q,c) -> {
+            return c.and(c.greaterThanOrEqualTo(r.get(time), aStart), c.lessThanOrEqualTo(r.get(time), bEnd));
+        });
+    }
+
+    public void betweenDate(Map<String, Object> source, String date, String dateA, String dateB) {
+        if (source.get(dateA) == null) return;
+        if (source.get(dateB) == null) return;
+        specs.add((r,q,c) -> {
+            return c.and(c.greaterThanOrEqualTo(r.get(date), dateA), c.lessThanOrEqualTo(r.get(date), dateB));
+        });
     }
 }

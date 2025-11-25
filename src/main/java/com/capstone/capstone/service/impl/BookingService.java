@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -143,5 +144,15 @@ public class BookingService {
             throw new AppException("INVOICE_EXPIRED");
         }
         return vnPayService.createPaymentUrl(payment.getId(), payment.getCreateTime(), payment.getPrice());
+    }
+
+    public void extend() {
+        User user = SecurityUtils.getCurrentUser();
+        TimeConfig timeConfig = timeConfigService.getCurrent().orElseThrow(() -> new AppException("TIME_CONFIG_NOT_FOUND"));
+        // đã từng dặt phòng
+        if (!slotHistoryService.existsByUser(user)) throw new AppException("SLOT_NOT_FOUND");
+        LocalDate today = LocalDate.now();
+        if (!(today.isBefore(timeConfig.getEndExtendDate()) && today.isAfter(timeConfig.getStartExtendDate())))
+            throw new AppException("EXTEND_DATE_NOT_START", List.of(timeConfig.getEndExtendDate(), timeConfig.getStartExtendDate()));
     }
 }

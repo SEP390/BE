@@ -7,6 +7,7 @@ import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.SemesterRepository;
 import com.capstone.capstone.util.SortUtil;
+import com.capstone.capstone.util.SpecQuery;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
@@ -39,12 +40,9 @@ public class SemesterService {
     }
 
     public PagedModel<SemesterResponse> getAll(String name, Pageable pageable) {
-        Sort sort = SortUtil.getSort(pageable, "startDate");
-        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        return new PagedModel<>(semesterRepository.findAll(
-                (name != null && !name.isBlank()) ? (r, q, c) -> c.equal(r.get("name"), name) : Specification.unrestricted(),
-                validPageable
-        ).map(semester -> modelMapper.map(semester, SemesterResponse.class)));
+        var query = new SpecQuery<Semester>();
+        query.like("name", name);
+        return new PagedModel<>(semesterRepository.findAll(query.and(), pageable).map(semester -> modelMapper.map(semester, SemesterResponse.class)));
     }
 
     public SemesterResponse getResponseById(UUID id) {

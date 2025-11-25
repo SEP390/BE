@@ -6,5 +6,5 @@ import lombok.Data;
 
 @Data
 public class UpdateInvoiceRequest {
-    private VNPayStatus status;
+    private PaymentStatus status;
 }

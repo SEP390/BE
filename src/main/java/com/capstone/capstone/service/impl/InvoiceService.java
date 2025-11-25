@@ -11,24 +11,19 @@ import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.SecurityUtils;
-import com.capstone.capstone.util.SortUtil;
 import com.capstone.capstone.util.SpecQuery;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -108,17 +103,23 @@ public class InvoiceService {
         return "SUCCESS";
     }
 
-    public PagedModel<InvoiceResponse> getAllByUser(Pageable pageable) {
+    public PagedModel<InvoiceResponse> getAllByUser(Map<String, Object> filter, Pageable pageable) {
         User user = SecurityUtils.getCurrentUser();
-        Sort sort = Sort.by(Sort.Direction.DESC, "createTime");
-        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        return new PagedModel<>(invoiceRepository.findAll((r, q, c) -> {
-            return c.equal(r.get("user"), user);
-        }, pageRequest).map(invoice -> modelMapper.map(invoice, InvoiceResponse.class)));
+        var query = new SpecQuery<Invoice>();
+        query.equal("user", user);
+        query.equal(filter, "status");
+        query.equal(filter, "type");
+        query.timeBetweenDate(filter, "createTime", "startDate", "endDate");
+        return new PagedModel<>(invoiceRepository.findAll(query.and(), pageable).map(invoice -> modelMapper.map(invoice, InvoiceResponse.class)));
     }
 
-    public PagedModel<InvoiceResponseJoinUser> getAll(Pageable pageable) {
-        return new PagedModel<>(invoiceRepository.findAll(pageable).map(invoice -> modelMapper.map(invoice, InvoiceResponseJoinUser.class)));
+    public PagedModel<InvoiceResponseJoinUser> getAll(Map<String, Object> filter, Pageable pageable) {
+        var query = new SpecQuery<Invoice>();
+        query.equal(filter, r -> r.get("user").get("id"), "userId");
+        query.equal(filter, "status");
+        query.equal(filter, "type");
+        query.timeBetweenDate(filter, "createTime", "startDate", "endDate");
+        return new PagedModel<>(invoiceRepository.findAll(query.and(), pageable).map(invoice -> modelMapper.map(invoice, InvoiceResponseJoinUser.class)));
     }
 
     public InvoiceCountResponse count() {

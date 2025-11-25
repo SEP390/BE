@@ -190,18 +190,6 @@ public class SlotService {
         }
     }
 
-    public void book(Slot slot, Semester semester) {
-        slot.setStatus(StatusSlotEnum.CHECKIN);
-        SlotHistory slotHistory = new SlotHistory();
-        slotRepository.save(slot);
-        slotHistory.setSlotId(slot.getId());
-        slotHistory.setSlotName(slot.getSlotName());
-        slotHistory.setRoom(slot.getRoom());
-        slotHistory.setUser(slot.getUser());
-        slotHistory.setSemester(semester);
-        slotHistoryRepository.save(slotHistory);
-    }
-
     public SlotResponseJoinRoomAndDormAndPricingAndUser checkout(UUID id) {
         Slot slot = slotRepository.findById(id).orElseThrow();
         User user = Optional.ofNullable(slot.getUser()).orElseThrow(() -> new AppException("SLOT_EMPTY"));
