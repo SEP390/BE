@@ -25,6 +25,8 @@ public class SlotHistoryService {
         var user = SecurityUtils.getCurrentUser();
         SpecQuery<SlotHistory> query = new SpecQuery<>();
         query.equal("user", user);
+        query.equal(filter, r-> r.get("room").get("id"),"roomId");
+        query.equal(filter, r -> r.get("semester").get("id"), "semesterId");
         return new PagedModel<>(slotHistoryRepository.findAll(query.and(), pageable).map(sh -> modelMapper.map(sh, SlotHistoryResponse.class)));
     }
 
@@ -35,7 +37,8 @@ public class SlotHistoryService {
     public PagedModel<SlotHistoryResponseJoinUser> getAll(Map<String, Object> filter, Pageable pageable) {
         SpecQuery<SlotHistory> query = new SpecQuery<>();
         query.equal(filter, r -> r.get("user").get("id"), "userId");
-        query.equal(filter, "roomId");
+        query.equal(filter, r-> r.get("room").get("id"),"roomId");
+        query.equal(filter, r -> r.get("semester").get("id"), "semesterId");
         return new PagedModel<>(slotHistoryRepository.findAll(query.and(), pageable).map(sh -> modelMapper.map(sh, SlotHistoryResponseJoinUser.class)));
     }
 }
