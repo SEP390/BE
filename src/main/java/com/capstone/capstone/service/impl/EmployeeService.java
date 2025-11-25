@@ -50,6 +50,7 @@ public class EmployeeService implements IEmployeeService {
         user.setRole(request.getRole());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setFullName(request.getFullName());
+        user.setImage(request.getImage());
         userRepository.save(user);
         Employee employee = new Employee();
         employee.setUser(user);

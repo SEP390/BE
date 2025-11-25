@@ -24,6 +24,12 @@ public class WarehouseItemService implements IWarehouseItemService {
     @Override
     public CreateWarehouseItemResponse createWarehouseItem(CreateWarehouseItemRequest createWarehouseItemRequest) {
         WarehouseItem warehouseItem = new WarehouseItem();
+        if (createWarehouseItemRequest.getItemName() == null ||
+                createWarehouseItemRequest.getItemName().isEmpty() ||
+                createWarehouseItemRequest.getItemUnit() == null ||
+                createWarehouseItemRequest.getItemUnit().isEmpty()) {
+            throw new IllegalArgumentException("Item's name or item's unit cannot be null");
+        }
         warehouseItem.setItemName(createWarehouseItemRequest.getItemName());
         warehouseItem.setUnit(createWarehouseItemRequest.getItemUnit());
         warehouseItem.setQuantity(0);
