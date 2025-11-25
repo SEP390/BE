@@ -27,4 +27,5 @@ public class CreateEmployeeRequest {
     private String phoneNumber;
     private LocalDate hireDate;
     private LocalDate contractEndDate;
+    private String image;
 }
