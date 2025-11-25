@@ -76,4 +76,7 @@ public class ApiConstant {
         public static final String WAREHOUSE_TRANSACTION = API + "/warehouse_transactions";
     }
 
+    public static class UPLOAD {
+        public static final String UPLOAD = API + "/uploads";
+    }
 }

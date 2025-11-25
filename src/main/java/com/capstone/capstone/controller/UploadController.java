@@ -17,7 +17,7 @@ import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/upload")
+@RequestMapping(ApiConstant.UPLOAD.UPLOAD)
 public class UploadController {
     private final IUploadService iUploadService;
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
