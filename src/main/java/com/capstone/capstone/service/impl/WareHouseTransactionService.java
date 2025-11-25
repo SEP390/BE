@@ -48,7 +48,11 @@ public class WareHouseTransactionService implements IWareHouseTransactionService
         if(request.getTransactionType() == TransactionTypeEnum.IMPORT){
             item.setQuantity(item.getQuantity() + transaction.getQuantity());
         } else if (request.getTransactionType() == TransactionTypeEnum.EXPORT) {
-            item.setQuantity(item.getQuantity() - transaction.getQuantity());
+            if(item.getQuantity() - transaction.getQuantity() <= 0){
+                throw new RuntimeException("Not enough quantity in stock");
+            } else  {
+                item.setQuantity(item.getQuantity() - transaction.getQuantity());
+            }
         }
         warehouseTransactionRepository.save(transaction);
         CreateWarehouseTransactionResponse response = new CreateWarehouseTransactionResponse();
