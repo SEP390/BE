@@ -6,14 +6,10 @@ import com.capstone.capstone.dto.response.semester.SemesterResponse;
 import com.capstone.capstone.entity.Semester;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.SemesterRepository;
-import com.capstone.capstone.util.SortUtil;
 import com.capstone.capstone.util.SpecQuery;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
