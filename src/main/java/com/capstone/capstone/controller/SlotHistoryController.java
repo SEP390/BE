@@ -24,10 +24,12 @@ public class SlotHistoryController {
     @GetMapping("/api/user/slot-history")
     public BaseResponse<PagedModel<SlotHistoryResponse>> getByCurrentUser(
             @RequestParam(required = false) UUID semesterId,
+            @RequestParam(required = false) UUID roomId,
             @PageableDefault Pageable pageable
     ) {
         Map<String, Object> filter = new HashMap<>();
         filter.put("semesterId", semesterId);
+        filter.put("roomId", roomId);
         return new BaseResponse<>(slotHistoryService.getAllByCurrentUser(filter, pageable));
     }
 
