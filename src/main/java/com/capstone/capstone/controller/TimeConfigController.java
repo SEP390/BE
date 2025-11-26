@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class TimeConfigController {
     private final TimeConfigService timeConfigService;
 
-    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/api/time-config/current")
     public BaseResponse<TimeConfigResponse> getCurrent() {
         return new BaseResponse<>(timeConfigService.getCurrentResponse());

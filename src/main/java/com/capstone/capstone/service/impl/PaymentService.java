@@ -69,8 +69,8 @@ public class PaymentService {
         }
         var payment = paymentRepository.findLatestByInvoice(invoice).orElse(null);
 
-        // booking invoice expire
-        if (invoice.getStatus() == PaymentStatus.PENDING && invoice.getType() == InvoiceType.BOOKING && invoice.getExpireTime() != null && LocalDateTime.now().isAfter(invoice.getExpireTime())) {
+        // invoice expire
+        if (invoice.getStatus() == PaymentStatus.PENDING && invoice.getExpireTime() != null && LocalDateTime.now().isAfter(invoice.getExpireTime())) {
             invoice.setStatus(PaymentStatus.CANCEL);
             invoice = invoiceRepository.save(invoice);
             if (payment != null) {
@@ -80,7 +80,6 @@ public class PaymentService {
             invoice = invoiceChangeService.update(invoice, PaymentStatus.CANCEL);
             throw new AppException("INVOICE_EXPIRE");
         }
-
         if (payment == null || payment.getCreateTime().until(LocalDateTime.now(), ChronoUnit.MINUTES) >= 10) {
             payment = create(invoice);
         }

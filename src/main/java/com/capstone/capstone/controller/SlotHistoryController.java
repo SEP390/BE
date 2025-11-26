@@ -31,6 +31,11 @@ public class SlotHistoryController {
         return new BaseResponse<>(slotHistoryService.getAllByCurrentUser(filter, pageable));
     }
 
+    @GetMapping("/api/user/slot-history/current")
+    public BaseResponse<SlotHistoryResponse> getCurrent() {
+        return new BaseResponse<>(slotHistoryService.getCurrent());
+    }
+
     @GetMapping("/api/slot-history")
     public BaseResponse<PagedModel<SlotHistoryResponseJoinUser>> getAll(
             @RequestParam(required = false) UUID semesterId,

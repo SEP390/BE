@@ -41,6 +41,7 @@ public class SlotService {
     private final InvoiceRepository invoiceRepository;
     private final UserRepository userRepository;
     private final SemesterService semesterService;
+    private final InvoiceChangeService invoiceChangeService;
 
     public Slot save(Slot slot) {
         return slotRepository.save(slot);
@@ -89,9 +90,7 @@ public class SlotService {
                     payment = paymentRepository.save(payment);
                     invoice.setStatus(PaymentStatus.CANCEL);
                     invoice = invoiceRepository.save(invoice);
-                    slot.setStatus(StatusSlotEnum.AVAILABLE);
-                    slot.setUser(null);
-                    slot = slotRepository.save(slot);
+                    invoiceChangeService.onChange(invoice);
                     return null;
                 }
             }

@@ -71,12 +71,10 @@ public class InvoiceChangeService {
 
     @Transactional
     public Invoice update(Invoice invoice, PaymentStatus status) {
-        if (invoice.getStatus() == PaymentStatus.PENDING) {
-            if (status == PaymentStatus.PENDING) throw new AppException("ALREADY_PENDING");
-            invoice.setStatus(status);
-            invoice = invoiceRepository.save(invoice);
-            invoice = onChange(invoice);
-        }
+        if (status == PaymentStatus.PENDING) throw new AppException("ALREADY_PENDING");
+        invoice.setStatus(status);
+        invoice = invoiceRepository.save(invoice);
+        invoice = onChange(invoice);
         return invoice;
     }
 

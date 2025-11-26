@@ -78,11 +78,8 @@ public class BookingService {
 
         String paymentUrl = paymentService.getPaymentUrl(payment);
 
-
         // khóa slot
         slotService.lock(slot, user);
-
-        LocalDateTime executionTime = LocalDateTime.now().plusMinutes(10);
 
         // hủy hóa đơn sau 10 phút
         scheduledExecutorService.schedule(new InvoiceExpireService(invoiceRepository, paymentRepository, invoice), 10, TimeUnit.MINUTES);
@@ -144,15 +141,5 @@ public class BookingService {
             throw new AppException("INVOICE_EXPIRED");
         }
         return vnPayService.createPaymentUrl(payment.getId(), payment.getCreateTime(), payment.getPrice());
-    }
-
-    public void extend() {
-        User user = SecurityUtils.getCurrentUser();
-        TimeConfig timeConfig = timeConfigService.getCurrent().orElseThrow(() -> new AppException("TIME_CONFIG_NOT_FOUND"));
-        // đã từng dặt phòng
-        if (!slotHistoryService.existsByUser(user)) throw new AppException("SLOT_NOT_FOUND");
-        LocalDate today = LocalDate.now();
-        if (!(today.isBefore(timeConfig.getEndExtendDate()) && today.isAfter(timeConfig.getStartExtendDate())))
-            throw new AppException("EXTEND_DATE_NOT_START", List.of(timeConfig.getEndExtendDate(), timeConfig.getStartExtendDate()));
     }
 }
