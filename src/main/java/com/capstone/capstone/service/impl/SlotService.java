@@ -36,7 +36,6 @@ public class SlotService {
     private final RoomRepository roomRepository;
     private final ModelMapper modelMapper;
     private final SlotHistoryRepository slotHistoryRepository;
-    private final SlotInvoiceRepository slotInvoiceRepository;
     private final PaymentRepository paymentRepository;
     private final InvoiceRepository invoiceRepository;
     private final UserRepository userRepository;
