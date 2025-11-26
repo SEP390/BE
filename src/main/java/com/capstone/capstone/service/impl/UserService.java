@@ -73,6 +73,7 @@ public class UserService implements IUserService {
         getUserInformationResponse.setStudentId(user.getUserCode());
         getUserInformationResponse.setSlotName(slot == null ? null : slot.getSlotName());
         getUserInformationResponse.setImage(user.getImage());
+        getUserInformationResponse.setRole(user.getRole());
         return getUserInformationResponse;
     }
 
