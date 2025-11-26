@@ -147,6 +147,7 @@ public class SlotService {
         query.like("userCode", (String) filter.get("userCode"));
         query.equal("userId", filter.get("userId"));
         query.equal("status", filter.get("status"));
+        query.equal(filter, r -> r.get("room").get("id"), "roomId");
         return new PagedModel<>(slotRepository.findAll(query.and(), pageable).map(s -> modelMapper.map(s, SlotResponseJoinRoomAndDormAndPricingAndUser.class)));
     }
 

@@ -42,11 +42,13 @@ public class SlotController {
     public BaseResponse<PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser>> getAll(
             @RequestParam(required = false) String userCode,
             @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) UUID roomId,
             @RequestParam(required = false) StatusSlotEnum status,
             @PageableDefault Pageable pageable) {
         Map<String, Object> filter = new HashMap<>();
         filter.put("userCode", userCode);
         filter.put("userId", userId);
+        filter.put("roomId", roomId);
         filter.put("status", status);
         return new BaseResponse<>(slotService.getAll(filter, pageable));
     }
