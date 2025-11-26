@@ -63,7 +63,7 @@ class SurveyQuestionServiceTest {
     // createSurveyQuestion
     // ------------------------------------------------------------
 
-    // 🎯 TC1: Tạo câu hỏi mới với nhiều option → lưu đúng và map response đúng
+    // TC1: Tạo câu hỏi mới với nhiều option → lưu đúng và map response đúng
     @Test
     void createSurveyQuestion_shouldCreateQuestionAndOptionsCorrectly_whenValidRequest() {
         // Arrange
@@ -108,7 +108,7 @@ class SurveyQuestionServiceTest {
         assertTrue(optionStrings.contains("Bình thường"));
     }
 
-    // 🎯 TC2: List option rỗng -> phải throw IllegalArgumentException
+    // TC2: List option rỗng -> phải throw IllegalArgumentException
     @Test
     void createSurveyQuestion_shouldThrowException_whenOptionListEmpty() {
         // Arrange
@@ -127,7 +127,7 @@ class SurveyQuestionServiceTest {
         verify(surveyOptionRepository, never()).save(any());
     }
 
-    // 🎯 TC3: Tạo câu hỏi với surveyOptions = null → hiện tại code sẽ NPE (test để lộ bug)
+    // TC3: Tạo câu hỏi với surveyOptions = null → hiện tại code sẽ NPE (test để lộ bug)
     @Test
     void createSurveyQuestion_shouldThrowNullPointer_whenOptionListIsNull() {
         // Arrange
@@ -153,7 +153,7 @@ class SurveyQuestionServiceTest {
     // getAllQuestion
     // ------------------------------------------------------------
 
-    // 🎯 TC4: Không có câu hỏi nào trong DB → trả về list rỗng
+    // TC4: Không có câu hỏi nào trong DB → trả về list rỗng
     @Test
     void getAllQuestion_shouldReturnEmptyList_whenNoQuestionInDatabase() {
         // Arrange
@@ -168,7 +168,7 @@ class SurveyQuestionServiceTest {
         verify(surveyQuestionRepository, times(1)).findAll();
     }
 
-    // 🎯 TC5: Có nhiều câu hỏi → map đúng id & content
+    // TC5: Có nhiều câu hỏi → map đúng id & content
     @Test
     void getAllQuestion_shouldReturnMappedList_whenQuestionsExist() {
         // Arrange
@@ -203,7 +203,7 @@ class SurveyQuestionServiceTest {
     // getQuestionById
     // ------------------------------------------------------------
 
-    // 🎯 TC6: Lấy câu hỏi theo id thành công (có options) → map đầy đủ cả options
+    // TC6: Lấy câu hỏi theo id thành công (có options) → map đầy đủ cả options
     @Test
     void getQuestionById_shouldReturnQuestionWithOptions_whenFound() {
         // Arrange
@@ -248,7 +248,7 @@ class SurveyQuestionServiceTest {
         verify(surveyQuestionRepository, times(1)).findById(qId);
     }
 
-    // 🎯 TC7: Lấy câu hỏi theo id nhưng không tồn tại → ném NotFoundException
+    // TC7: Lấy câu hỏi theo id nhưng không tồn tại → ném NotFoundException
     @Test
     void getQuestionById_shouldThrowNotFound_whenQuestionNotExist() {
         // Arrange
@@ -266,7 +266,7 @@ class SurveyQuestionServiceTest {
     // updateQuestion
     // ------------------------------------------------------------
 
-    // 🎯 TC8: Update content câu hỏi thành công → save được gọi, response trả content mới
+    // TC8: Update content câu hỏi thành công → save được gọi, response trả content mới
     @Test
     void updateQuestion_shouldUpdateContent_whenQuestionExists() {
         // Arrange
@@ -294,7 +294,7 @@ class SurveyQuestionServiceTest {
         verify(surveyQuestionRepository, times(1)).save(q);
     }
 
-    // 🎯 TC9: Update nhưng question không tồn tại → NotFoundException
+    // TC9: Update nhưng question không tồn tại → NotFoundException
     @Test
     void updateQuestion_shouldThrowNotFound_whenQuestionNotExist() {
         // Arrange
@@ -316,7 +316,7 @@ class SurveyQuestionServiceTest {
     // createSurveyOptionForQuestion
     // ------------------------------------------------------------
 
-    // 🎯 TC10: Thêm option cho câu hỏi tồn tại → save option với question đúng, response đúng
+    // TC10: Thêm option cho câu hỏi tồn tại → save option với question đúng, response đúng
     @Test
     void createSurveyOptionForQuestion_shouldCreateOption_whenQuestionExists() {
         // Arrange
@@ -350,7 +350,7 @@ class SurveyQuestionServiceTest {
         verify(surveyQuestionRepository, times(1)).findById(qId);
     }
 
-    // 🎯 TC11: Thêm option cho câu hỏi nhưng questionId không tồn tại → NotFoundException
+    // TC11: Thêm option cho câu hỏi nhưng questionId không tồn tại → NotFoundException
     @Test
     void createSurveyOptionForQuestion_shouldThrowNotFound_whenQuestionNotExist() {
         // Arrange
