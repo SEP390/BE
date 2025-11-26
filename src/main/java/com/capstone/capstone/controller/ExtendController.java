@@ -40,18 +40,21 @@ public class ExtendController {
         TimeConfig timeConfig = timeConfigService.getCurrent().orElseThrow(() -> new AppException("TIME_CONFIG_NOT_FOUND"));
         // chưa từng đặt phòng
         if (!slotHistoryRepository.existsByUser(user)) throw new AppException("SLOT_HISTORY_NOT_FOUND");
+        Semester nextSemester = semesterRepository.findNextSemester();
+        if (nextSemester == null) throw new AppException("NEXT_SEMESTER_NOT_FOUND");
+        SlotHistory slotHistory = slotHistoryRepository.findCurrent(user).orElse(null);
+        if (slotHistory != null) {
+            if (slotHistory.getSemester().getId().equals(nextSemester.getId())) {
+                throw new AppException("ALREADY_BOOK");
+            }
+            slotHistory.setCheckout(LocalDateTime.now());
+            slotHistoryRepository.save(slotHistory);
+        }
         LocalDate today = LocalDate.now();
         if (!(today.isBefore(timeConfig.getEndExtendDate()) && today.isAfter(timeConfig.getStartExtendDate())))
             throw new AppException("EXTEND_DATE_NOT_START", List.of(timeConfig.getEndExtendDate(), timeConfig.getStartExtendDate()));
         Slot slot = user.getSlot();
         if (slot == null) throw new AppException("SLOT_NOT_FOUND");
-        Semester nextSemester = semesterRepository.findNextSemester();
-        if (nextSemester == null) throw new AppException("NEXT_SEMESTER_NOT_FOUND");
-        SlotHistory slotHistory = slotHistoryRepository.findCurrent(user).orElse(null);
-        if (slotHistory != null) {
-            slotHistory.setCheckout(LocalDateTime.now());
-            slotHistoryRepository.save(slotHistory);
-        }
         slotService.lock(slot, user);
         Invoice invoice = invoiceService.create(user, slot, nextSemester);
         // tạo lần thanh toán
