@@ -1,6 +1,7 @@
 package com.capstone.capstone.dto.response.user;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
+import com.capstone.capstone.dto.enums.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,5 @@ public class GetUserInformationResponse {
     private GenderEnum gender;
     private String slotName;
     private String image;
+    private RoleEnum role;
 }

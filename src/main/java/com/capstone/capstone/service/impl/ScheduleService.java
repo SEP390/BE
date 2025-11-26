@@ -183,6 +183,7 @@ public class ScheduleService implements IScheduleService {
         r.setId(schedule.getId());
         r.setEmployeeId(schedule.getEmployee().getId());
         r.setEmployeeName(schedule.getEmployee().getUser().getFullName());
+        r.setNote(schedule.getNote());
         r.setShiftId(schedule.getShift().getId());
         r.setShiftName(schedule.getShift().getName());
         r.setDormId(schedule.getDorm().getId());

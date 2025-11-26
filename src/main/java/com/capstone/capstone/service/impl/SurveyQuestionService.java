@@ -31,9 +31,12 @@ public class SurveyQuestionService implements ISurveyQuestionService {
 
     @Override
     public CreateSurveyQuestionResponse createSurveyQuestion(CreateSurveyQuestionRequest request) {
+        if (request.getSurveyOptions() == null || request.getSurveyOptions().isEmpty()) {
+            throw new IllegalArgumentException("Survey question must have at least one option");
+        }
+
         SurveyQuestion surveyQuestion = new SurveyQuestion();
         surveyQuestion.setQuestionContent(request.getQuestionContent());
-        surveyQuestionRepository.save(surveyQuestion);
 
         List<SurveyOption> surveyOptions = new ArrayList<>();
         for (CreateSurveyOptionRequest createSurveyOptionRequest : request.getSurveyOptions()) {
@@ -44,19 +47,20 @@ public class SurveyQuestionService implements ISurveyQuestionService {
             surveyOptionRepository.save(surveyOption);
         }
         surveyQuestion.setSurveyOptions(surveyOptions);
+        surveyQuestionRepository.save(surveyQuestion);
 
-        CreateSurveyQuestionResponse createSurveyQuestionResponse = new CreateSurveyQuestionResponse();
-        createSurveyQuestionResponse.setQuestionContent(surveyQuestion.getQuestionContent());
-        List<CreateSurveyOptionResponse> createSurveyOptionRespons = surveyQuestion.getSurveyOptions()
-                .stream()
-                .map(option -> {
-                    CreateSurveyOptionResponse response = new CreateSurveyOptionResponse();
-                    response.setSurveyOption(option.getOptionContent());
-                    return response;
-                })
-                .collect(Collectors.toList());
-        createSurveyQuestionResponse.setSurveyOptions(createSurveyOptionRespons);
-        return createSurveyQuestionResponse;
+        CreateSurveyQuestionResponse resp = new CreateSurveyQuestionResponse();
+        resp.setQuestionContent(surveyQuestion.getQuestionContent());
+        resp.setSurveyOptions(
+                surveyQuestion.getSurveyOptions().stream()
+                        .map(opt -> {
+                            CreateSurveyOptionResponse r = new CreateSurveyOptionResponse();
+                            r.setSurveyOption(opt.getOptionContent());
+                            return r;
+                        })
+                        .collect(Collectors.toList())
+        );
+        return resp;
     }
 
     @Override

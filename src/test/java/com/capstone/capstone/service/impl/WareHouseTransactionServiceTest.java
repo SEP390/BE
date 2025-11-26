@@ -74,10 +74,7 @@ class WareHouseTransactionServiceTest {
         authenUtilMock.close();
     }
 
-    // ------------------------------------------------------------------------
     // createWarehouseTransaction
-    // ------------------------------------------------------------------------
-
     @Test
     void createWarehouseTransaction_shouldCreateImportTransaction_andIncreaseQuantity() {
         // Arrange
@@ -105,7 +102,7 @@ class WareHouseTransactionServiceTest {
         CreateWarehouseTransactionResponse res =
                 wareHouseTransactionService.createWarehouseTransaction(req);
 
-        // Assert – quantity phải tăng 10 -> 15 (logic thực tế)
+        // Assert – quantity phải tăng 10 -> 15
         assertEquals(15, item.getQuantity());
 
         // check transaction được save đúng
