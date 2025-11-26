@@ -31,4 +31,5 @@ public class BookingController {
     public BaseResponse<String> paymentBooking() {
         return new BaseResponse<>(bookingService.payment());
     }
+
 }

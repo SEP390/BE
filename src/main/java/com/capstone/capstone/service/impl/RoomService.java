@@ -124,6 +124,25 @@ public class RoomService {
     @Transactional
     public PagedModel<RoomResponseJoinPricingAndDormAndSlot> getBooking(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
         User user = SecurityUtils.getCurrentUser();
+
+        TimeConfig timeConfig = timeConfigService.getCurrent().orElseThrow(() -> new AppException("TIME_CONFIG_NOT_FOUND"));
+        var today = LocalDate.now();
+        // đã từng dặt phòng
+        if (slotHistoryService.existsByUser(user)) {
+            if (!(today.isBefore(timeConfig.getEndExtendDate()) && today.isAfter(timeConfig.getStartExtendDate())))
+                throw new AppException("BOOKING_DATE_NOT_START");
+        } else {
+            if (!(today.isBefore(timeConfig.getEndBookingDate()) && today.isAfter(timeConfig.getStartBookingDate())))
+                throw new AppException("BOOKING_DATE_NOT_START");
+        }
+        Semester nextSemester = semesterService.getNext();
+
+        if (nextSemester == null) throw new AppException("NEXT_SEMESTER_NOT_FOUND");
+
+        // không được đặt phòng nếu chưa làm survey
+        if (!surveySelectRepository.exists((r, q, c) -> {
+            return c.equal(r.get("user"), user);
+        })) throw new AppException("SURVEY_NOT_FOUND");
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
         int validPageSize = Math.min(pageable.getPageSize(), 100);
         Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");

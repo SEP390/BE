@@ -13,10 +13,18 @@ public interface SlotHistoryRepository extends JpaRepository<SlotHistory, UUID>,
     @Query("""
             FROM SlotHistory sh
             WHERE sh.user = :user AND sh.slotId = :slotId
-            ORDER BY sh.semester.startDate DESC
+            ORDER BY sh.semester.startDate DESC, sh.checkin DESC
             LIMIT 1
             """)
     Optional<SlotHistory> findCurrent(User user, UUID slotId);
+
+    @Query("""
+            FROM SlotHistory sh
+            WHERE sh.user = :user
+            ORDER BY sh.semester.startDate DESC, sh.checkin DESC
+            LIMIT 1
+            """)
+    Optional<SlotHistory> findCurrent(User user);
 
     boolean existsByUser(User user);
 }

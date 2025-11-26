@@ -11,6 +11,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -23,9 +24,15 @@ public class EWRoomController {
     @GetMapping("/api/ew/room")
     public BaseResponse<PagedModel<EWRoomResponse>> getAll(
             @RequestParam(required = false) UUID roomId,
+            @RequestParam(required = false) UUID semesterId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
             @PageableDefault Pageable pageable) {
         Map<String, Object> filter = new HashMap<>();
         filter.put("roomId", roomId);
+        filter.put("semesterId", semesterId);
+        filter.put("startDate", startDate);
+        filter.put("endDate", endDate);
         return new BaseResponse<>(ewRoomService.getAll(filter, pageable));
     }
 

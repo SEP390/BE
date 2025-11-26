@@ -1,5 +1,5 @@
 package com.capstone.capstone.dto.enums;
 
 public enum InvoiceType {
-    BOOKING, EW, VIOLATION, COMPENSATE, OTHER, SWAP
+    BOOKING, EW, VIOLATION, COMPENSATE, OTHER, SWAP, EXTEND
 }

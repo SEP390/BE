@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -77,11 +78,8 @@ public class BookingService {
 
         String paymentUrl = paymentService.getPaymentUrl(payment);
 
-
         // khóa slot
         slotService.lock(slot, user);
-
-        LocalDateTime executionTime = LocalDateTime.now().plusMinutes(10);
 
         // hủy hóa đơn sau 10 phút
         scheduledExecutorService.schedule(new InvoiceExpireService(invoiceRepository, paymentRepository, invoice), 10, TimeUnit.MINUTES);

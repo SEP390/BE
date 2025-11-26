@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.LocalDate;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -46,7 +48,12 @@ public class GoogleService {
                 existed = new User();
                 existed.setEmail(email);
                 // default username to google_<google-id>, example: google_107063658492462372965
-                existed.setUsername("google_%s".formatted(payload.getSubject()));
+                var username = email.split("@")[0];
+                var userCode = username.substring(username.length() - 8).toUpperCase();
+                existed.setUsername(username);
+                existed.setUserCode(userCode);
+                existed.setFullName(username.toUpperCase());
+                existed.setDob(LocalDate.now());
                 existed.setRole(RoleEnum.RESIDENT);
                 existed.setGender(GenderEnum.MALE); // TODO: edit later
                 existed = userRepository.save(existed);

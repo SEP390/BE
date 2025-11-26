@@ -33,6 +33,8 @@ public class EWUsageService {
         User user = SecurityUtils.getCurrentUser();
         var query = new SpecQuery<EWUsage>();
         query.equal("user", user);
+        query.equal(filter, r -> r.get("semester").get("id"), "semesterId");
+        query.dateRangeBetweenDateRange(filter, "startDate", "endDate", "startDate", "endDate");
         return new PagedModel<>(ewUsageRepository.findAll(query.and(), pageable).map(it -> modelMapper.map(it, UserEWUsageResponse.class)));
     }
 
