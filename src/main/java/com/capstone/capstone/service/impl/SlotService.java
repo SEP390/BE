@@ -7,6 +7,7 @@ import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.checkin.GuardCheckinRequest;
 import com.capstone.capstone.dto.request.slot.SwapSlotRequest;
 import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
+import com.capstone.capstone.dto.response.room.RoomResponseJoinPricing;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDorm;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
@@ -136,10 +137,6 @@ public class SlotService {
 
     /**
      * Danh sách các slot đang chờ checkin
-     *
-     * @param userCode mã sinh viên
-     * @param pageable page, size
-     * @return
      */
     public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAll(Map<String, Object> filter, Pageable pageable) {
         SpecQuery<Slot> query = new SpecQuery<>();
@@ -252,5 +249,29 @@ public class SlotService {
         response.setNewSlot(modelMapper.map(newSlot, SlotResponseJoinRoomAndDorm.class));
         response.setSlotHistory(modelMapper.map(slotHistory, SlotHistoryResponse.class));
         return response;
+    }
+
+    @Transactional
+    public Integer getSwapCount(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException("USER_NOT_FOUND"));
+        if (user.getSlot() == null) throw new AppException("SLOT_NOT_FOUND");
+        return roomRepository.findSwapableCount(user.getGender(), user.getSlot().getRoom().getTotalSlot());
+    }
+
+    @Transactional
+    public Map<String, Object> getSwapDetail(UUID userId, UUID roomId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException("USER_NOT_FOUND"));
+        Room room = roomId == null ? null : roomRepository.findById(roomId).orElse(null);
+        Map<String, Object> res = new HashMap<>();
+        res.put("old", user.getSlot() == null ? null : modelMapper.map(user.getSlot().getRoom(), RoomResponseJoinPricing.class));
+        res.put("new", room == null ? null : modelMapper.map(room, RoomResponseJoinPricing.class));
+        if (user.getSlot() == null || room == null) {
+            res.put("swapable", false);
+            return res;
+        }
+        if (room.getStatus() != StatusRoomEnum.AVAILABLE) {
+            res.put("swapable", false);
+        } else res.put("swapable", roomRepository.isValid(room, user.getGender()));
+        return res;
     }
 }

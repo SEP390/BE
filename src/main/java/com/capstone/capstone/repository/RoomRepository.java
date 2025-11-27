@@ -56,4 +56,15 @@ public interface RoomRepository extends JpaRepository<Room, UUID>, JpaSpecificat
             WHERE r = :room AND u.gender <> :gender
             """)
     boolean isValid(Room room, GenderEnum gender);
+
+    @Query("""
+    SELECT COUNT(DISTINCT r)
+    FROM Room r
+    JOIN r.slots s
+    LEFT JOIN s.user u
+    WHERE r.status = com.capstone.capstone.dto.enums.StatusRoomEnum.AVAILABLE AND r.totalSlot >= :totalSlot
+    GROUP BY r
+    HAVING SUM(CASE WHEN u IS NOT NULL AND u.gender <> :gender THEN 1 ELSE 0 END) = 0
+    """)
+    int findSwapableCount(GenderEnum gender, int totalSlot);
 }

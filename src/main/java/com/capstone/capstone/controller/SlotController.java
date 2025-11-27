@@ -64,4 +64,16 @@ public class SlotController {
     public BaseResponse<SwapSlotResponse> swap(@RequestBody SwapSlotRequest request) {
         return new BaseResponse<>(slotService.swap(request));
     }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @GetMapping("/api/slots/swap/count")
+    public BaseResponse<?> swapCount(@RequestParam UUID userId) {
+        return new BaseResponse<>(slotService.getSwapCount(userId));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @GetMapping("/api/slots/swap/detail")
+    public BaseResponse<?> swapDetail(@RequestParam UUID userId, @RequestParam(required = false) UUID roomId) {
+        return new BaseResponse<>(slotService.getSwapDetail(userId, roomId));
+    }
 }
