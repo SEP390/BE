@@ -13,5 +13,5 @@ import java.util.UUID;
 @Getter
 @Setter
 public class CreateQuestionSelectedRequest {
-    private List<UUID> ids;
+    private List<UUID> optionIds;
 }
