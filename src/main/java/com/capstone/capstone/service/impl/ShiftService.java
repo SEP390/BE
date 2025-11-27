@@ -10,6 +10,7 @@ import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.ShiftRepository;
 import com.capstone.capstone.service.interfaces.IShiftService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,6 +24,13 @@ public class ShiftService implements IShiftService {
 
     @Override
     public CreateShiftResponse createShift(CreateShiftRequest request) {
+
+        if (request.getStartTime().isAfter(request.getEndTime())) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+        if (request.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be blank");
+        }
         Shift shift = new Shift();
         shift.setName(request.getName());
         shift.setStartTime(request.getStartTime());
@@ -54,6 +62,12 @@ public class ShiftService implements IShiftService {
     @Override
     public UpdateShiftResponse updateShift(UUID shiftId, UpdateShiftRequest request) {
         Shift shift = shiftRepository.findById(shiftId).orElseThrow(()-> new NotFoundException("Shift not found"));
+        if (request.getStartTime().isAfter(request.getEndTime())) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+        if (request.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be blank");
+        }
         shift.setName(request.getName());
         shift.setStartTime(request.getStartTime());
         shift.setEndTime(request.getEndTime());
