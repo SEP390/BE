@@ -28,41 +28,50 @@ public class SurveySelectService implements ISurveySelectService {
     private final UserRepository userRepository;
     private final SurveyOptionRepository surveyOptionRepository;
     private final SurveyQuestionRepository surveyQuestionRepository;
+
     @Override
     @Transactional
     public CreateQuestionSelectedResponse createQuestionSelected(CreateQuestionSelectedRequest request) {
         UUID userId = AuthenUtil.getCurrentUserId();
-        User user = userRepository.findById(userId).orElseThrow(()-> new NotFoundException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        // 1️⃣ Validate danh sách option tối thiểu phải có 1 phần tử
+        if (request.getOptionIds() == null || request.getOptionIds().isEmpty()) {
+            throw new BadHttpRequestException("Option list cannot be empty");
+        }
+
         Boolean hasCompletedSurvey = surveySelectRepository.hasCompletedSurvey(user);
-//        for (UUID id : request.getIds()){
-//            SurveyOption option = surveyOptionRepository.findById(id).orElseThrow(()-> new NotFoundException("Survey option not found"));
-//            SurveyQuestion question = option.getSurveyQuestion();
-//            boolean isSurveySelectedExist = surveySelectRepository.existsByUserAndQuestion(user, question);
-//            if(isSurveySelectedExist){
-//                throw new BadHttpRequestException("Survey option already exists");
-//            }
-//            SurveyQuetionSelected selected = new SurveyQuetionSelected();
-//            selected.setSurveyOption(option);
-//            selected.setUser(user);
-//            surveySelectRepository.save(selected);
-//        }
-        Map<UUID, SurveyQuetionSelected> questionSelected = new HashMap<>() ;
-        for (UUID id : request.getIds()){
-            SurveyOption option = surveyOptionRepository.findById(id).orElseThrow(()-> new NotFoundException("Survey option not found"));
+
+        // 2️⃣ Kiểm tra duplicate (1 question chỉ chọn 1 option)
+        Map<UUID, SurveyQuetionSelected> questionSelected = new HashMap<>();
+
+        for (UUID id : request.getOptionIds()) {
+            SurveyOption option = surveyOptionRepository.findById(id)
+                    .orElseThrow(() -> new NotFoundException("Survey option not found"));
+
             SurveyQuestion question = option.getSurveyQuestion();
             UUID questionId = question.getId();
-            if(questionSelected.containsKey(questionId)){
+
+            if (questionSelected.containsKey(questionId)) {
                 throw new BadHttpRequestException("Survey option already exists");
             }
-            SurveyQuetionSelected surveyQuetionSelected = new SurveyQuetionSelected();
-            surveyQuetionSelected.setUser(user);
-            surveyQuetionSelected.setSurveyOption(option);
-            questionSelected.put(questionId, surveyQuetionSelected);
+
+            SurveyQuetionSelected s = new SurveyQuetionSelected();
+            s.setUser(user);
+            s.setSurveyOption(option);
+
+            questionSelected.put(questionId, s);
         }
+
+        // 3️⃣ Lưu tất cả
         surveySelectRepository.saveAll(questionSelected.values());
+
+        // 4️⃣ Build response
         CreateQuestionSelectedResponse response = new CreateQuestionSelectedResponse();
-        response.setIds(request.getIds());
+        response.setIds(request.getOptionIds());
         response.setHasCompletedSurvey(hasCompletedSurvey);
+
         return response;
     }
 

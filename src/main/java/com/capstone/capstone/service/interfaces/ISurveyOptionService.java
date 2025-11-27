@@ -4,9 +4,10 @@ import com.capstone.capstone.dto.request.surveyOption.CreateSurveyOptionRequest;
 import com.capstone.capstone.dto.request.surveyOption.UpdateOptionRequest;
 import com.capstone.capstone.dto.response.surveyOption.CreateSurveyOptionResponse;
 import com.capstone.capstone.dto.response.surveyOption.UpdateOptionResponse;
+import org.apache.coyote.BadRequestException;
 
 import java.util.UUID;
 
 public interface ISurveyOptionService {
-    UpdateOptionResponse updateOption(UUID id, UpdateOptionRequest request);
+    UpdateOptionResponse updateOption(UUID id, UpdateOptionRequest request) throws BadRequestException;
 }
