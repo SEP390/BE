@@ -216,6 +216,7 @@ public class SlotService {
             throw new AppException("SLOT_LOWER_PRICE");
         if (currentSlot.getId().equals(newSlot.getId())) throw new AppException("SAME_SLOT");
 
+        if(!roomRepository.isValid(newSlot.getRoom(), user.getGender())) throw new AppException("GENDER_INVALID");
         SwapSlotResponse response = new SwapSlotResponse();
         if (newPricing.getTotalSlot() > currentPricing.getTotalSlot()) {
             Invoice invoice = new Invoice();

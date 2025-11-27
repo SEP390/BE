@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +32,7 @@ public class BookingService {
     private final PaymentRepository paymentRepository;
     private final SlotInvoiceRepository slotInvoiceRepository;
     private final VNPayService vnPayService;
+    private final RoomRepository roomRepository;
 
     @Transactional
     public String create(UUID slotId) {
@@ -69,6 +69,8 @@ public class BookingService {
 
         // slot not available
         if (slot.getStatus() != StatusSlotEnum.AVAILABLE) throw new AppException("SLOT_NOT_AVAILABLE");
+
+        if (!roomRepository.isValid(slot.getRoom(), user.getGender())) throw new AppException("GENDER_INVALID");
 
         // tạo hóa đơn
         Invoice invoice = invoiceService.create(user, slot, nextSemester);

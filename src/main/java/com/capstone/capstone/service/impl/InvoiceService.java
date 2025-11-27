@@ -144,7 +144,7 @@ public class InvoiceService {
         invoice.setUser(user);
         invoice.setPrice(price);
         invoice.setType(InvoiceType.BOOKING);
-        invoice.setReason("Đặt phòng %s".formatted(slot.getRoom().getRoomNumber()));
+        invoice.setReason("Đặt phòng %s kỳ %s".formatted(slot.getRoom().getRoomNumber(), nextSemester.getName()));
         invoice.setStatus(PaymentStatus.PENDING);
         var now = LocalDateTime.now();
         invoice.setCreateTime(now);

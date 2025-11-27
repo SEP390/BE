@@ -1,6 +1,7 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.request.ew.CreateEWRoomRequest;
+import com.capstone.capstone.dto.request.ew.UpdateEWRoomRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.ew.EWRoomResponse;
 import com.capstone.capstone.service.impl.EWRoomService;
@@ -39,5 +40,15 @@ public class EWRoomController {
     @PostMapping("/api/ew/room")
     public BaseResponse<EWRoomResponse> create(@Valid @RequestBody CreateEWRoomRequest request) {
         return new BaseResponse<>(ewRoomService.create(request));
+    }
+
+    @GetMapping("/api/ew/room/latest")
+    public BaseResponse<EWRoomResponse> latest(@RequestParam UUID roomId) {
+        return new BaseResponse<>(ewRoomService.getLatest(roomId));
+    }
+
+    @PutMapping("/api/ew/room")
+    public BaseResponse<EWRoomResponse> update(@RequestBody UpdateEWRoomRequest request) {
+        return new BaseResponse<>(ewRoomService.update(request));
     }
 }

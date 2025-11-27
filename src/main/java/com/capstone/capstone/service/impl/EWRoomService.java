@@ -1,6 +1,7 @@
 package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.request.ew.CreateEWRoomRequest;
+import com.capstone.capstone.dto.request.ew.UpdateEWRoomRequest;
 import com.capstone.capstone.dto.response.ew.EWRoomResponse;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
@@ -102,5 +103,39 @@ public class EWRoomService {
         query.equal(filter, r -> r.get("semester").get("id"), "semesterId");
         query.betweenDate(filter, "createDate", "startDate", "endDate");
         return new PagedModel<>(ewRoomRepository.findAll(query.and() , pageable).map(ewRoom -> modelMapper.map(ewRoom, EWRoomResponse.class)));
+    }
+
+    public EWRoomResponse getLatest(UUID roomId) {
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
+        return modelMapper.map(ewRoomRepository.findRecent(room), EWRoomResponse.class);
+    }
+
+    @Transactional
+    public EWRoomResponse update(UpdateEWRoomRequest request) {
+        EWRoom ewRoom = ewRoomRepository.findById(request.getId()).orElseThrow(() -> new AppException("EW_ROOM_NOT_FOUND"));
+        if (!ewRoom.getCreateDate().equals(LocalDate.now())) throw new AppException("OVERDUE");
+        List<EWUsage> usages = ewRoom.getUsages();
+        if (usages.stream().anyMatch(u -> u.getPaid().equals(true))) {
+            throw new AppException("ALREADY_PAID");
+        }
+        var newElectric = request.getElectric();
+        var newWater = request.getWater();
+        var recentElectric = ewRoom.getElectric() - ewRoom.getElectricUsed();
+        var recentWater = ewRoom.getWater() - ewRoom.getWaterUsed();
+        var electricUsed = newElectric - recentElectric;
+        var waterUsed = newWater - recentWater;
+        if (electricUsed < 0) throw new AppException("ELECTRIC_USED_NEGATIVE");
+        if (waterUsed < 0) throw new AppException("WATER_USED_NEGATIVE");
+        ewRoom.setElectric(newElectric);
+        ewRoom.setWater(newWater);
+        ewRoom.setElectricUsed(electricUsed);
+        ewRoom.setWaterUsed(waterUsed);
+        ewRoom = ewRoomRepository.save(ewRoom);
+        usages.forEach(u -> {
+            u.setElectric(electricUsed);
+            u.setWater(waterUsed);
+        });
+        usages = ewUsageRepository.saveAll(usages);
+        return modelMapper.map(ewRoom, EWRoomResponse.class);
     }
 }

@@ -22,4 +22,12 @@ public interface EWRoomRepository extends JpaRepository<EWRoom, UUID>, JpaSpecif
             LIMIT 1
             """)
     Optional<EWRoom> findRecent(Room room, Semester semester);
+
+    @Query("""
+            FROM EWRoom r
+            WHERE r.room = :room
+            ORDER BY r.createDate DESC
+            LIMIT 1
+            """)
+    Optional<EWRoom> findRecent(Room room);
 }
