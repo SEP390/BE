@@ -37,7 +37,7 @@ public class SurveyQuestionService implements ISurveyQuestionService {
 
         SurveyQuestion surveyQuestion = new SurveyQuestion();
         surveyQuestion.setQuestionContent(request.getQuestionContent());
-
+        surveyQuestionRepository.save(surveyQuestion);
         List<SurveyOption> surveyOptions = new ArrayList<>();
         for (CreateSurveyOptionRequest createSurveyOptionRequest : request.getSurveyOptions()) {
             SurveyOption surveyOption = new SurveyOption();
@@ -47,7 +47,6 @@ public class SurveyQuestionService implements ISurveyQuestionService {
             surveyOptionRepository.save(surveyOption);
         }
         surveyQuestion.setSurveyOptions(surveyOptions);
-        surveyQuestionRepository.save(surveyQuestion);
 
         CreateSurveyQuestionResponse resp = new CreateSurveyQuestionResponse();
         resp.setQuestionContent(surveyQuestion.getQuestionContent());
