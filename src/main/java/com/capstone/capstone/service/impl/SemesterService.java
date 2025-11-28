@@ -52,7 +52,6 @@ public class SemesterService {
     public SemesterResponse create(CreateSemesterRequest request) {
         Semester semester = modelMapper.map(request, Semester.class);
         semester = create(semester);
-        // TODO: check overlapping date
         return modelMapper.map(semester, SemesterResponse.class);
     }
 
@@ -83,7 +82,12 @@ public class SemesterService {
         }
         Semester semester = modelMapper.map(request, Semester.class);
         semester.setId(id);
-        // TODO: check overlapping date
+        if (semesterRepository.exists((r, q, c) -> {
+            return c.and(c.notEqual(r.get("id"), id), c.or(
+                    c.between(r.get("startDate"), semester.getStartDate(), semester.getEndDate()),
+                    c.between(r.get("endDate"), semester.getStartDate(), semester.getEndDate())
+            ));
+        })) throw new AppException("SEMESTER_OVERLAPPING");
         return modelMapper.map(semesterRepository.save(semester), SemesterResponse.class);
     }
 
