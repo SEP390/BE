@@ -52,7 +52,7 @@ public class BookingService {
             if (today.isAfter(timeConfig.getEndExtendDate()) || today.isBefore(timeConfig.getStartExtendDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         } else {
-            if (today.isAfter(timeConfig.getStartBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
+            if (today.isAfter(timeConfig.getEndBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         }
 
