@@ -554,11 +554,18 @@ class RequestServiceTest {
     // getAllAnonymousRequest
     // ---------------------------------------------------------
 
-    // ✅ TC14: getAllAnonymousRequest – map đúng dữ liệu
+    // ✅ TC14: MANAGER xem được danh sách anonymous, mapping đúng dữ liệu
     @Test
-    void getAllAnonymousRequest_shouldReturnMappedList() {
+    void getAllAnonymousRequest_shouldReturnMappedList_whenUserIsManager() {
+        // Arrange
+        UUID managerId = UUID.randomUUID();
+        User manager = new User();
+        manager.setId(managerId);
+        manager.setRole(RoleEnum.MANAGER);
+
         Semester semester = new Semester();
         semester.setName("Spring 2025");
+
         Request r1 = new Request();
         r1.setId(UUID.randomUUID());
         r1.setSemester(semester);
@@ -573,16 +580,108 @@ class RequestServiceTest {
         r2.setCreateTime(LocalDateTime.now());
         r2.setRequestType(RequestTypeEnum.ANONYMOUS);
 
-        when(requestRepository.findRequestByRequestType(RequestTypeEnum.ANONYMOUS))
-                .thenReturn(List.of(r1, r2));
+        try (MockedStatic<AuthenUtil> mockedStatic = mockStatic(AuthenUtil.class)) {
+            mockedStatic.when(AuthenUtil::getCurrentUserId).thenReturn(managerId);
 
-        List<GetAllAnonymousRequestResponse> result = requestService.getAllAnonymousRequest();
+            when(userRepository.findById(managerId)).thenReturn(Optional.of(manager));
+            when(requestRepository.findRequestByRequestType(RequestTypeEnum.ANONYMOUS))
+                    .thenReturn(List.of(r1, r2));
 
-        verify(requestRepository, times(1))
-                .findRequestByRequestType(RequestTypeEnum.ANONYMOUS);
+            // Act
+            List<GetAllAnonymousRequestResponse> result = requestService.getAllAnonymousRequest();
 
-        assertEquals(2, result.size());
-        assertEquals("Góp ý 1", result.get(0).getContent());
-        assertEquals("Spring 2025", result.get(0).getSemesterName());
+            // Assert
+            verify(userRepository, times(1)).findById(managerId);
+            verify(requestRepository, times(1))
+                    .findRequestByRequestType(RequestTypeEnum.ANONYMOUS);
+
+            assertEquals(2, result.size());
+
+            GetAllAnonymousRequestResponse first = result.get(0);
+            assertEquals(r1.getId(), first.getRequestId());
+            assertEquals("Góp ý 1", first.getContent());
+            assertEquals("Spring 2025", first.getSemesterName());
+            assertNotNull(first.getCreateTime());
+        }
+    }
+
+    // ✅ TC15: ADMIN cũng xem được danh sách anonymous
+    @Test
+    void getAllAnonymousRequest_shouldReturnMappedList_whenUserIsAdmin() {
+        UUID adminId = UUID.randomUUID();
+        User admin = new User();
+        admin.setId(adminId);
+        admin.setRole(RoleEnum.ADMIN);
+
+        Semester semester = new Semester();
+        semester.setName("Fall 2025");
+
+        Request r = new Request();
+        r.setId(UUID.randomUUID());
+        r.setSemester(semester);
+        r.setContent("Góp ý ADMIN");
+        r.setCreateTime(LocalDateTime.now());
+        r.setRequestType(RequestTypeEnum.ANONYMOUS);
+
+        try (MockedStatic<AuthenUtil> mockedStatic = mockStatic(AuthenUtil.class)) {
+            mockedStatic.when(AuthenUtil::getCurrentUserId).thenReturn(adminId);
+
+            when(userRepository.findById(adminId)).thenReturn(Optional.of(admin));
+            when(requestRepository.findRequestByRequestType(RequestTypeEnum.ANONYMOUS))
+                    .thenReturn(List.of(r));
+
+            List<GetAllAnonymousRequestResponse> result = requestService.getAllAnonymousRequest();
+
+            verify(requestRepository, times(1))
+                    .findRequestByRequestType(RequestTypeEnum.ANONYMOUS);
+            assertEquals(1, result.size());
+            assertEquals("Góp ý ADMIN", result.get(0).getContent());
+            assertEquals("Fall 2025", result.get(0).getSemesterName());
+        }
+    }
+
+    // ✅ TC16: User không phải MANAGER/ADMIN (ví dụ GUARD) → AccessDeniedException
+    @Test
+    void getAllAnonymousRequest_shouldThrowAccessDenied_whenUserIsNotManagerOrAdmin() {
+        UUID guardId = UUID.randomUUID();
+        User guard = new User();
+        guard.setId(guardId);
+        guard.setRole(RoleEnum.GUARD);
+
+        try (MockedStatic<AuthenUtil> mockedStatic = mockStatic(AuthenUtil.class)) {
+            mockedStatic.when(AuthenUtil::getCurrentUserId).thenReturn(guardId);
+
+            when(userRepository.findById(guardId)).thenReturn(Optional.of(guard));
+
+            AccessDeniedException ex = assertThrows(
+                    AccessDeniedException.class,
+                    () -> requestService.getAllAnonymousRequest()
+            );
+
+            assertTrue(ex.getMessage().toLowerCase().contains("access denied"));
+            verify(requestRepository, never())
+                    .findRequestByRequestType(any());
+        }
+    }
+
+    // ✅ TC17: Current user không tồn tại → NotFoundException
+    @Test
+    void getAllAnonymousRequest_shouldThrowNotFound_whenUserNotFound() {
+        UUID userId = UUID.randomUUID();
+
+        try (MockedStatic<AuthenUtil> mockedStatic = mockStatic(AuthenUtil.class)) {
+            mockedStatic.when(AuthenUtil::getCurrentUserId).thenReturn(userId);
+
+            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+            NotFoundException ex = assertThrows(
+                    NotFoundException.class,
+                    () -> requestService.getAllAnonymousRequest()
+            );
+
+            assertEquals("User not found", ex.getMessage());
+            verify(requestRepository, never())
+                    .findRequestByRequestType(any());
+        }
     }
 }
