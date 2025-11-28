@@ -49,10 +49,10 @@ public class BookingService {
         var today = LocalDate.now();
         // đã từng dặt phòng
         if (slotHistoryService.existsByUser(user)) {
-            if (!(today.isBefore(timeConfig.getEndExtendDate()) && today.isAfter(timeConfig.getStartExtendDate())))
+            if (today.isAfter(timeConfig.getEndExtendDate()) || today.isBefore(timeConfig.getStartExtendDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         } else {
-            if (!(today.isBefore(timeConfig.getEndBookingDate()) && today.isAfter(timeConfig.getStartBookingDate())))
+            if (today.isAfter(timeConfig.getStartBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         }
 
