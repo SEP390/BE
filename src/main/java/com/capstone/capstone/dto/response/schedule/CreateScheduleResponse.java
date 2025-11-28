@@ -21,7 +21,6 @@ public class CreateScheduleResponse {
     String shiftName;
     UUID dormId;
     String dormName;
-    UUID semesterId;
     LocalDate workDate;
     String note;
     LocalDateTime createdAt;

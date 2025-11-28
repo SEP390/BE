@@ -19,8 +19,6 @@ public class GetScheduleResponse {
     private String employeeName;
     private UUID shiftId;
     private String shiftName;
-    private UUID semesterId;
-    private String semesterName;
     private UUID dormId;
     private String dormName;
     private LocalDateTime createdAt;
