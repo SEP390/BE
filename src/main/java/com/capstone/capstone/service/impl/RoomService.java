@@ -4,7 +4,6 @@ import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
-import com.capstone.capstone.dto.response.slot.SlotResponse;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
@@ -48,10 +47,10 @@ public class RoomService {
         var today = LocalDate.now();
         // đã từng dặt phòng
         if (slotHistoryService.existsByUser(user)) {
-            if (!(today.isBefore(timeConfig.getEndExtendDate()) && today.isAfter(timeConfig.getStartExtendDate())))
+            if (today.isAfter(timeConfig.getEndBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         } else {
-            if (!(today.isBefore(timeConfig.getEndBookingDate()) && today.isAfter(timeConfig.getStartBookingDate())))
+            if (today.isAfter(timeConfig.getStartExtendDate()) || today.isBefore(timeConfig.getEndExtendDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         }
         Semester nextSemester = semesterService.getNext();
@@ -129,10 +128,10 @@ public class RoomService {
         var today = LocalDate.now();
         // đã từng dặt phòng
         if (slotHistoryService.existsByUser(user)) {
-            if (!(today.isBefore(timeConfig.getEndExtendDate()) && today.isAfter(timeConfig.getStartExtendDate())))
+            if (today.isAfter(timeConfig.getEndBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         } else {
-            if (!(today.isBefore(timeConfig.getEndBookingDate()) && today.isAfter(timeConfig.getStartBookingDate())))
+            if (today.isAfter(timeConfig.getStartExtendDate()) || today.isBefore(timeConfig.getEndExtendDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         }
         Semester nextSemester = semesterService.getNext();
