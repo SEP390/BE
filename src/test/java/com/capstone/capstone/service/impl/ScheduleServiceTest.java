@@ -139,7 +139,6 @@ class ScheduleServiceTest {
         s.setEmployee(emp);
         s.setShift(shift);
         s.setDorm(dorm);
-        s.setSemester(sem);
         s.setWorkDate(workDate);
         s.setNote(note);
         s.setCreatedAt(LocalDateTime.of(2025, 1, 1, 8, 0));
@@ -163,8 +162,8 @@ class ScheduleServiceTest {
                 () -> scheduleService.createSchedule(req)
         );
 
-        assertEquals("employeeId, shiftId, dormId, semesterId là bắt buộc", ex.getMessage());
-        verifyNoInteractions(employeeRepository, shiftRepository, dormRepository, semesterRepository, scheduleRepository);
+        assertEquals("employeeId, shiftId, dormId là bắt buộc", ex.getMessage());
+        verifyNoInteractions(employeeRepository, shiftRepository, dormRepository, scheduleRepository);
     }
 
     // Test case: Cả singleDate và range (from+to) đều được set → ném IllegalArgumentException
@@ -174,7 +173,6 @@ class ScheduleServiceTest {
         req.setEmployeeId(UUID.randomUUID());
         req.setShiftId(UUID.randomUUID());
         req.setDormId(UUID.randomUUID());
-        req.setSemesterId(UUID.randomUUID());
 
         req.setSingleDate(LocalDate.now());
         req.setFrom(LocalDate.now());
@@ -194,7 +192,6 @@ class ScheduleServiceTest {
         req.setEmployeeId(UUID.randomUUID());
         req.setShiftId(UUID.randomUUID());
         req.setDormId(UUID.randomUUID());
-        req.setSemesterId(UUID.randomUUID());
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
@@ -210,7 +207,6 @@ class ScheduleServiceTest {
         req.setEmployeeId(UUID.randomUUID());
         req.setShiftId(UUID.randomUUID());
         req.setDormId(UUID.randomUUID());
-        req.setSemesterId(UUID.randomUUID());
 
         req.setFrom(LocalDate.of(2025, 1, 10));
         req.setTo(LocalDate.of(2025, 1, 5));
@@ -228,13 +224,11 @@ class ScheduleServiceTest {
         UUID empId = UUID.randomUUID();
         UUID shiftId = shiftMorning.getId();
         UUID dormId = dormA.getId();
-        UUID semId = semester1.getId();
 
         CreateScheduleRequest req = new CreateScheduleRequest();
         req.setEmployeeId(empId);
         req.setShiftId(shiftId);
         req.setDormId(dormId);
-        req.setSemesterId(semId);
         LocalDate workDate = LocalDate.of(2025, 1, 5);
         req.setSingleDate(workDate);
         req.setNote("Ghi chú test");
@@ -244,7 +238,6 @@ class ScheduleServiceTest {
         when(employeeRepository.findById(empId)).thenReturn(Optional.of(emp));
         when(shiftRepository.findById(shiftId)).thenReturn(Optional.of(shiftMorning));
         when(dormRepository.findById(dormId)).thenReturn(Optional.of(dormA));
-        when(semesterRepository.findById(semId)).thenReturn(Optional.of(semester1));
         when(scheduleRepository.existsByEmployeeAndWorkDateAndShift(emp, workDate, shiftMorning))
                 .thenReturn(false);
 
@@ -263,7 +256,6 @@ class ScheduleServiceTest {
         assertEquals(empId, res.getEmployeeId());
         assertEquals(shiftId, res.getShiftId());
         assertEquals(dormId, res.getDormId());
-        assertEquals(semId, res.getSemesterId());
         assertEquals(workDate, res.getWorkDate());
         assertEquals("Ghi chú test", res.getNote());
 
@@ -276,13 +268,11 @@ class ScheduleServiceTest {
         UUID empId = UUID.randomUUID();
         UUID shiftId = shiftMorning.getId();
         UUID dormId = dormA.getId();
-        UUID semId = semester1.getId();
 
         CreateScheduleRequest req = new CreateScheduleRequest();
         req.setEmployeeId(empId);
         req.setShiftId(shiftId);
         req.setDormId(dormId);
-        req.setSemesterId(semId);
         req.setFrom(LocalDate.of(2025, 1, 1));  // Wednesday
         req.setTo(LocalDate.of(2025, 1, 10));
         req.setRepeatDays(Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
@@ -292,7 +282,6 @@ class ScheduleServiceTest {
         when(employeeRepository.findById(empId)).thenReturn(Optional.of(emp));
         when(shiftRepository.findById(shiftId)).thenReturn(Optional.of(shiftMorning));
         when(dormRepository.findById(dormId)).thenReturn(Optional.of(dormA));
-        when(semesterRepository.findById(semId)).thenReturn(Optional.of(semester1));
 
         when(scheduleRepository.existsByEmployeeAndWorkDateAndShift(any(), any(), any()))
                 .thenReturn(false);
@@ -329,13 +318,11 @@ class ScheduleServiceTest {
         UUID empId = UUID.randomUUID();
         UUID shiftId = shiftMorning.getId();
         UUID dormId = dormA.getId();
-        UUID semId = semester1.getId();
 
         CreateScheduleRequest req = new CreateScheduleRequest();
         req.setEmployeeId(empId);
         req.setShiftId(shiftId);
         req.setDormId(dormId);
-        req.setSemesterId(semId);
         req.setFrom(LocalDate.of(2025, 1, 1));
         req.setTo(LocalDate.of(2025, 1, 3));
         req.setRepeatDays(null);
@@ -345,7 +332,6 @@ class ScheduleServiceTest {
         when(employeeRepository.findById(empId)).thenReturn(Optional.of(emp));
         when(shiftRepository.findById(shiftId)).thenReturn(Optional.of(shiftMorning));
         when(dormRepository.findById(dormId)).thenReturn(Optional.of(dormA));
-        when(semesterRepository.findById(semId)).thenReturn(Optional.of(semester1));
 
         when(scheduleRepository.existsByEmployeeAndWorkDateAndShift(any(), any(), any()))
                 .thenReturn(false);
@@ -369,13 +355,11 @@ class ScheduleServiceTest {
         UUID empId = UUID.randomUUID();
         UUID shiftId = shiftMorning.getId();
         UUID dormId = dormA.getId();
-        UUID semId = semester1.getId();
 
         CreateScheduleRequest req = new CreateScheduleRequest();
         req.setEmployeeId(empId);
         req.setShiftId(shiftId);
         req.setDormId(dormId);
-        req.setSemesterId(semId);
         req.setFrom(LocalDate.of(2025, 1, 1));
         req.setTo(LocalDate.of(2025, 1, 3));
         req.setRepeatDays(Collections.emptySet());
@@ -385,7 +369,6 @@ class ScheduleServiceTest {
         when(employeeRepository.findById(empId)).thenReturn(Optional.of(emp));
         when(shiftRepository.findById(shiftId)).thenReturn(Optional.of(shiftMorning));
         when(dormRepository.findById(dormId)).thenReturn(Optional.of(dormA));
-        when(semesterRepository.findById(semId)).thenReturn(Optional.of(semester1));
 
         when(scheduleRepository.existsByEmployeeAndWorkDateAndShift(any(), any(), any()))
                 .thenReturn(false);
@@ -409,13 +392,11 @@ class ScheduleServiceTest {
         UUID empId = UUID.randomUUID();
         UUID shiftId = shiftMorning.getId();
         UUID dormId = dormA.getId();
-        UUID semId = semester1.getId();
 
         CreateScheduleRequest req = new CreateScheduleRequest();
         req.setEmployeeId(empId);
         req.setShiftId(shiftId);
         req.setDormId(dormId);
-        req.setSemesterId(semId);
         req.setFrom(LocalDate.of(2025, 1, 1));
         req.setTo(LocalDate.of(2025, 1, 3));
         // repeatDays chỉ chứa Sunday, nhưng khoảng 1-3/1 có Wed, Thu, Fri
@@ -426,7 +407,6 @@ class ScheduleServiceTest {
         when(employeeRepository.findById(empId)).thenReturn(Optional.of(emp));
         when(shiftRepository.findById(shiftId)).thenReturn(Optional.of(shiftMorning));
         when(dormRepository.findById(dormId)).thenReturn(Optional.of(dormA));
-        when(semesterRepository.findById(semId)).thenReturn(Optional.of(semester1));
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
@@ -442,13 +422,11 @@ class ScheduleServiceTest {
         UUID empId = UUID.randomUUID();
         UUID shiftId = shiftMorning.getId();
         UUID dormId = dormA.getId();
-        UUID semId = semester1.getId();
 
         CreateScheduleRequest req = new CreateScheduleRequest();
         req.setEmployeeId(empId);
         req.setShiftId(shiftId);
         req.setDormId(dormId);
-        req.setSemesterId(semId);
         req.setFrom(LocalDate.of(2025, 1, 1));
         req.setTo(LocalDate.of(2025, 1, 3));
         req.setRepeatDays(null);
@@ -458,7 +436,6 @@ class ScheduleServiceTest {
         when(employeeRepository.findById(empId)).thenReturn(Optional.of(emp));
         when(shiftRepository.findById(shiftId)).thenReturn(Optional.of(shiftMorning));
         when(dormRepository.findById(dormId)).thenReturn(Optional.of(dormA));
-        when(semesterRepository.findById(semId)).thenReturn(Optional.of(semester1));
 
         // Giả lập: ngày 1/1 conflict, các ngày còn lại không conflict
         when(scheduleRepository.existsByEmployeeAndWorkDateAndShift(emp, LocalDate.of(2025, 1, 1), shiftMorning))
@@ -482,13 +459,11 @@ class ScheduleServiceTest {
         UUID empId = UUID.randomUUID();
         UUID shiftId = shiftMorning.getId();
         UUID dormId = dormA.getId();
-        UUID semId = semester1.getId();
 
         CreateScheduleRequest req = new CreateScheduleRequest();
         req.setEmployeeId(empId);
         req.setShiftId(shiftId);
         req.setDormId(dormId);
-        req.setSemesterId(semId);
         LocalDate workDate = LocalDate.of(2025, 1, 5);
         req.setSingleDate(workDate);
 
@@ -497,7 +472,6 @@ class ScheduleServiceTest {
         when(employeeRepository.findById(empId)).thenReturn(Optional.of(emp));
         when(shiftRepository.findById(shiftId)).thenReturn(Optional.of(shiftMorning));
         when(dormRepository.findById(dormId)).thenReturn(Optional.of(dormA));
-        when(semesterRepository.findById(semId)).thenReturn(Optional.of(semester1));
         when(scheduleRepository.existsByEmployeeAndWorkDateAndShift(emp, workDate, shiftMorning))
                 .thenReturn(false);
 

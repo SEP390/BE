@@ -37,10 +37,6 @@ public class Schedule extends BaseEntity {
     @JsonIgnore
     private Shift shift;
 
-    @ManyToOne
-    @JoinColumn(name = "semester_id", nullable = false)
-    @JsonIgnore
-    private Semester semester;
 
     @ManyToOne
     @JoinColumn(name = "dorm_id", nullable = false)
@@ -59,8 +55,4 @@ public class Schedule extends BaseEntity {
     private LocalDate workDate;
 
     private String note;
-
-    @OneToOne(mappedBy = "schedule", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Attendance attendance;
 }

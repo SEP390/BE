@@ -33,7 +33,6 @@ public class ScheduleService implements IScheduleService {
     private final EmployeeRepository employeeRepository;
     private final ShiftRepository shiftRepository;
     private final DormRepository dormRepository;
-    private final SemesterRepository semesterRepository;
     private final UserRepository userRepository;
 
 
@@ -41,8 +40,8 @@ public class ScheduleService implements IScheduleService {
     public List<CreateScheduleResponse> createSchedule(CreateScheduleRequest req) {
         // 1) Validate bắt buộc
         if (req.getEmployeeId() == null || req.getShiftId() == null ||
-                req.getDormId() == null || req.getSemesterId() == null) {
-            throw new IllegalArgumentException("employeeId, shiftId, dormId, semesterId là bắt buộc");
+                req.getDormId() == null) {
+            throw new IllegalArgumentException("employeeId, shiftId, dormId là bắt buộc");
         }
 
         boolean singleDay = req.getSingleDate() != null;
@@ -62,8 +61,6 @@ public class ScheduleService implements IScheduleService {
                 .orElseThrow(() -> new RuntimeException("Shift not found"));
         Dorm dorm = dormRepository.findById(req.getDormId())
                 .orElseThrow(() -> new RuntimeException("Dorm not found"));
-        Semester sem = semesterRepository.findById(req.getSemesterId())
-                .orElseThrow(() -> new RuntimeException("Semester not found"));
 
         // 3) Build danh sách ngày cần insert
         List<LocalDate> days = new ArrayList<>();
@@ -100,7 +97,6 @@ public class ScheduleService implements IScheduleService {
             s.setEmployee(emp);
             s.setShift(shift);
             s.setDorm(dorm);
-            s.setSemester(sem);
             s.setWorkDate(day);
             s.setNote(req.getNote());
 
@@ -121,7 +117,6 @@ public class ScheduleService implements IScheduleService {
         r.setEmployeeId(s.getEmployee().getId());
         r.setShiftId(s.getShift().getId());
         r.setDormId(s.getDorm().getId());
-        r.setSemesterId(s.getSemester().getId());
         r.setWorkDate(s.getWorkDate());
         r.setNote(s.getNote());
         r.setEmployeeName(s.getEmployee().getUser().getFullName());
@@ -157,8 +152,6 @@ public class ScheduleService implements IScheduleService {
             resp.setEmployeeName(s.getEmployee().getUser().getFullName());
             resp.setShiftId(s.getShift().getId());
             resp.setShiftName(s.getShift().getName());
-            resp.setSemesterId(s.getSemester().getId());
-            resp.setSemesterName(s.getSemester().getName());
             resp.setDormId(s.getDorm().getId());
             resp.setDormName(s.getDorm().getDormName());
             resp.setCreatedAt(s.getCreatedAt());
@@ -188,8 +181,6 @@ public class ScheduleService implements IScheduleService {
         r.setShiftName(schedule.getShift().getName());
         r.setDormId(schedule.getDorm().getId());
         r.setDormName(schedule.getDorm().getDormName());
-        r.setSemesterId(schedule.getSemester().getId());
-        r.setSemesterName(schedule.getSemester().getName());
         r.setWorkDate(schedule.getWorkDate());
         r.setCreatedAt(schedule.getCreatedAt());
         r.setUpdatedAt(schedule.getUpdatedAt());
@@ -215,8 +206,6 @@ public class ScheduleService implements IScheduleService {
             resp.setEmployeeName(s.getEmployee().getUser().getFullName());
             resp.setShiftId(s.getShift().getId());
             resp.setShiftName(s.getShift().getName());
-            resp.setSemesterId(s.getSemester().getId());
-            resp.setSemesterName(s.getSemester().getName());
             resp.setDormId(s.getDorm().getId());
             resp.setDormName(s.getDorm().getDormName());
             resp.setCreatedAt(s.getCreatedAt());

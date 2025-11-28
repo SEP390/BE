@@ -21,8 +21,6 @@ public class UpdateScheduleResponse {
     String shiftName;
     UUID dormId;
     String dormName;
-    UUID semesterId;
-    String semesterName;
     LocalDate workDate;
     String note;
     LocalDateTime createdAt;

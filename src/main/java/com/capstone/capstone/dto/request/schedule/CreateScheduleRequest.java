@@ -20,8 +20,6 @@ public class CreateScheduleRequest {
     private UUID shiftId;
     private UUID dormId;
 
-    // TUỲ CHỌN
-    private UUID semesterId;
 
     private String note;
 
