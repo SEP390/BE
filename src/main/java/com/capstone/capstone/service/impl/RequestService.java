@@ -156,6 +156,12 @@ public class RequestService implements IRequestService {
 
     @Override
     public List<GetAllAnonymousRequestResponse> getAllAnonymousRequest() {
+        UUID userId = AuthenUtil.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (user.getRole() != RoleEnum.MANAGER && user.getRole() != RoleEnum.ADMIN) {
+            throw new AccessDeniedException("Access denied");
+        }
         List<Request> requests = requestRepository.findRequestByRequestType(RequestTypeEnum.ANONYMOUS);
         List<GetAllAnonymousRequestResponse> responses  = new ArrayList<>();
         for (Request request : requests) {

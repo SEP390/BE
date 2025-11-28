@@ -40,14 +40,22 @@ public class ReportService implements IReportService {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
         Report report = new Report();
+        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+            throw new IllegalArgumentException("Content cannot be blank");
+        }
         report.setContent(request.getContent());
+        if (request.getReportType() == null) {
+            throw new IllegalArgumentException("Report type is required");
+        }
         report.setReportType(request.getReportType());
         report.setReportStatus(ReportStatusEnum.PENDING);
         report.setCreatedAt(LocalDateTime.now());
         report.setUserCode(user.getUserCode());
         report.setEmployee(employee);
         reportRepository.save(report);
+
         CreateReportResponse createReportResponse = new CreateReportResponse();
+        createReportResponse.setReportId(report.getId());
         createReportResponse.setContent(report.getContent());
         createReportResponse.setReportStatus(report.getReportStatus());
         createReportResponse.setCreatedAt(report.getCreatedAt());
@@ -61,7 +69,7 @@ public class ReportService implements IReportService {
         UUID  userId = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
         List<Report> reports;
-        if (user.getRole() == RoleEnum.MANAGER) {
+        if (user.getRole() == RoleEnum.MANAGER || user.getRole() == RoleEnum.ADMIN) {
             reports = reportRepository.findAll();
         } else if (user.getRole() == RoleEnum.TECHNICAL) {
             reports = reportRepository.findByReportType(ReportTypeEnum.MAINTENANCE_REQUEST);
@@ -89,20 +97,30 @@ public class ReportService implements IReportService {
     }
 
     @Override
-    public UpdateReportResponse updateReport(UUID requestId, UpdateReportRequest request) {
-        Report report =  reportRepository.findById(requestId).orElseThrow(() -> new NotFoundException("Report not found"));
-        report.setResponseMessage(request.getResponseMessage());
-        report.setReportStatus(request.getReportStatus());
-        reportRepository.save(report);
-        UpdateReportResponse response = new UpdateReportResponse();
-        response.setReportId(report.getId());
-        response.setEmployeeId(report.getEmployee().getId());
-        response.setContent(report.getContent());
-        response.setReportStatus(report.getReportStatus());
-        response.setCreatedDate(report.getCreatedAt());
-        response.setUserCode(report.getUserCode());
-        response.setResponseMessage(report.getResponseMessage());
-        return response;
+    public UpdateReportResponse updateReport(UUID reportId, UpdateReportRequest request) {
+        UUID  userId = AuthenUtil.getCurrentUserId();
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
+        Report report =  reportRepository.findById(reportId).orElseThrow(() -> new NotFoundException("Report not found"));
+        if (report.getEmployee().getId().equals(employee.getId())
+                || user.getRole() == RoleEnum.MANAGER
+                || user.getRole() == RoleEnum.TECHNICAL) {
+            report.setResponseMessage(request.getResponseMessage());
+            report.setReportStatus(request.getReportStatus());
+            reportRepository.save(report);
+            UpdateReportResponse response = new UpdateReportResponse();
+            response.setReportId(report.getId());
+            response.setEmployeeId(report.getEmployee().getId());
+            response.setContent(report.getContent());
+            response.setReportStatus(report.getReportStatus());
+            response.setCreatedDate(report.getCreatedAt());
+            response.setUserCode(report.getUserCode());
+            response.setResponseMessage(report.getResponseMessage());
+            return response;
+        } else  {
+            throw new AccessDeniedException("Access denied");
+        }
+
     }
 
     @Override
