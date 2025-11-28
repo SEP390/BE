@@ -47,10 +47,10 @@ public class RoomService {
         var today = LocalDate.now();
         // đã từng dặt phòng
         if (slotHistoryService.existsByUser(user)) {
-            if (today.isAfter(timeConfig.getEndBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
+            if (today.isAfter(timeConfig.getEndExtendDate()) || today.isBefore(timeConfig.getEndBookingDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         } else {
-            if (today.isAfter(timeConfig.getStartExtendDate()) || today.isBefore(timeConfig.getEndExtendDate()))
+            if (today.isAfter(timeConfig.getStartBookingDate()) || today.isBefore(timeConfig.getEndBookingDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         }
         Semester nextSemester = semesterService.getNext();
@@ -128,10 +128,10 @@ public class RoomService {
         var today = LocalDate.now();
         // đã từng dặt phòng
         if (slotHistoryService.existsByUser(user)) {
-            if (today.isAfter(timeConfig.getEndBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
+            if (today.isAfter(timeConfig.getEndExtendDate()) || today.isBefore(timeConfig.getEndBookingDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         } else {
-            if (today.isAfter(timeConfig.getStartExtendDate()) || today.isBefore(timeConfig.getEndExtendDate()))
+            if (today.isAfter(timeConfig.getStartBookingDate()) || today.isBefore(timeConfig.getEndBookingDate()))
                 throw new AppException("BOOKING_DATE_NOT_START");
         }
         Semester nextSemester = semesterService.getNext();
