@@ -35,13 +35,14 @@ public class SurveySelectService implements ISurveySelectService {
         UUID userId = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+        //check xem user ddax lam survey chua
+        Boolean hasCompletedSurvey = surveySelectRepository.hasCompletedSurvey(user);
 
         // 1️⃣ Validate danh sách option tối thiểu phải có 1 phần tử
+
         if (request.getOptionIds() == null || request.getOptionIds().isEmpty()) {
             throw new BadHttpRequestException("Option list cannot be empty");
         }
-
-        Boolean hasCompletedSurvey = surveySelectRepository.hasCompletedSurvey(user);
 
         // 2️⃣ Kiểm tra duplicate (1 question chỉ chọn 1 option)
         Map<UUID, SurveyQuetionSelected> questionSelected = new HashMap<>();
@@ -64,6 +65,11 @@ public class SurveySelectService implements ISurveySelectService {
             questionSelected.put(questionId, s);
         }
 
+        //nếu đã làm survey rồi bà list select pas hêt toàn bộ thì xoá các select cũ và add các select mới
+        List<SurveyQuetionSelected> listSelect =  surveySelectRepository.findAllByUser(user);
+        if(hasCompletedSurvey){
+            surveySelectRepository.deleteAll(listSelect);
+        }
         // 3️⃣ Lưu tất cả
         surveySelectRepository.saveAll(questionSelected.values());
 

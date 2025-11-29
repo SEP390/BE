@@ -12,6 +12,7 @@ import com.capstone.capstone.dto.response.report.UpdateReportResponse;
 import com.capstone.capstone.entity.Employee;
 import com.capstone.capstone.entity.Report;
 import com.capstone.capstone.entity.User;
+import com.capstone.capstone.exception.BadHttpRequestException;
 import com.capstone.capstone.exception.NotFoundException;
 import com.capstone.capstone.repository.EmployeeRepository;
 import com.capstone.capstone.repository.ReportRepository;
@@ -41,12 +42,13 @@ public class ReportService implements IReportService {
         Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
         Report report = new Report();
         if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            throw new IllegalArgumentException("Content cannot be blank");
+            throw new BadHttpRequestException("Content cannot be blank");
+        }
+
+        if (request.getReportType() == null) {
+            throw new BadHttpRequestException("Report type is required");
         }
         report.setContent(request.getContent());
-        if (request.getReportType() == null) {
-            throw new IllegalArgumentException("Report type is required");
-        }
         report.setReportType(request.getReportType());
         report.setReportStatus(ReportStatusEnum.PENDING);
         report.setCreatedAt(LocalDateTime.now());
@@ -100,11 +102,9 @@ public class ReportService implements IReportService {
     public UpdateReportResponse updateReport(UUID reportId, UpdateReportRequest request) {
         UUID  userId = AuthenUtil.getCurrentUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-        Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
         Report report =  reportRepository.findById(reportId).orElseThrow(() -> new NotFoundException("Report not found"));
-        if (report.getEmployee().getId().equals(employee.getId())
-                || user.getRole() == RoleEnum.MANAGER
-                || user.getRole() == RoleEnum.TECHNICAL) {
+//        Employee employee = employeeRepository.findByUser(user).orElseThrow(() -> new NotFoundException("Employee not found"));
+        if (user.getRole() == RoleEnum.MANAGER || user.getRole() == RoleEnum.TECHNICAL || user.getRole() == RoleEnum.CLEANER || user.getRole() == RoleEnum.GUARD) {
             report.setResponseMessage(request.getResponseMessage());
             report.setReportStatus(request.getReportStatus());
             reportRepository.save(report);
