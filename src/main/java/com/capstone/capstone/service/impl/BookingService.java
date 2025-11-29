@@ -20,19 +20,17 @@ import java.util.concurrent.TimeUnit;
 @AllArgsConstructor
 public class BookingService {
     private final SlotRepository slotRepository;
-    private final SurveySelectRepository surveySelectRepository;
     private final SlotService slotService;
     private final InvoiceService invoiceService;
     private final SemesterService semesterService;
     private final PaymentService paymentService;
-    private final TimeConfigService timeConfigService;
-    private final SlotHistoryService slotHistoryService;
     private final ScheduledExecutorService scheduledExecutorService;
     private final InvoiceRepository invoiceRepository;
     private final PaymentRepository paymentRepository;
     private final SlotInvoiceRepository slotInvoiceRepository;
     private final VNPayService vnPayService;
     private final RoomRepository roomRepository;
+    private final BookingValidateService bookingValidateService;
 
     @Transactional
     public String create(UUID slotId) {
@@ -44,22 +42,7 @@ public class BookingService {
 
         if (nextSemester == null) throw new AppException("NEXT_SEMESTER_NOT_FOUND");
 
-        TimeConfig timeConfig = timeConfigService.getCurrent().orElseThrow(() -> new AppException("TIME_CONFIG_NOT_FOUND"));
-
-        var today = LocalDate.now();
-        // đã từng dặt phòng
-        if (slotHistoryService.existsByUser(user)) {
-            if (today.isAfter(timeConfig.getEndExtendDate()) || today.isBefore(timeConfig.getStartExtendDate()))
-                throw new AppException("BOOKING_DATE_NOT_START");
-        } else {
-            if (today.isAfter(timeConfig.getEndBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
-                throw new AppException("BOOKING_DATE_NOT_START");
-        }
-
-        // không được đặt phòng nếu chưa làm survey
-        if (!surveySelectRepository.exists((r, q, c) -> {
-            return c.equal(r.get("user"), user);
-        })) throw new AppException("SURVEY_NOT_FOUND");
+        bookingValidateService.validate();
 
         // đã đặt slot khác
         if (slotService.getByUser(user).isPresent()) throw new AppException("ALREADY_BOOKED");

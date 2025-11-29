@@ -21,7 +21,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,40 +34,25 @@ public class RoomService {
     private final MatchingRepository matchingRepository;
     private final SlotRepository slotRepository;
     private final SlotService slotService;
-    private final SlotHistoryService slotHistoryService;
-    private final SemesterService semesterService;
-    private final SurveySelectRepository surveySelectRepository;
-    private final TimeConfigService timeConfigService;
+    private final BookingValidateService bookingValidateService;
 
     @Transactional
     public List<RoomMatchingResponse> getMatching() {
         User user = SecurityUtils.getCurrentUser();
-        TimeConfig timeConfig = timeConfigService.getCurrent().orElseThrow(() -> new AppException("TIME_CONFIG_NOT_FOUND"));
-        var today = LocalDate.now();
-        // đã từng dặt phòng
-        if (slotHistoryService.existsByUser(user)) {
-            if (today.isAfter(timeConfig.getEndExtendDate()) || today.isBefore(timeConfig.getStartExtendDate()))
-                throw new AppException("BOOKING_DATE_NOT_START");
-        } else {
-            if (today.isAfter(timeConfig.getEndBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
-                throw new AppException("BOOKING_DATE_NOT_START");
-        }
-        Semester nextSemester = semesterService.getNext();
-
-        if (nextSemester == null) throw new AppException("NEXT_SEMESTER_NOT_FOUND");
-
-        // không được đặt phòng nếu chưa làm survey
-        if (!surveySelectRepository.exists((r, q, c) -> {
-            return c.equal(r.get("user"), user);
-        })) throw new AppException("SURVEY_NOT_FOUND");
-
+        // kiểm tra điều kiện đặt phòng
+        bookingValidateService.validate();
+        // tổng số lượng câu hỏi
         final long totalQuestion = surveyQuestionRepository.count();
+        // dach sách phòng phù hợp (cùng giới tính / trống)
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
+        // tính matching user - room
         final Map<UUID, Double> matching = matchingRepository.computeRoomMatching(user, rooms)
                 .stream()
                 .collect(Collectors.toMap(RoomMatching::getRoomId, m -> (double) m.getSameOptionCount() / m.getUserCount() / totalQuestion * 100));
         Comparator<Room> comparator = Comparator.comparingDouble(o -> matching.getOrDefault(o.getId(), 0.0));
+        // sắp xếp giảm dần
         rooms.sort(comparator.reversed());
+        // top 5 phòng matching cao nhất
         return rooms.subList(0, Math.min(5, rooms.size())).stream().map(room -> modelMapper.map(room, RoomMatchingResponse.class)).peek(room -> {
             room.setMatching(matching.getOrDefault(room.getId(), 0.0));
         }).toList();
@@ -123,25 +107,7 @@ public class RoomService {
     @Transactional
     public PagedModel<RoomResponseJoinPricingAndDormAndSlot> getBooking(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
         User user = SecurityUtils.getCurrentUser();
-
-        TimeConfig timeConfig = timeConfigService.getCurrent().orElseThrow(() -> new AppException("TIME_CONFIG_NOT_FOUND"));
-        var today = LocalDate.now();
-        // đã từng dặt phòng
-        if (slotHistoryService.existsByUser(user)) {
-            if (today.isAfter(timeConfig.getEndExtendDate()) || today.isBefore(timeConfig.getStartExtendDate()))
-                throw new AppException("BOOKING_DATE_NOT_START");
-        } else {
-            if (today.isAfter(timeConfig.getEndBookingDate()) || today.isBefore(timeConfig.getStartBookingDate()))
-                throw new AppException("BOOKING_DATE_NOT_START");
-        }
-        Semester nextSemester = semesterService.getNext();
-
-        if (nextSemester == null) throw new AppException("NEXT_SEMESTER_NOT_FOUND");
-
-        // không được đặt phòng nếu chưa làm survey
-        if (!surveySelectRepository.exists((r, q, c) -> {
-            return c.equal(r.get("user"), user);
-        })) throw new AppException("SURVEY_NOT_FOUND");
+        bookingValidateService.validate();
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
         int validPageSize = Math.min(pageable.getPageSize(), 100);
         Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
