@@ -133,6 +133,7 @@ public class EmployeeService implements IEmployeeService {
         response.setPhoneNumber(user.getPhoneNumber());
         response.setHireDate(employee.getHireDate());
         response.setContractEndDate(employee.getContractEndDate());
+        response.setImageUrl(user.getImage());
         return response;
     }
 
