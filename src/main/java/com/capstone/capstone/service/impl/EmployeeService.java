@@ -5,15 +5,11 @@ import com.capstone.capstone.dto.request.employee.CreateEmployeeRequest;
 import com.capstone.capstone.dto.request.employee.ResetPasswordRequest;
 import com.capstone.capstone.dto.request.employee.UpdateEmployeeRequest;
 import com.capstone.capstone.dto.response.employee.*;
-import com.capstone.capstone.entity.Dorm;
 import com.capstone.capstone.entity.Employee;
-import com.capstone.capstone.entity.Schedule;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.BadHttpRequestException;
 import com.capstone.capstone.exception.NotFoundException;
-import com.capstone.capstone.repository.DormRepository;
 import com.capstone.capstone.repository.EmployeeRepository;
-import com.capstone.capstone.repository.ScheduleRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IEmployeeService;
 import com.capstone.capstone.util.AuthenUtil;
@@ -22,8 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.Utilities;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
