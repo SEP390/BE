@@ -34,6 +34,7 @@ public class InvoiceService {
     private final SemesterService semesterService;
     private final EWUsageRepository ewUsageRepository;
     private final EWPriceRepository eWPriceRepository;
+    private final EWInvoiceRepository ewInvoiceRepository;
     private final RoomRepository roomRepository;
     private final SlotInvoiceRepository slotInvoiceRepository;
 
@@ -75,7 +76,14 @@ public class InvoiceService {
         if (priceToPay > 0) {
             String startDate = usages.getFirst().getStartDate().format(DateTimeFormatter.ISO_DATE);
             String endDate = usages.getLast().getEndDate().format(DateTimeFormatter.ISO_DATE);
-            create(user, priceToPay, "Tiền điện nước từ ngày %s đến ngày %s".formatted(startDate, endDate), InvoiceType.EW);
+            Invoice invoice = create(user, priceToPay, "Tiền điện nước từ ngày %s đến ngày %s".formatted(startDate, endDate), InvoiceType.EW);
+            EWInvoice ewInvoice = new EWInvoice();
+            ewInvoice.setInvoice(invoice);
+            ewInvoice.setElectricUsed(totalElectricUsed);
+            ewInvoice.setWaterUsed(totalWaterUsed);
+            ewInvoice.setStartDate(usages.getFirst().getStartDate());
+            ewInvoice.setEndDate(usages.getLast().getEndDate());
+            ewInvoice = ewInvoiceRepository.save(ewInvoice);
         }
     }
 

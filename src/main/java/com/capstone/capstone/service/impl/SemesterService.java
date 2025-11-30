@@ -14,6 +14,7 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,9 +36,10 @@ public class SemesterService {
         return modelMapper.map(semesterRepository.findCurrent(), SemesterResponse.class);
     }
 
-    public PagedModel<SemesterResponse> getAll(String name, Pageable pageable) {
+    public PagedModel<SemesterResponse> getAll(Map<String, Object> filter, Pageable pageable) {
         var query = new SpecQuery<Semester>();
-        query.like("name", name);
+        query.like(filter, "name");
+        query.equal(filter, "id");
         return new PagedModel<>(semesterRepository.findAll(query.and(), pageable).map(semester -> modelMapper.map(semester, SemesterResponse.class)));
     }
 

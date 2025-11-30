@@ -84,6 +84,10 @@ public class RoomPricingService {
     public RoomPricingResponse update(UUID id, UpdateRoomPricingRequest request) {
         var pricing = roomPricingRepository.findById(id).orElseThrow(() -> new AppException("PRICING_NOT_FOUND"));
         pricing.setPrice(request.getPrice());
+        pricing.setTotalSlot(request.getTotalSlot());
+        if (roomPricingRepository.exists((r,q,c) -> {
+            return c.and(c.notEqual(r.get("id"), id), c.equal(r.get("totalSlot"), request.getTotalSlot()));
+        })) throw new AppException("TOTAL_SLOT_EXISTED");
         pricing = roomPricingRepository.save(pricing);
         return modelMapper.map(pricing, RoomPricingResponse.class);
     }

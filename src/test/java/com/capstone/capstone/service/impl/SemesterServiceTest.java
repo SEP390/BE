@@ -147,7 +147,7 @@ class SemesterServiceTest {
         when(modelMapper.map(any(Semester.class), eq(SemesterResponse.class))).thenReturn(mockSemesterResponse);
 
         // Act
-        PagedModel<SemesterResponse> result = semesterService.getAll("Fall", pageable);
+        PagedModel<SemesterResponse> result = semesterService.getAll(null, pageable);
 
         // Assert
         assertThat(result.getContent()).hasSize(1);

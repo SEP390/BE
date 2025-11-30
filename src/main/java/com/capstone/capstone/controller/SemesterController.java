@@ -13,7 +13,9 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -24,8 +26,12 @@ public class SemesterController {
     @GetMapping("/api/semesters")
     public BaseResponse<PagedModel<SemesterResponse>> getAll(
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) UUID id,
             @PageableDefault Pageable pageable) {
-        return new BaseResponse<>(semesterService.getAll(name, pageable));
+        Map<String, Object> filter = new HashMap<>();
+        filter.put("name", name);
+        filter.put("id", id);
+        return new BaseResponse<>(semesterService.getAll(filter, pageable));
     }
 
     @GetMapping("/api/semesters/current")
