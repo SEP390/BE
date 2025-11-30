@@ -26,4 +26,5 @@ public class GetEmployeeByIdResponse {
     private String fullName;
     private LocalDate hireDate;
     private LocalDate contractEndDate;
+    private String imageUrl;
 }
