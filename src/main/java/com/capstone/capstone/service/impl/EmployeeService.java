@@ -131,6 +131,8 @@ public class EmployeeService implements IEmployeeService {
         response.setGender(user.getGender());
         response.setFullName(user.getFullName());
         response.setPhoneNumber(user.getPhoneNumber());
+        response.setHireDate(employee.getHireDate());
+        response.setContractEndDate(employee.getContractEndDate());
         return response;
     }
 
