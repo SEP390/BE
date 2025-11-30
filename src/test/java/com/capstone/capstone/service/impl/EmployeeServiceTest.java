@@ -323,10 +323,16 @@ class EmployeeServiceTest {
     }
 
     /**
-     * 🎯 TC7 – Role không phải GUARD/CLEANER.
+     * 🎯 TC7 – Role không phải GUARD/CLEANER/TECHNICAL:
+     *  - currentUser: MANAGER
+     *  - request.role = RESIDENT (không thuộc GUARD/CLEANER/TECHNICAL)
+     *  Kỳ vọng theo service hiện tại:
+     *  - Ném BadHttpRequestException với message:
+     *    "You only can create account for GUARD, CLEANER or TECHNICAL"
+     *  - Không save user/employee.
      */
     @Test
-    void createEmployee_shouldThrow_whenRoleIsNotGuardOrCleaner() {
+    void createEmployee_shouldThrow_whenRoleIsNotGuardCleanerOrTechnical() {
         try (MockedStatic<AuthenUtil> mockedStatic = mockStatic(AuthenUtil.class)) {
             UUID managerId = UUID.randomUUID();
             mockedStatic.when(AuthenUtil::getCurrentUserId).thenReturn(managerId);
@@ -341,14 +347,14 @@ class EmployeeServiceTest {
             req.setUsername("newUser");
             req.setEmail("ok@example.com");
             req.setPassword("123456");
-            req.setRole(RoleEnum.RESIDENT); // không hợp lệ
+            req.setRole(RoleEnum.RESIDENT); // ❌ không hợp lệ theo service
 
             BadHttpRequestException ex = assertThrows(
                     BadHttpRequestException.class,
                     () -> employeeService.createEmployee(req)
             );
 
-            assertTrue(ex.getMessage().contains("Employee role must be GUARD or CLEANER"));
+            assertEquals("You only can create account for GUARD, CLEANER or TECHNICAL", ex.getMessage());
             verify(userRepository, never()).save(any());
             verify(employeeRepository, never()).save(any());
         }
@@ -736,7 +742,13 @@ class EmployeeServiceTest {
     }
 
     /**
-     * 🎯 TC18 – Role update không phải GUARD/CLEANER.
+     * 🎯 TC18 – Role update không phải GUARD/CLEANER/TECHNICAL:
+     *  - currentUser: MANAGER
+     *  - request.role = RESIDENT
+     *  Kỳ vọng:
+     *  - Ném BadHttpRequestException với message:
+     *    "You only can update this employee to GUARD, CLEANER or TECHNICAL"
+     *  - Không save user/employee.
      */
     @Test
     void updateEmployee_shouldThrow_whenRoleInvalid() {
@@ -760,14 +772,14 @@ class EmployeeServiceTest {
             when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
 
             UpdateEmployeeRequest req = new UpdateEmployeeRequest();
-            req.setRole(RoleEnum.RESIDENT); // invalid
+            req.setRole(RoleEnum.RESIDENT); // ❌ không hợp lệ
 
             BadHttpRequestException ex = assertThrows(
                     BadHttpRequestException.class,
                     () -> employeeService.updateEmployee(employee.getId(), req)
             );
 
-            assertTrue(ex.getMessage().contains("only can update this employee to GUARD or CLEANER"));
+            assertEquals("You only can update this employee to GUARD, CLEANER or TECHNICAL", ex.getMessage());
             verify(userRepository, never()).save(any());
             verify(employeeRepository, never()).save(any());
         }
