@@ -49,6 +49,9 @@ public class EmployeeService implements IEmployeeService {
         if (users.stream().anyMatch(u -> request.getEmail().equals(u.getEmail()))) {
             throw new BadHttpRequestException("Email is already taken");
         }
+        if (request.getRole() != RoleEnum.CLEANER && request.getRole() != RoleEnum.GUARD && request.getRole() != RoleEnum.TECHNICAL) {
+            throw new BadHttpRequestException("You only can create account for GUARD, CLEANER or TECHNICAL");
+        }
         if (!request.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             throw new BadHttpRequestException("Invalid email format");
         }
@@ -149,8 +152,8 @@ public class EmployeeService implements IEmployeeService {
         if (!isManager && !isOwner) {
             throw new BadHttpRequestException("You are not allowed to update this employee");
         }
-        if (request.getRole() != RoleEnum.CLEANER && request.getRole() != RoleEnum.GUARD) {
-            throw new BadHttpRequestException("You only can update this employee to GUARD or CLEANER");
+        if (request.getRole() != RoleEnum.CLEANER && request.getRole() != RoleEnum.GUARD && request.getRole() != RoleEnum.TECHNICAL) {
+            throw new BadHttpRequestException("You only can update this employee to GUARD, CLEANER or TECHNICAL");
         }
 
         if (employee.getHireDate() != null && request.getContractEndDate() != null &&
