@@ -39,7 +39,8 @@ public class GoogleService {
             }
             GoogleIdToken.Payload payload = idToken.getPayload();
             String email = payload.getEmail();
-            // String pictureUrl = (String) payload.get("picture");
+            String fullName = (String) payload.get("name");
+            String pictureUrl = (String) payload.get("picture");
             User userExample = new User();
             userExample.setEmail(email);
             User existed = userRepository.findOne(Example.of(userExample)).orElse(null);
@@ -47,12 +48,12 @@ public class GoogleService {
             if (existed == null) {
                 existed = new User();
                 existed.setEmail(email);
-                // default username to google_<google-id>, example: google_107063658492462372965
+                existed.setImage(pictureUrl);
                 var username = email.split("@")[0];
                 var userCode = username.substring(username.length() - 8).toUpperCase();
                 existed.setUsername(username);
                 existed.setUserCode(userCode);
-                existed.setFullName(username.toUpperCase());
+                existed.setFullName(fullName);
                 existed.setDob(LocalDate.now());
                 existed.setRole(RoleEnum.RESIDENT);
                 existed.setGender(GenderEnum.MALE); // TODO: edit later
