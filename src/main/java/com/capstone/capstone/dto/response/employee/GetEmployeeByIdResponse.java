@@ -24,4 +24,6 @@ public class GetEmployeeByIdResponse {
     private RoleEnum role;
     private String phoneNumber;
     private String fullName;
+    private LocalDate hireDate;
+    private LocalDate contractEndDate;
 }
