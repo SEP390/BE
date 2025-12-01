@@ -27,7 +27,7 @@ public interface SemesterRepository extends JpaRepository<Semester, UUID>, JpaSp
 
     @Query("""
             FROM Semester
-            WHERE CURRENT_DATE BETWEEN startDate AND endDate
+            WHERE CURRENT_DATE >= startDate AND CURRENT_DATE <= endDate
             ORDER BY startDate DESC
             LIMIT 1
             """)

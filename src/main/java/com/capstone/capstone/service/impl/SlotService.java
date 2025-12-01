@@ -140,8 +140,8 @@ public class SlotService {
      */
     public PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser> getAll(Map<String, Object> filter, Pageable pageable) {
         SpecQuery<Slot> query = new SpecQuery<>();
-        query.like("userCode", (String) filter.get("userCode"));
-        query.equal("userId", filter.get("userId"));
+        query.equal(filter, r -> r.get("user").get("userCode"), "userCode");
+        query.equal(filter, r -> r.get("user").get("id"), "userId");
         query.equal("status", filter.get("status"));
         query.equal(filter, r -> r.get("room").get("id"), "roomId");
         return new PagedModel<>(slotRepository.findAll(query.and(), pageable).map(s -> modelMapper.map(s, SlotResponseJoinRoomAndDormAndPricingAndUser.class)));

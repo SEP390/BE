@@ -1,5 +1,6 @@
 package com.capstone.capstone.controller;
 
+import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.request.room.CreateRoomRequest;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
 import com.capstone.capstone.dto.request.slot.CreateSlotRequest;
@@ -40,6 +41,7 @@ public class RoomController {
             @RequestParam(required = false) Integer floor,
             @RequestParam(required = false) Integer totalSlot,
             @RequestParam(required = false) String roomNumber,
+            @RequestParam(required = false) UUID swapUserId,
             @PageableDefault Pageable pageable) {
         Map<String, Object> filter = new HashMap<>();
         filter.put("dormId", dormId);
@@ -47,6 +49,7 @@ public class RoomController {
         filter.put("floor", floor);
         filter.put("totalSlot", totalSlot);
         filter.put("roomNumber", roomNumber);
+        filter.put("swapUserId", swapUserId);
         return new BaseResponse<>(roomService.get(filter, pageable));
     }
 

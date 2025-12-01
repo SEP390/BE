@@ -1,5 +1,6 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
 import com.capstone.capstone.dto.response.booking.UserMatching;
@@ -10,6 +11,9 @@ import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SortUtil;
 import com.capstone.capstone.util.SpecQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +39,7 @@ public class RoomService {
     private final SlotRepository slotRepository;
     private final SlotService slotService;
     private final BookingValidateService bookingValidateService;
+    private final UserRepository userRepository;
 
     @Transactional
     public List<RoomMatchingResponse> getMatching() {
@@ -92,16 +97,30 @@ public class RoomService {
     }
 
     public PagedModel<RoomResponseJoinPricingAndDormAndSlot> get(Map<String, Object> filter, Pageable pageable) {
-        int validPageSize = Math.min(pageable.getPageSize(), 100);
-        Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
-        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), validPageSize, validSort);
         var query = new SpecQuery<Room>();
         query.equal(r -> r.get("dorm").get("id"), filter.get("dormId"));
         query.equal(filter, "id");
         query.equal(filter, "floor");
         query.equal(filter, "totalSlot");
         query.like(filter, "roomNumber");
-        return new PagedModel<>(roomRepository.findAll(query.and(), validPageable).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
+        if (filter.get("swapUserId") != null) {
+            final UUID swapUserId = (UUID) filter.get("swapUserId");
+            User user = userRepository.findById(swapUserId).orElseThrow(() -> new AppException("USER_NOT_FOUND"));
+            final GenderEnum gender = user.getGender();
+            query.addSpec((r,q,c) -> {
+                Subquery<Long> subquery = q.subquery(Long.class);
+                Root<User> userSubRoot = subquery.from(User.class);
+                subquery.select(c.count(userSubRoot));
+                Predicate roomMatch = c.equal(
+                        r.get("id"),
+                        userSubRoot.get("slot").get("room").get("id")
+                );
+                Predicate genderMatch = c.and(c.notEqual(userSubRoot.get("gender"), gender));
+                subquery.where(c.and(roomMatch, genderMatch));
+                return c.equal(c.literal(0), subquery.getSelection());
+            });
+        }
+        return new PagedModel<>(roomRepository.findAll(query.and(), pageable).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
     }
 
     @Transactional

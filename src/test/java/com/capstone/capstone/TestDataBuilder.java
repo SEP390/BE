@@ -125,7 +125,9 @@ class TestDataBuilder {
     @Test
     void generateSurveySelect() {
         List<SurveyQuestion> surveyQuestions = surveyQuestionRepository.findAll();
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findAll((r,q,c) -> {
+            return c.equal(r.get("role"), RoleEnum.RESIDENT);
+        });
         users.forEach(user -> {
             surveyQuestions.forEach(question -> {
                 var opts = surveyOptionRepository.findAll((r, q, c) -> {
@@ -149,6 +151,13 @@ class TestDataBuilder {
     private String normalize(String fullName) {
         String[] split = fullName.split(" ");
         return removeAccent(split[2].toLowerCase()) + split[0].substring(0, 1).toLowerCase() + split[1].substring(0, 1).toLowerCase();
+    }
+
+    @Test
+    void generateUserSlot() {
+        List<User> users = userRepository.findAll((r,q,c) -> {
+            return c.equal(r.get("role"), RoleEnum.RESIDENT);
+        });
     }
 
 
@@ -187,6 +196,7 @@ class TestDataBuilder {
             user.setEmail(email);
             user.setPassword(passwordEncoder.encode("123456"));
             user.setGender(GenderEnum.MALE);
+            user.setRole(RoleEnum.RESIDENT);
             user.setDob(LocalDate.now());
             user.setPhoneNumber("0912345678");
             users.add(user);

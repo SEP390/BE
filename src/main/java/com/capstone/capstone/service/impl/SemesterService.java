@@ -33,7 +33,7 @@ public class SemesterService {
     }
 
     public SemesterResponse getCurrentResponse() {
-        return modelMapper.map(semesterRepository.findCurrent(), SemesterResponse.class);
+        return modelMapper.map(Optional.ofNullable(semesterRepository.findCurrent()).orElseThrow(() -> new AppException("CURRENT_SEMESTER_NOT_FOUND")), SemesterResponse.class);
     }
 
     public PagedModel<SemesterResponse> getAll(Map<String, Object> filter, Pageable pageable) {
