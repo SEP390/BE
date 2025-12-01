@@ -55,9 +55,6 @@ public class EmployeeService implements IEmployeeService {
         if (!request.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             throw new BadHttpRequestException("Invalid email format");
         }
-        if (request.getRole() != RoleEnum.GUARD && request.getRole() != RoleEnum.CLEANER) {
-            throw new BadHttpRequestException("Employee role must be GUARD or CLEANER");
-        }
         if (request.getHireDate() != null && request.getContractEndDate() != null &&
                 request.getContractEndDate().isBefore(request.getHireDate())) {
             throw new BadHttpRequestException("Contract end date must be after hire date");
