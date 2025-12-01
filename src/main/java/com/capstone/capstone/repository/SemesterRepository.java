@@ -14,7 +14,7 @@ public interface SemesterRepository extends JpaRepository<Semester, UUID>, JpaSp
     @Query("""
             FROM Semester
             WHERE startDate > CURRENT_DATE
-            ORDER BY startDate DESC
+            ORDER BY startDate ASC
             LIMIT 1
             """)
     Semester findNextSemester();
