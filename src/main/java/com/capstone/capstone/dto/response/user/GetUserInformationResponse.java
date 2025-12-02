@@ -9,12 +9,14 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class GetUserInformationResponse {
+    UUID  id;
     private String username;
     private String email;
     private LocalDate dob;
