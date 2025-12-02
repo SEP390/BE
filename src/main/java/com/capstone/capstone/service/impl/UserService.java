@@ -68,6 +68,8 @@ public class UserService implements IUserService {
         GetUserInformationResponse getUserInformationResponse = new GetUserInformationResponse();
         getUserInformationResponse.setId(user.getId());
         getUserInformationResponse.setUsername(user.getUsername());
+        getUserInformationResponse.setFullName(user.getFullName());
+        getUserInformationResponse.setPhongNum(user.getPhoneNumber());
         getUserInformationResponse.setEmail(user.getEmail());
         getUserInformationResponse.setDob(user.getDob());
         getUserInformationResponse.setGender(user.getGender());
