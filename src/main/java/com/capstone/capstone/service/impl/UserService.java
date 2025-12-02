@@ -66,6 +66,7 @@ public class UserService implements IUserService {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
         Slot slot = slotRepository.findByUser(user);
         GetUserInformationResponse getUserInformationResponse = new GetUserInformationResponse();
+        getUserInformationResponse.setId(user.getId());
         getUserInformationResponse.setUsername(user.getUsername());
         getUserInformationResponse.setEmail(user.getEmail());
         getUserInformationResponse.setDob(user.getDob());
