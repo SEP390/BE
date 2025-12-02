@@ -2,6 +2,7 @@ package com.capstone.capstone;
 
 import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.RoleEnum;
+import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.entity.*;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.service.impl.DormService;
@@ -16,9 +17,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.text.Normalizer;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @SpringBootTest
@@ -48,6 +48,12 @@ class TestDataBuilder {
     private DormRepository dormRepository;
     @Autowired
     private ScheduleRepository scheduleRepository;
+    @Autowired
+    private SlotRepository slotRepository;
+    @Autowired
+    private SemesterRepository semesterRepository;
+    @Autowired
+    private SlotHistoryRepository slotHistoryRepository;
 
     @Test
     void generate() {
@@ -103,6 +109,9 @@ class TestDataBuilder {
     @Test
     void generateSurvey() {
         String[] questionContent = new String[]{
+                "Bạn có thường xuyên sử dụng không gian chung (bếp, phòng sinh hoạt, khu tự học) không?",
+                "Bạn có sẵn lòng chia sẻ đồ dùng chung với bạn bè cùng tầng/khu vực không?",
+                "Bạn có tập thể dục thể thao không?",
                 "Bạn có ngủ trước 11 giờ không?",
                 "Bạn có chơi game không?",
                 "Bạn có đọc tiểu thuyết không?",
@@ -158,6 +167,27 @@ class TestDataBuilder {
         List<User> users = userRepository.findAll((r,q,c) -> {
             return c.equal(r.get("role"), RoleEnum.RESIDENT);
         });
+        Semester semester = semesterRepository.findNextSemester();
+        List<Slot> slots = slotRepository.findAll();
+        Collections.shuffle(slots);
+        slots = slots.subList(0, users.size());
+        List<SlotHistory> needSaved = new ArrayList<>();
+        for (int i = 0; i < users.size(); i++) {
+            var slot = slots.get(i);
+            var user = users.get(i);
+            slot.setUser(user);
+            slot.setStatus(StatusSlotEnum.UNAVAILABLE);
+            SlotHistory slotHistory = new SlotHistory();
+            slotHistory.setSlotId(slot.getId());
+            slotHistory.setUser(user);
+            slotHistory.setSemester(semester);
+            slotHistory.setSlotName(slot.getSlotName());
+            slotHistory.setCheckin(LocalDateTime.now());
+            slotHistory.setRoom(slot.getRoom());
+            needSaved.add(slotHistory);
+        }
+        slotRepository.saveAll(slots);
+        slotHistoryRepository.saveAll(needSaved);
     }
 
 
@@ -181,17 +211,18 @@ class TestDataBuilder {
                 "Sầm Huy Việt",
                 "Uông Quý Vĩnh",
         };
+        List<Integer> codePool = Arrays.stream(names).map(item -> random.nextInt(100000, 999999)).toList();
         int code = 123456;
         List<User> users = new ArrayList<>();
-        for (String name : names) {
+        for (int i = 0; i < names.length; i++) {
+            var name = names[i];
             User user = new User();
             user.setFullName(name);
-            String[] split = name.split(" ");
             String normalized = normalize(name);
             String username = normalized + "he" + code;
             user.setUsername(username);
             String email = "%s@fpt.edu.vn".formatted(username);
-            String userCode = "HE" + code;
+            String userCode = "HE" + codePool.get(i);
             user.setUserCode(userCode);
             user.setEmail(email);
             user.setPassword(passwordEncoder.encode("123456"));
@@ -200,7 +231,6 @@ class TestDataBuilder {
             user.setDob(LocalDate.now());
             user.setPhoneNumber("0912345678");
             users.add(user);
-            code++;
         }
         userRepository.saveAll(users);
     }
