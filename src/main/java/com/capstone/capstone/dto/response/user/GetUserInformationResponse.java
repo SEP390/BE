@@ -18,6 +18,8 @@ import java.util.UUID;
 public class GetUserInformationResponse {
     UUID  id;
     private String username;
+    private String fullName;
+    private String phongNum;
     private String email;
     private LocalDate dob;
     private String StudentId;
