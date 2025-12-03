@@ -79,10 +79,10 @@ public class EWRoomService {
         if (electricUsed < 0) throw new AppException("ELECTRIC_USED_NEGATIVE");
         if (waterUsed < 0) throw new AppException("WATER_USED_NEGATIVE");
         var userCount = users.size();
-        electricUsed = electricUsed / userCount;
-        waterUsed = waterUsed / userCount;
         ewRoom.setElectricUsed(electricUsed);
         ewRoom.setWaterUsed(waterUsed);
+        electricUsed = electricUsed / userCount;
+        waterUsed = waterUsed / userCount;
         ewRoom.setSemester(semester);
         ewRoom = ewRoomRepository.save(ewRoom);
         for (User user : users) {

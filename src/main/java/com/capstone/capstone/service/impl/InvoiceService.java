@@ -63,15 +63,11 @@ public class InvoiceService {
         int totalWaterUsed = usages.stream().mapToInt(EWUsage::getWater).sum();
         long priceToPay = 0;
         // đã từng trả tiền trước đó -> hiện tại cũng đã vượt quá mức
-        if (containPaid) {
-            priceToPay = totalElectricUsed * price.getElectricPrice() + totalWaterUsed * price.getWaterPrice();
-        } else {
-            if (totalElectricUsed > price.getMaxElectricIndex()) {
-                priceToPay += (totalElectricUsed - price.getMaxElectricIndex()) * price.getElectricPrice();
-            }
-            if (totalWaterUsed > price.getMaxWaterIndex()) {
-                priceToPay += (totalWaterUsed - price.getMaxWaterIndex()) * price.getWaterPrice();
-            }
+        if (totalElectricUsed > price.getMaxElectricIndex()) {
+            priceToPay += (totalElectricUsed - price.getMaxElectricIndex()) * price.getElectricPrice();
+        }
+        if (totalWaterUsed > price.getMaxWaterIndex()) {
+            priceToPay += (totalWaterUsed - price.getMaxWaterIndex()) * price.getWaterPrice();
         }
         if (priceToPay > 0) {
             String startDate = usages.getFirst().getStartDate().format(DateTimeFormatter.ISO_DATE);
