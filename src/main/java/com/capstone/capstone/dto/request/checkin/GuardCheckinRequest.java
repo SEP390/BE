@@ -11,4 +11,5 @@ import java.util.UUID;
 @AllArgsConstructor
 public class GuardCheckinRequest {
     private UUID slotId;
+    private String note;
 }
