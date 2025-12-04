@@ -368,7 +368,7 @@ class SlotServiceTest {
         mockSlot1.setStatus(StatusSlotEnum.LOCK);
         mockUser.setUserCode("SV001");
         mockSlot1.setUser(mockUser);
-        GuardCheckinRequest request = new GuardCheckinRequest(SLOT_ID_1);
+        GuardCheckinRequest request = new GuardCheckinRequest(SLOT_ID_1, "");
         SlotHistory mockHistory = new SlotHistory();
         mockHistory.setCheckin(null);
         mockHistory.setSlotId(SLOT_ID_1);
@@ -388,7 +388,7 @@ class SlotServiceTest {
 
     @Test
     void checkin_ShouldThrowException_WhenSlotNotFound() {
-        GuardCheckinRequest request = new GuardCheckinRequest(SLOT_ID_1);
+        GuardCheckinRequest request = new GuardCheckinRequest(SLOT_ID_1, "");
         when(slotRepository.findById(SLOT_ID_1)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> slotService.checkin(request))
                 .isInstanceOf(NoSuchElementException.class);
@@ -397,7 +397,7 @@ class SlotServiceTest {
     @Test
     void checkin_ShouldThrowException_WhenUserIsNull() {
         mockSlot1.setUser(null);
-        GuardCheckinRequest request = new GuardCheckinRequest(SLOT_ID_1);
+        GuardCheckinRequest request = new GuardCheckinRequest(SLOT_ID_1, "");
         when(slotRepository.findById(SLOT_ID_1)).thenReturn(Optional.of(mockSlot1));
         assertThatThrownBy(() -> slotService.checkin(request))
                 .isInstanceOf(NoSuchElementException.class);
@@ -407,7 +407,7 @@ class SlotServiceTest {
     void checkin_ShouldHandleNoCurrentHistoryFound() {
         mockSlot1.setStatus(StatusSlotEnum.LOCK);
         mockSlot1.setUser(mockUser);
-        GuardCheckinRequest request = new GuardCheckinRequest(SLOT_ID_1);
+        GuardCheckinRequest request = new GuardCheckinRequest(SLOT_ID_1, "");
         when(slotRepository.findById(SLOT_ID_1)).thenReturn(Optional.of(mockSlot1));
         when(slotRepository.save(any(Slot.class))).thenReturn(mockSlot1);
         when(slotHistoryRepository.findCurrent(mockUser, SLOT_ID_1)).thenReturn(Optional.empty());
