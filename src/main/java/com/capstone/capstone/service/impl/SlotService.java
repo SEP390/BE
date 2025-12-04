@@ -159,6 +159,7 @@ public class SlotService {
         var his = slotHistoryRepository.findCurrent(user, slot.getId()).orElse(null);
         if (his != null) {
             his.setCheckin(LocalDateTime.now());
+            his.setCheckinNote(request.getNote());
             his = slotHistoryRepository.save(his);
         }
         return modelMapper.map(slot, SlotResponseJoinRoomAndDormAndPricingAndUser.class);
