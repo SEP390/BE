@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,9 +39,15 @@ public class BookingService {
         // next semester
         Semester nextSemester = semesterService.getNext();
 
+        // chưa setting kỳ tiếp theo
         if (nextSemester == null) throw new AppException("NEXT_SEMESTER_NOT_FOUND");
 
         bookingValidateService.validate();
+
+        // có hóa đơn chưa thanh toán
+        if (invoiceRepository.exists((r, q, c) -> {
+            return c.and(c.equal(r.get("user"), user), c.equal(r.get("status"), PaymentStatus.PENDING));
+        })) throw new AppException("IN_DEBT");
 
         // đã đặt slot khác
         if (slotService.getByUser(user).isPresent()) throw new AppException("ALREADY_BOOKED");
