@@ -24,4 +24,7 @@ public class GetReportByIdResponse {
     private ReportStatusEnum reportStatus;
     private ReportTypeEnum reportType;
     private String userCode;
+    private UUID  residentId;
+    private UUID roomId;
+    private UUID semesterId;
 }

@@ -17,6 +17,9 @@ import java.util.UUID;
 public class GetAllReportResponse {
     private UUID reportId;
     private UUID employeeId;
+    private UUID  residentId;
+    private UUID roomId;
+    private UUID semesterId;
     private String employeeName;
     private String content;
     private String responseMessage;
