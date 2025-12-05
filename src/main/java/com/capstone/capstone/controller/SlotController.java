@@ -1,16 +1,21 @@
 package com.capstone.capstone.controller;
 
 import com.capstone.capstone.dto.enums.StatusSlotEnum;
+import com.capstone.capstone.dto.request.slot.SwapSlotRequest;
 import com.capstone.capstone.dto.response.BaseResponse;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricing;
 import com.capstone.capstone.dto.response.slot.SlotResponseJoinRoomAndDormAndPricingAndUser;
+import com.capstone.capstone.dto.response.slot.SwapSlotResponse;
 import com.capstone.capstone.service.impl.SlotService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -36,18 +41,39 @@ public class SlotController {
     @GetMapping("/api/slots")
     public BaseResponse<PagedModel<SlotResponseJoinRoomAndDormAndPricingAndUser>> getAll(
             @RequestParam(required = false) String userCode,
+            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) UUID roomId,
             @RequestParam(required = false) StatusSlotEnum status,
             @PageableDefault Pageable pageable) {
-        return new BaseResponse<>(slotService.getAll(userCode, status, pageable));
+        Map<String, Object> filter = new HashMap<>();
+        filter.put("userCode", userCode);
+        filter.put("userId", userId);
+        filter.put("roomId", roomId);
+        filter.put("status", status);
+        return new BaseResponse<>(slotService.getAll(filter, pageable));
     }
 
-
-    /**
-     * [Guard] checkin cho slot
-     * @param id id của slot
-     */
+    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/api/slots/checkout/{id}")
     public BaseResponse<SlotResponseJoinRoomAndDormAndPricingAndUser> checkout(@PathVariable UUID id) {
         return new BaseResponse<>(slotService.checkout(id));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @PostMapping("/api/slots/swap")
+    public BaseResponse<SwapSlotResponse> swap(@RequestBody SwapSlotRequest request) {
+        return new BaseResponse<>(slotService.swap(request));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @GetMapping("/api/slots/swap/count")
+    public BaseResponse<?> swapCount(@RequestParam UUID userId) {
+        return new BaseResponse<>(slotService.getSwapCount(userId));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @GetMapping("/api/slots/swap/detail")
+    public BaseResponse<?> swapDetail(@RequestParam UUID userId, @RequestParam(required = false) UUID roomId) {
+        return new BaseResponse<>(slotService.getSwapDetail(userId, roomId));
     }
 }

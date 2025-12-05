@@ -1,9 +1,8 @@
 package com.capstone.capstone.service.impl;
 
+import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.enums.StatusRoomEnum;
-import com.capstone.capstone.dto.enums.StatusSlotEnum;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
-import com.capstone.capstone.dto.response.slot.SlotResponse;
 import com.capstone.capstone.dto.response.booking.UserMatching;
 import com.capstone.capstone.dto.response.room.*;
 import com.capstone.capstone.entity.*;
@@ -11,6 +10,10 @@ import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.*;
 import com.capstone.capstone.util.SecurityUtils;
 import com.capstone.capstone.util.SortUtil;
+import com.capstone.capstone.util.SpecQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
@@ -35,21 +38,26 @@ public class RoomService {
     private final MatchingRepository matchingRepository;
     private final SlotRepository slotRepository;
     private final SlotService slotService;
-    private final SlotHistoryService slotHistoryService;
-    private final SemesterService semesterService;
-    private final SurveySelectRepository surveySelectRepository;
+    private final BookingValidateService bookingValidateService;
+    private final UserRepository userRepository;
 
     @Transactional
     public List<RoomMatchingResponse> getMatching() {
         User user = SecurityUtils.getCurrentUser();
-        if (!surveySelectRepository.hasCompletedSurvey(user)) throw new AppException("NO_SURVEY");
+        // kiểm tra điều kiện đặt phòng
+        bookingValidateService.validate();
+        // tổng số lượng câu hỏi
         final long totalQuestion = surveyQuestionRepository.count();
+        // dach sách phòng phù hợp (cùng giới tính / trống)
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
+        // tính matching user - room
         final Map<UUID, Double> matching = matchingRepository.computeRoomMatching(user, rooms)
                 .stream()
                 .collect(Collectors.toMap(RoomMatching::getRoomId, m -> (double) m.getSameOptionCount() / m.getUserCount() / totalQuestion * 100));
         Comparator<Room> comparator = Comparator.comparingDouble(o -> matching.getOrDefault(o.getId(), 0.0));
+        // sắp xếp giảm dần
         rooms.sort(comparator.reversed());
+        // top 5 phòng matching cao nhất
         return rooms.subList(0, Math.min(5, rooms.size())).stream().map(room -> modelMapper.map(room, RoomMatchingResponse.class)).peek(room -> {
             room.setMatching(matching.getOrDefault(room.getId(), 0.0));
         }).toList();
@@ -66,9 +74,10 @@ public class RoomService {
     }
 
     @Transactional
-    public List<RoommateResponse> getRoommates(UUID id) {
+    public List<RoommateResponse> getRoommates() {
         User user = SecurityUtils.getCurrentUser();
-        Room room = roomRepository.getReferenceById(id);
+        Slot slot = Optional.ofNullable(user.getSlot()).orElseThrow(() -> new AppException("SLOT_NOT_FOUND"));
+        Room room = slot.getRoom();
         long totalQuestion = surveyQuestionRepository.count();
         List<User> users = roomRepository.findUsers(room).stream().filter(u -> !u.getId().equals(user.getId())).collect(Collectors.toList());
         Map<UUID, Double> matching = matchingRepository.computeUserMatching(user, users).stream().collect(Collectors.toMap(UserMatching::getId, m -> m.getSameOptionCount() / totalQuestion * 100));
@@ -87,24 +96,37 @@ public class RoomService {
         roomRepository.save(room);
     }
 
-    public PagedModel<RoomResponseJoinPricingAndDormAndSlot> get(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
-        int validPageSize = Math.min(pageable.getPageSize(), 100);
-        Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
-        Pageable validPageable = PageRequest.of(pageable.getPageNumber(), validPageSize, validSort);
-        return new PagedModel<>(roomRepository.findAll(
-                Specification.allOf(
-                        dormId != null ? (root, query, cb) -> cb.equal(root.get("dorm").get("id"), dormId) : Specification.unrestricted(),
-                        floor != null ? (root, query, cb) -> cb.equal(root.get("floor"), floor) : Specification.unrestricted(),
-                        totalSlot != null ? (root, query, cb) -> cb.equal(root.get("totalSlot"), totalSlot) : Specification.unrestricted(),
-                        roomNumber != null ? (root, query, cb) -> cb.like(root.get("roomNumber"), "%" + roomNumber + "%") : Specification.unrestricted()
-                ),
-                validPageable
-        ).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
+    public PagedModel<RoomResponseJoinPricingAndDormAndSlot> get(Map<String, Object> filter, Pageable pageable) {
+        var query = new SpecQuery<Room>();
+        query.equal(r -> r.get("dorm").get("id"), filter.get("dormId"));
+        query.equal(filter, "id");
+        query.equal(filter, "floor");
+        query.equal(filter, "totalSlot");
+        query.like(filter, "roomNumber");
+        if (filter.get("swapUserId") != null) {
+            final UUID swapUserId = (UUID) filter.get("swapUserId");
+            User user = userRepository.findById(swapUserId).orElseThrow(() -> new AppException("USER_NOT_FOUND"));
+            final GenderEnum gender = user.getGender();
+            query.addSpec((r,q,c) -> {
+                Subquery<Long> subquery = q.subquery(Long.class);
+                Root<User> userSubRoot = subquery.from(User.class);
+                subquery.select(c.count(userSubRoot));
+                Predicate roomMatch = c.equal(
+                        r.get("id"),
+                        userSubRoot.get("slot").get("room").get("id")
+                );
+                Predicate genderMatch = c.and(c.notEqual(userSubRoot.get("gender"), gender));
+                subquery.where(c.and(roomMatch, genderMatch));
+                return c.equal(c.literal(0), subquery.getSelection());
+            });
+        }
+        return new PagedModel<>(roomRepository.findAll(query.and(), pageable).map(room -> modelMapper.map(room, RoomResponseJoinPricingAndDormAndSlot.class)));
     }
 
     @Transactional
     public PagedModel<RoomResponseJoinPricingAndDormAndSlot> getBooking(@Nullable UUID dormId, Integer floor, Integer totalSlot, String roomNumber, Pageable pageable) {
         User user = SecurityUtils.getCurrentUser();
+        bookingValidateService.validate();
         List<Room> rooms = roomRepository.findAvailableForGender(user.getGender());
         int validPageSize = Math.min(pageable.getPageSize(), 100);
         Sort validSort = SortUtil.getSort(pageable, "dormId", "floor", "totalSlot", "roomNumber");
@@ -205,11 +227,8 @@ public class RoomService {
     @Transactional
     public List<RoomUserResponse> getUsersResponse(UUID id) {
         Room room = getById(id).orElseThrow(() -> new AppException("ROOM_NOT_FOUND"));
-        return room.getSlots().stream().map((slot) -> {
-            if (slot.getUser() == null) return null;
-            var res = modelMapper.map(slot.getUser(), RoomUserResponse.class);
-            res.setSlot(modelMapper.map(slot, SlotResponse.class));
-            return res;
+        return room.getSlots().stream().map(Slot::getUser).filter(Objects::nonNull).map((user) -> {
+            return modelMapper.map(user, RoomUserResponse.class);
         }).toList();
     }
 

@@ -15,7 +15,5 @@ public class InvoiceResponse {
     private InvoiceType type;
     private LocalDateTime createTime;
     private PaymentStatus status;
-
-    // special case
     private SlotInvoiceResponse slotInvoice;
 }

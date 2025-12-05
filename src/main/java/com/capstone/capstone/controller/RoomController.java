@@ -1,5 +1,6 @@
 package com.capstone.capstone.controller;
 
+import com.capstone.capstone.dto.enums.GenderEnum;
 import com.capstone.capstone.dto.request.room.CreateRoomRequest;
 import com.capstone.capstone.dto.request.room.UpdateRoomRequest;
 import com.capstone.capstone.dto.request.slot.CreateSlotRequest;
@@ -13,7 +14,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -34,11 +37,20 @@ public class RoomController {
     @GetMapping("/api/rooms")
     public BaseResponse<PagedModel<RoomResponseJoinPricingAndDormAndSlot>> get(
             @RequestParam(required = false) UUID dormId,
+            @RequestParam(required = false) UUID id,
             @RequestParam(required = false) Integer floor,
             @RequestParam(required = false) Integer totalSlot,
             @RequestParam(required = false) String roomNumber,
+            @RequestParam(required = false) UUID swapUserId,
             @PageableDefault Pageable pageable) {
-        return new BaseResponse<>(roomService.get(dormId, floor, totalSlot, roomNumber, pageable));
+        Map<String, Object> filter = new HashMap<>();
+        filter.put("dormId", dormId);
+        filter.put("id", id);
+        filter.put("floor", floor);
+        filter.put("totalSlot", totalSlot);
+        filter.put("roomNumber", roomNumber);
+        filter.put("swapUserId", swapUserId);
+        return new BaseResponse<>(roomService.get(filter, pageable));
     }
 
     @GetMapping("/api/rooms/booking")
@@ -56,9 +68,9 @@ public class RoomController {
         return new BaseResponse<>(roomService.current());
     }
 
-    @GetMapping("/api/rooms/{id}/roommates")
-    public BaseResponse<List<RoommateResponse>> getRoommates(@PathVariable UUID id) {
-        return new BaseResponse<>(roomService.getRoommates(id));
+    @GetMapping("/api/user/roommates")
+    public BaseResponse<List<RoommateResponse>> getRoommates() {
+        return new BaseResponse<>(roomService.getRoommates());
     }
 
     @GetMapping("/api/rooms/{id}/users")

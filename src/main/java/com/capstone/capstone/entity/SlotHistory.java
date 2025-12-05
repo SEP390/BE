@@ -33,5 +33,7 @@ public class SlotHistory extends BaseEntity {
     private String slotName;
 
     private LocalDateTime checkin;
+    private String checkinNote;
     private LocalDateTime checkout;
+    private String checkoutNote;
 }

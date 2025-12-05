@@ -2,17 +2,14 @@ package com.capstone.capstone.service.impl;
 
 import com.capstone.capstone.dto.enums.InvoiceType;
 import com.capstone.capstone.dto.enums.PaymentStatus;
-import com.capstone.capstone.dto.response.invoice.InvoiceResponse;
+import com.capstone.capstone.dto.response.invoice.PaymentResponse;
 import com.capstone.capstone.dto.response.vnpay.VNPayResult;
+import com.capstone.capstone.dto.response.vnpay.VNPayStatus;
 import com.capstone.capstone.entity.Invoice;
-import com.capstone.capstone.entity.Slot;
-import com.capstone.capstone.entity.SlotInvoice;
-import com.capstone.capstone.entity.User;
+import com.capstone.capstone.entity.Payment;
 import com.capstone.capstone.exception.AppException;
 import com.capstone.capstone.repository.InvoiceRepository;
-import com.capstone.capstone.repository.SlotInvoiceRepository;
-import com.capstone.capstone.repository.SlotRepository;
-import com.capstone.capstone.util.SecurityUtils;
+import com.capstone.capstone.repository.PaymentRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -26,71 +23,75 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class PaymentService {
-    private final InvoiceService invoiceService;
-    private final SlotInvoiceService slotInvoiceService;
-    private final InvoiceRepository invoiceRepository;
     private final VNPayService vnPayService;
+    private final InvoiceRepository invoiceRepository;
+    private final PaymentRepository paymentRepository;
     private final ModelMapper modelMapper;
-    private final SlotService slotService;
-    private final SlotRepository slotRepository;
-    private final SlotInvoiceRepository slotInvoiceRepository;
+    private final InvoiceChangeService invoiceChangeService;
 
-    public Invoice handle(VNPayResult res) {
-        var invoiceId = res.getId();
+    @Transactional
+    public PaymentResponse handle(VNPayResult res) {
+        var paymentId = res.getId();
+        var payment = paymentRepository.findById(paymentId).orElseThrow();
+        var invoice = payment.getInvoice();
         var vnPayStatus = res.getStatus();
-        var invoice = invoiceRepository.findById(invoiceId).orElseThrow();
+        // chỉ cập nhật nếu đang PENDING (double render problem)
         if (invoice.getStatus() == PaymentStatus.PENDING) {
-            invoice = invoiceService.updateStatus(invoice, vnPayStatus);
-            if (invoice.getType() == InvoiceType.BOOKING) {
-                slotInvoiceService.onPayment(invoice, invoice.getStatus());
-            }
+            PaymentStatus newStatus = vnPayStatus == VNPayStatus.SUCCESS ? PaymentStatus.SUCCESS : PaymentStatus.CANCEL;
+            payment.setStatus(newStatus);
+            payment = paymentRepository.save(payment);
+            invoiceChangeService.update(invoice, newStatus);
         }
-        return invoice;
-    }
-
-    public InvoiceResponse toResponse(Invoice invoice) {
-        InvoiceResponse response = modelMapper.map(invoice, InvoiceResponse.class);
-        if (invoice.getType() == InvoiceType.BOOKING) {
-            response.setSlotInvoice(slotInvoiceService.toResponse(invoice.getSlotInvoice()));
-        }
-        return response;
+        return modelMapper.map(payment, PaymentResponse.class);
     }
 
     @Transactional
-    public InvoiceResponse handle(HttpServletRequest request) {
+    public PaymentResponse handle(HttpServletRequest request) {
         var res = vnPayService.verify(request);
-        return toResponse(handle(res));
+        return handle(res);
     }
 
-    public String getPendingBookingUrl() {
-        User user = SecurityUtils.getCurrentUser();
-        Invoice invoice = invoiceRepository.findByUserAndTypeAndStatus(user, InvoiceType.BOOKING, PaymentStatus.PENDING).orElseThrow(() -> new AppException("NO_INVOICE"));
-        // hết hạn
-        if (invoice.getCreateTime().until(LocalDateTime.now(), ChronoUnit.MINUTES) >= 10) {
-            invoice.setStatus(PaymentStatus.CANCEL);
-            invoice = invoiceRepository.save(invoice);
-            Slot slot = slotRepository.findById(invoice.getSlotInvoice().getSlotId()).orElseThrow();
-            slotService.unlock(slot);
-            throw new AppException("INVOICE_EXPIRE");
-        }
-        return vnPayService.createPaymentUrl(invoice.getId(), invoice.getCreateTime(), invoice.getPrice());
+    public Payment create(Invoice invoice) {
+        Payment payment = new Payment();
+        payment.setInvoice(invoice);
+        payment.setCreateTime(LocalDateTime.now());
+        payment.setStatus(PaymentStatus.PENDING);
+        payment.setPrice(invoice.getPrice());
+        return paymentRepository.save(payment);
     }
 
-    public String getInvoicePaymentUrl(UUID id) {
-        Invoice invoice = invoiceRepository.findById(id).orElseThrow(() -> new AppException("INVOICE_NOT_FOUND"));
+    public String getPaymentUrl(Invoice invoice) {
         if (invoice.getStatus() == PaymentStatus.SUCCESS) {
             throw new AppException("INVOICE_ALREADY_PAID");
         }
-        if (invoice.getCreateTime().until(LocalDateTime.now(), ChronoUnit.MINUTES) >= 10) {
+        if (invoice.getStatus() == PaymentStatus.CANCEL) {
+            throw new AppException("INVOICE_CANCEL");
+        }
+        var payment = paymentRepository.findLatestByInvoice(invoice).orElse(null);
+
+        // invoice expire
+        if (invoice.getStatus() == PaymentStatus.PENDING && invoice.getExpireTime() != null && LocalDateTime.now().isAfter(invoice.getExpireTime())) {
             invoice.setStatus(PaymentStatus.CANCEL);
             invoice = invoiceRepository.save(invoice);
-            if (invoice.getType() == InvoiceType.BOOKING) {
-                SlotInvoice slotInvoice = slotInvoiceRepository.findById(invoice.getSlotInvoice().getId()).orElseThrow();
-                Slot slot = slotRepository.findById(slotInvoice.getSlotId()).orElseThrow();
-                slotService.unlock(slot);
+            if (payment != null) {
+                payment.setStatus(PaymentStatus.CANCEL);
+                payment = paymentRepository.save(payment);
             }
+            invoice = invoiceChangeService.update(invoice, PaymentStatus.CANCEL);
             throw new AppException("INVOICE_EXPIRE");
         }
-        return vnPayService.createPaymentUrl(invoice.getId(), invoice.getCreateTime(), invoice.getPrice());
+        if (payment == null || payment.getCreateTime().until(LocalDateTime.now(), ChronoUnit.MINUTES) >= 10) {
+            payment = create(invoice);
+        }
+        return vnPayService.createPaymentUrl(payment.getId(), payment.getCreateTime(), payment.getPrice());
+    }
+
+    public String getPaymentUrl(UUID id) {
+        Invoice invoice = invoiceRepository.findById(id).orElseThrow(() -> new AppException("INVOICE_NOT_FOUND"));
+        return getPaymentUrl(invoice);
+    }
+
+    public String getPaymentUrl(Payment payment) {
+        return vnPayService.createPaymentUrl(payment.getId(), payment.getCreateTime(), payment.getPrice());
     }
 }
