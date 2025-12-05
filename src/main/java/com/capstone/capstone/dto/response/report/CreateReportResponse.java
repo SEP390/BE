@@ -16,6 +16,7 @@ import java.util.UUID;
 @Setter
 public class CreateReportResponse {
     private UUID reportId;
+    private UUID semesterId;
     private String content;
     private LocalDateTime createdAt;
     private ReportStatusEnum reportStatus;

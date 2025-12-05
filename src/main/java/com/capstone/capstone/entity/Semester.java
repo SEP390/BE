@@ -26,4 +26,6 @@ public class Semester extends BaseEntity {
     @OneToMany(mappedBy = "semester")
     private List<Holiday> holidays;
 
+    @OneToMany(mappedBy = "semester")
+    private List<Report> reports;
 }

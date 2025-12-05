@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,6 +15,8 @@ import java.time.LocalDateTime;
 @Setter
 public class CreateReportRequest {
     private String content;
+    private UUID residentId;
+    private UUID roomId;
     private LocalDateTime createAt;
     private ReportTypeEnum reportType;
 }
