@@ -73,4 +73,14 @@ public class ScheduleController {
         response.setMessage("Schedules found");
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @DeleteMapping(ApiConstant.SCHEDULE.GET_BY_ID)
+    public ResponseEntity<BaseResponse<Void>> deleteSchedule(@PathVariable UUID id) {
+        BaseResponse<Void> response = new BaseResponse<>();
+        iScheduleService.deleteSchedule(id);
+        response.setData(null);
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Schedule deleted");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

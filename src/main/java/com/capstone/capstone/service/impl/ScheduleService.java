@@ -217,4 +217,17 @@ public class ScheduleService implements IScheduleService {
         }
         return response;
     }
+
+    @Override
+    public Void deleteSchedule(UUID scheduleId) {
+        UUID currentUserId = AuthenUtil.getCurrentUserId();
+        User user = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getRole().equals(RoleEnum.MANAGER)) {
+            Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new RuntimeException("Schedule not found"));
+            scheduleRepository.delete(schedule);
+        } else {
+            throw new RuntimeException("User not allowed to delete schedule");
+        }
+        return null;
+    }
 }
