@@ -31,4 +31,7 @@ public class Room extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "pricing_id")
     private RoomPricing pricing;
+
+    @OneToMany(mappedBy = "room")
+    private List<Report> reports;
 }

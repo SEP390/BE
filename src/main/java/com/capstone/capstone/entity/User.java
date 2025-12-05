@@ -49,6 +49,8 @@ public class User extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<WarehouseTransaction> warehouseItems;
 
+    @OneToMany(mappedBy = "resident")
+    private List<Report> reports;
     @OneToOne(mappedBy = "user")
     private Slot slot;
 
