@@ -17,6 +17,6 @@ public interface IScheduleService {
     List<CreateScheduleResponse> createSchedule(CreateScheduleRequest request);
     PageResponse<GetScheduleResponse> getAllSchedules(Pageable pageable);
     UpdateScheduleResponse updateSchedule(UpdateScheduleRequest request, UUID scheduleId);
-
     List<GetScheduleResponse> getAllScheduleByDate(LocalDate from, LocalDate to);
+    Void  deleteSchedule(UUID scheduleId);
 }
