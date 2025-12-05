@@ -30,4 +30,19 @@ public class Report extends BaseEntity {
     @JoinColumn(name = "employee_id", nullable = false)
     @JsonIgnore
     private Employee employee;
+
+    @ManyToOne
+    @JoinColumn(name = "semester_id", nullable = true)
+    @JsonIgnore
+    private Semester semester;//10
+
+    @ManyToOne
+    @JoinColumn(name = "resident_id", nullable = true)
+    @JsonIgnore
+    private User resident;//10
+
+    @ManyToOne
+    @JoinColumn(name = "room_id", nullable = false)
+    @JsonIgnore
+    private Room room;//10
 }
