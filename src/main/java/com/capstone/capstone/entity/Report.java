@@ -32,7 +32,7 @@ public class Report extends BaseEntity {
     private Employee employee;
 
     @ManyToOne
-    @JoinColumn(name = "semester_id", nullable = true)
+    @JoinColumn(name = "semester_id", nullable = false)
     @JsonIgnore
     private Semester semester;//10
 
@@ -42,7 +42,7 @@ public class Report extends BaseEntity {
     private User resident;//10
 
     @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
+    @JoinColumn(name = "room_id", nullable = true)
     @JsonIgnore
     private Room room;//10
 }
