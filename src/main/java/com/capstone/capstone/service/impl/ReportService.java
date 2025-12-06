@@ -51,7 +51,7 @@ public class ReportService implements IReportService {
             throw new BadHttpRequestException("Report type is required");
         }
 
-        if (request.getReportType().equals(ReportTypeEnum.SECURITY_ISSUE)) {
+        if (request.getReportType().equals(ReportTypeEnum.VIOLATION)) {
             if (request.getRoomId() == null || request.getRoomId().toString().isEmpty()) {
                 User resident = userRepository.findByIdAndRole(request.getResidentId(), RoleEnum.RESIDENT).orElseThrow(() -> new RuntimeException("Resident not found"));
                 Room room = slotRepository.findByUser(resident).getRoom();
