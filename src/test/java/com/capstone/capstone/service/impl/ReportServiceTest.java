@@ -349,7 +349,7 @@ class ReportServiceTest {
             r.setReportStatus(ReportStatusEnum.PENDING);
             r.setCreatedAt(LocalDateTime.now());
             r.setUserCode("GU001");
-            r.setReportType(ReportTypeEnum.SECURITY_ISSUE);
+            r.setReportType(ReportTypeEnum.VIOLATION);
 
             when(userRepository.findById(guardUserId)).thenReturn(Optional.of(guardUser));
             when(employeeRepository.findByUser(guardUser)).thenReturn(Optional.of(guardEmp));
@@ -590,7 +590,7 @@ class ReportServiceTest {
         report.setResponseMessage("Đã xử lý an toàn");
         report.setCreatedAt(LocalDateTime.now());
         report.setReportStatus(ReportStatusEnum.PENDING);
-        report.setReportType(ReportTypeEnum.SECURITY_ISSUE);
+        report.setReportType(ReportTypeEnum.VIOLATION);
         report.setUserCode("SE777");
 
         when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
@@ -604,7 +604,7 @@ class ReportServiceTest {
         assertEquals("Đã xử lý an toàn", resp.getResponseMessage());
         assertEquals(report.getCreatedAt(), resp.getCreatedDate());
         assertEquals(ReportStatusEnum.PENDING, resp.getReportStatus());
-        assertEquals(ReportTypeEnum.SECURITY_ISSUE, resp.getReportType());
+        assertEquals(ReportTypeEnum.VIOLATION, resp.getReportType());
         assertEquals("SE777", resp.getUserCode());
     }
 
