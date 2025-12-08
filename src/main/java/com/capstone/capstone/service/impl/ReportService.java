@@ -138,8 +138,19 @@ public class ReportService implements IReportService {
             GetAllReportResponse response = new GetAllReportResponse();
             response.setReportId(report.getId());
             response.setEmployeeId(report.getEmployee().getId());
-            response.setRoomId(report.getRoom().getId());
-            response.setResidentId(report.getResident().getId());
+
+            if (report.getResident() != null) {
+                response.setResidentId(report.getResident().getId());
+            } else {
+                response.setResidentId(null);
+            }
+
+            if (report.getRoom() != null) {
+                response.setRoomId(report.getRoom().getId());
+            } else {
+                response.setRoomId(null);
+            }
+
             response.setSemesterId(report.getSemester().getId());
             response.setContent(report.getContent());
             response.setResponseMessage(report.getResponseMessage());

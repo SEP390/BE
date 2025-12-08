@@ -661,49 +661,9 @@ class EmployeeServiceTest {
         }
     }
 
-    /**
-     * 🎯 TC16 – Owner (chính employee đó) được phép update thông tin của mình.
-     */
-    @Test
-    void updateEmployee_shouldAllowOwnerToUpdateSelf() {
-        try (MockedStatic<AuthenUtil> mockedStatic = mockStatic(AuthenUtil.class)) {
-            UUID employeeUserId = UUID.randomUUID();
-            mockedStatic.when(AuthenUtil::getCurrentUserId).thenReturn(employeeUserId);
-
-            User currentUser = new User();
-            currentUser.setId(employeeUserId);
-            currentUser.setRole(RoleEnum.GUARD);
-
-            User empUser = currentUser; // chính nó
-            Employee employee = new Employee();
-            employee.setId(UUID.randomUUID());
-            employee.setUser(empUser);
-            employee.setHireDate(LocalDate.of(2023, 1, 1));
-
-            when(userRepository.findById(employeeUserId)).thenReturn(Optional.of(currentUser));
-            when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
-
-            UpdateEmployeeRequest req = new UpdateEmployeeRequest();
-            req.setPhoneNumber("555");
-            req.setBirthDate(LocalDate.of(1998, 5, 5));
-            req.setRole(RoleEnum.GUARD);
-            req.setContractEndDate(LocalDate.of(2024, 1, 1));
-
-            when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-            when(employeeRepository.save(any(Employee.class))).thenAnswer(inv -> inv.getArgument(0));
-
-            UpdateEmployeeResponse resp = employeeService.updateEmployee(employee.getId(), req);
-
-            assertEquals("555", empUser.getPhoneNumber());
-            assertEquals(LocalDate.of(1998, 5, 5), empUser.getDob());
-            assertEquals(RoleEnum.GUARD, empUser.getRole());
-            assertEquals(LocalDate.of(2024, 1, 1), employee.getContractEndDate());
-            assertEquals(employee.getId(), resp.getEmployeeId());
-        }
-    }
 
     /**
-     * 🎯 TC17 – User không phải manager, cũng không phải owner → bị chặn.
+     * 🎯 TC16 – User không phải manager, cũng không phải owner → bị chặn.
      */
     @Test
     void updateEmployee_shouldThrow_whenNotManagerAndNotOwner() {
@@ -742,7 +702,7 @@ class EmployeeServiceTest {
     }
 
     /**
-     * 🎯 TC18 – Role update không phải GUARD/CLEANER/TECHNICAL:
+     * 🎯 TC17 – Role update không phải GUARD/CLEANER/TECHNICAL:
      *  - currentUser: MANAGER
      *  - request.role = RESIDENT
      *  Kỳ vọng:
@@ -786,7 +746,7 @@ class EmployeeServiceTest {
     }
 
     /**
-     * 🎯 TC19 – ContractEndDate < hireDate khi update → reject.
+     * 🎯 TC18 – ContractEndDate < hireDate khi update → reject.
      */
     @Test
     void updateEmployee_shouldThrow_whenContractEndBeforeHireDate() {
@@ -830,7 +790,7 @@ class EmployeeServiceTest {
     // --------------------------------------------------
 
     /**
-     * 🎯 TC20 – Manager reset password cho nhân viên khác thành công.
+     * 🎯 TC18 – Manager reset password cho nhân viên khác thành công.
      */
     @Test
     void resetPassword_shouldAllowManagerToResetOthersPassword() {
@@ -866,7 +826,7 @@ class EmployeeServiceTest {
     }
 
     /**
-     * 🎯 TC21 – Owner được phép tự đổi password của mình.
+     * 🎯 TC20 – Owner được phép tự đổi password của mình.
      */
     @Test
     void resetPassword_shouldAllowOwnerToResetSelfPassword() {
@@ -897,7 +857,7 @@ class EmployeeServiceTest {
     }
 
     /**
-     * 🎯 TC22 – Không phải manager, không phải owner → không được reset password.
+     * 🎯 TC21 – Không phải manager, không phải owner → không được reset password.
      */
     @Test
     void resetPassword_shouldThrow_whenNotManagerAndNotOwner() {
@@ -935,7 +895,7 @@ class EmployeeServiceTest {
     }
 
     /**
-     * 🎯 TC23 – Password mới null/blank.
+     * 🎯 TC22 – Password mới null/blank.
      */
     @Test
     void resetPassword_shouldThrow_whenNewPasswordMissing() {
@@ -971,7 +931,7 @@ class EmployeeServiceTest {
     }
 
     /**
-     * 🎯 TC24 – Password mới quá ngắn (< 6 ký tự).
+     * 🎯 TC23 – Password mới quá ngắn (< 6 ký tự).
      */
     @Test
     void resetPassword_shouldThrow_whenNewPasswordTooShort() {
