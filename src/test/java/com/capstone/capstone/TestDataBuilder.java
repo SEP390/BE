@@ -54,12 +54,30 @@ class TestDataBuilder {
     private SemesterRepository semesterRepository;
     @Autowired
     private SlotHistoryRepository slotHistoryRepository;
+    @Autowired
+    private TimeConfigRepository timeConfigRepository;
 
     @Test
     void generate() {
         generateSemester();
         generateRoomPricing();
+        generateTimeConfig();
+        generateSurvey();
         generateDorm();
+        generateUser();
+        generateSurveySelect();
+        generateUserSlot();
+        generateManager();
+    }
+
+    void generateTimeConfig() {
+        TimeConfig timeConfig = new TimeConfig();
+        timeConfig.setCreateTime(LocalDateTime.now());
+        timeConfig.setStartBookingDate(LocalDate.now().minusDays(3));
+        timeConfig.setEndBookingDate(LocalDate.now().plusDays(3));
+        timeConfig.setStartExtendDate(LocalDate.now().minusDays(3));
+        timeConfig.setEndExtendDate(LocalDate.now().plusDays(3));
+        timeConfigRepository.save(timeConfig);
     }
 
     @Test
@@ -189,7 +207,20 @@ class TestDataBuilder {
         slotRepository.saveAll(slots);
         slotHistoryRepository.saveAll(needSaved);
     }
-
+    @Test
+    void generateManager() {
+        User user = new User();
+        user.setFullName("Quản lý");
+        user.setUsername("manager");
+        user.setPassword(passwordEncoder.encode("123456"));
+        user.setUserCode("MNG001");
+        user.setDob(LocalDate.now());
+        user.setEmail("manager@fpt.edu.vn");
+        user.setPhoneNumber("0912345678");
+        user.setRole(RoleEnum.MANAGER);
+        user.setGender(GenderEnum.MALE);
+        userRepository.save(user);
+    }
 
     @Test
     void generateUser() {
