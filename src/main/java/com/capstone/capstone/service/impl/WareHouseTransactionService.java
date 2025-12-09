@@ -77,6 +77,8 @@ public class WareHouseTransactionService implements IWareHouseTransactionService
             warehouseTransactions = warehouseTransactionRepository.findAllByUser(user);
         }  else if(user.getRole() == RoleEnum.MANAGER){
             warehouseTransactions = warehouseTransactionRepository.findAll();
+        } else {
+            throw new RuntimeException("Role not allowed");
         }
         List<GetAllWarehouseTransactionResponse> response = new ArrayList<>();
         for (WarehouseTransaction transaction : warehouseTransactions) {
