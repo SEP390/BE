@@ -104,6 +104,8 @@ public class UserService implements IUserService {
             getAllResidentResponse.setSlotName(
                     slot != null ? slot.getSlotName() : null
             );
+            getAllResidentResponse.setDob(user.getDob());
+            getAllResidentResponse.setUserCode(user.getUserCode());
             responses.add(getAllResidentResponse);
         }
         return responses;

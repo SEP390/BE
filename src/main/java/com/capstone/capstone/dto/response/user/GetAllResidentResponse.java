@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
@@ -19,4 +20,6 @@ public class GetAllResidentResponse {
     private String phoneNumber;
     private String slotName;
     private String image;
+    private LocalDate dob;
+    private String userCode;
 }
