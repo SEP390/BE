@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
@@ -26,4 +27,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     List<Schedule> findAllByEmployee_IdAndWorkDateBetween(UUID employeeId,
                                                        LocalDate from,
                                                        LocalDate to);
+
+    Schedule findScheduleByWorkDateAndShiftAndEmployee(LocalDate workDate, Shift shift, Employee employee);
 }

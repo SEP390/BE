@@ -6,11 +6,12 @@ import com.capstone.capstone.dto.response.user.CreateAccountResponse;
 import com.capstone.capstone.dto.response.user.GetAllResidentResponse;
 import com.capstone.capstone.dto.response.user.GetUserByIdResponse;
 import com.capstone.capstone.dto.response.user.GetUserInformationResponse;
+import com.capstone.capstone.entity.Room;
 import com.capstone.capstone.entity.Slot;
 import com.capstone.capstone.entity.User;
 import com.capstone.capstone.exception.BadHttpRequestException;
 import com.capstone.capstone.exception.NotFoundException;
-import com.capstone.capstone.repository.EmployeeRepository;
+import com.capstone.capstone.repository.RoomRepository;
 import com.capstone.capstone.repository.SlotRepository;
 import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IUploadService;
@@ -19,12 +20,9 @@ import com.capstone.capstone.util.AuthenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -34,6 +32,7 @@ public class UserService implements IUserService {
     private final PasswordEncoder passwordEncoder;
     private final SlotRepository  slotRepository;
     private final IUploadService uploadService;
+    private final RoomRepository roomRepository;
 
     @Override
     public CreateAccountResponse createAccount(CreateUserRequest createUserRequest){
@@ -77,6 +76,15 @@ public class UserService implements IUserService {
         getUserInformationResponse.setSlotName(slot == null ? null : slot.getSlotName());
         getUserInformationResponse.setImage(user.getImage());
         getUserInformationResponse.setRole(user.getRole());
+        Room currentRoom = roomRepository.findByUser(user);
+        if (currentRoom != null) {
+            getUserInformationResponse.setRoomNumber(currentRoom.getRoomNumber());
+            getUserInformationResponse.setFloor(currentRoom.getFloor());
+        } else {
+            // user chưa được gán room
+            getUserInformationResponse.setRoomNumber(null);
+            getUserInformationResponse.setFloor(null);
+        }
         return getUserInformationResponse;
     }
 
