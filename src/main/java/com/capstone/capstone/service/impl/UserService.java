@@ -125,6 +125,15 @@ public class UserService implements IUserService {
         getUserByIdResponse.setGender(responseUser.getGender());
         getUserByIdResponse.setRole(responseUser.getRole());
         getUserByIdResponse.setImage(responseUser.getImage());
+        Room currentRoom = roomRepository.findByUser(responseUser);
+        if (currentRoom != null) {
+            getUserByIdResponse.setRoomNumber(currentRoom.getRoomNumber());
+            getUserByIdResponse.setFloor(currentRoom.getFloor());
+        } else {
+            // user chưa được gán room
+            getUserByIdResponse.setRoomNumber(null);
+            getUserByIdResponse.setFloor(null);
+        }
         return getUserByIdResponse;
     }
 }
