@@ -225,6 +225,8 @@ public class ScheduleService implements IScheduleService {
         User user = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
         if (user.getRole().equals(RoleEnum.MANAGER)) {
             Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new RuntimeException("Schedule not found"));
+            LocalDate currentDate = LocalDate.now();
+            if (currentDate.isAfter(schedule.getWorkDate())) throw new RuntimeException("Cannot delete schedule has finish");
             scheduleRepository.delete(schedule);
         } else {
             throw new RuntimeException("User not allowed to delete schedule");
