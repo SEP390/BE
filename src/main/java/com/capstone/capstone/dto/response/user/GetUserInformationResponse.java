@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -16,7 +15,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class GetUserInformationResponse {
-    UUID  id;
+    private UUID  id;
     private String username;
     private String fullName;
     private String phongNum;
@@ -27,4 +26,6 @@ public class GetUserInformationResponse {
     private String slotName;
     private String image;
     private RoleEnum role;
+    private String roomNumber;
+    private Integer floor;
 }

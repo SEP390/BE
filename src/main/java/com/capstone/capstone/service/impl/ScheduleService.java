@@ -18,12 +18,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -89,6 +87,32 @@ public class ScheduleService implements IScheduleService {
         if (!conflicts.isEmpty()) {
             throw new RuntimeException("Trùng lịch ở các ngày: " + conflicts);
         }
+
+
+
+        // Kiểu tra có bị quá giờ làm trên ngày hay
+        if (singleDay) {
+            if(scheduleRepository.findScheduleByWorkDateAndShiftAndEmployee(req.getSingleDate(), shift, emp) != null){
+                Schedule schedule = scheduleRepository.findScheduleByWorkDateAndShiftAndEmployee(req.getSingleDate(), shift, emp);
+                Long timeHasSet = Duration.between(schedule.getShift().getStartTime(), schedule.getShift().getEndTime()).toMinutes();
+                Long currentTime = Duration.between(shift.getStartTime(), shift.getEndTime()).toMinutes();
+                if(timeHasSet + currentTime > 720){
+                    throw new RuntimeException("Quá 12 tiếng một ngày cho người này rồi");
+                }
+            }
+        }
+
+        if(range) {
+            List<Schedule> schedules = scheduleRepository.findAllByEmployee_IdAndWorkDateBetween(emp.getId(), req.getFrom(), req.getTo());
+            for(Schedule schedule : schedules) {
+                Long timeHasSet = Duration.between(schedule.getShift().getStartTime(), schedule.getShift().getEndTime()).toMinutes();
+                Long currentTime = Duration.between(shift.getStartTime(), shift.getEndTime()).toMinutes();
+                if(timeHasSet + currentTime > 720){
+                    throw new RuntimeException("Có ngày bị quá 12h/ngày");
+                }
+            }
+        }
+
 
         // 5) Lưu & trả về
         List<CreateScheduleResponse> out = new ArrayList<>();
