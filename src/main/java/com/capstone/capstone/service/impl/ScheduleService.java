@@ -166,6 +166,8 @@ public class ScheduleService implements IScheduleService {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(() -> new RuntimeException("Schedule not found"));
         Dorm newDorm = dormRepository.findById(request.getDormID()).orElseThrow(() -> new RuntimeException("Dorm not found"));
         Shift shift = shiftRepository.findById(request.getShiftId()).orElseThrow(() -> new RuntimeException("Shift not found"));
+        LocalDate currentDate = LocalDate.now();
+        if (currentDate.isAfter(schedule.getWorkDate())) throw new RuntimeException("Cannot update schedule has finish");
         schedule.setDorm(newDorm);
         schedule.setNote(request.getNote());
         schedule.setShift(shift);
