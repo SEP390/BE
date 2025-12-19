@@ -29,4 +29,6 @@ public class GetUserByIdResponse {
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
     private String image;
+    private String roomNumber;
+    private Integer floor;
 }
