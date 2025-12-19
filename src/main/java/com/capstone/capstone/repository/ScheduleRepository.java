@@ -28,5 +28,5 @@ public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
                                                        LocalDate from,
                                                        LocalDate to);
 
-    Schedule findScheduleByWorkDateAndShiftAndEmployee(LocalDate workDate, Shift shift, Employee employee);
+    Schedule findByShift(Shift shift);
 }

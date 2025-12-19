@@ -5,9 +5,12 @@ import com.capstone.capstone.dto.request.shift.UpdateShiftRequest;
 import com.capstone.capstone.dto.response.shift.CreateShiftResponse;
 import com.capstone.capstone.dto.response.shift.GetAllShiftResponse;
 import com.capstone.capstone.dto.response.shift.UpdateShiftResponse;
+import com.capstone.capstone.entity.Schedule;
 import com.capstone.capstone.entity.Shift;
 import com.capstone.capstone.exception.NotFoundException;
+import com.capstone.capstone.repository.ScheduleRepository;
 import com.capstone.capstone.repository.ShiftRepository;
+import com.capstone.capstone.repository.UserRepository;
 import com.capstone.capstone.service.interfaces.IShiftService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
@@ -21,6 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ShiftService implements IShiftService {
     private final ShiftRepository shiftRepository;
+    private final ScheduleRepository scheduleRepository;
 
     @Override
     public CreateShiftResponse createShift(CreateShiftRequest request) {
@@ -62,6 +66,8 @@ public class ShiftService implements IShiftService {
     @Override
     public UpdateShiftResponse updateShift(UUID shiftId, UpdateShiftRequest request) {
         Shift shift = shiftRepository.findById(shiftId).orElseThrow(()-> new NotFoundException("Shift not found"));
+        Schedule schedule = scheduleRepository.findByShift(shift);
+        if(schedule != null) throw new RuntimeException("Schedule exited so cannot update shift");
         if (request.getStartTime().isAfter(request.getEndTime())) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
