@@ -78,6 +78,15 @@ public class ScheduleService implements IScheduleService {
             throw new IllegalArgumentException("Không có ngày nào hợp lệ để tạo lịch");
         }
 
+        // 3.1) Không cho tạo lịch quá khứ
+        LocalDate today = LocalDate.now(); // hoặc inject Clock để test dễ hơn
+        List<LocalDate> pastDays = days.stream()
+                .filter(day -> day.isBefore(today))
+                .toList();
+
+        if (!pastDays.isEmpty()) {
+            throw new IllegalArgumentException("Không được tạo lịch cho quá khứ: " + pastDays);
+        }
         // 4) Kiểm tra trùng (báo sớm)
         List<LocalDate> conflicts = new ArrayList<>();
         for (LocalDate day : days) {
