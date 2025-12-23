@@ -141,7 +141,7 @@ public class RequestService implements IRequestService {
             GetAllRequestResponse requestResponse = new GetAllRequestResponse();
             requestResponse.setRequestId(request.getId());
             requestResponse.setResidentId(request.getUser().getId());
-            requestResponse.setResidentName(request.getUser().getUsername());
+            requestResponse.setResidentName(request.getUser().getFullName());
             requestResponse.setRequestType(request.getRequestType());
             requestResponse.setCreateTime(request.getCreateTime());
             requestResponse.setResponseStatus(request.getRequestStatus());
